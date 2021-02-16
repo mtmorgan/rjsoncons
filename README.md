@@ -1,5 +1,5 @@
 
-# jsoncons
+# rjsoncons
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -48,8 +48,18 @@ json <- '{
 
 jsonpath(json, "$..name")
 
-jmespath(json, "
+jmespath(json, "locations[?state == 'WA'].name | sort(@)")
 ```
+
+For an R representation use, e.g., [jsonlite][]
+
+``` r
+jmespath(json, "locations[?state == 'WA'].name | sort(@)") |>
+    jsonlite::fromJSON()
+```
+
+[jsonlite]: https://cran.r-project.org/package=jsonlite
+
 
 ## Library use in other packages
 
@@ -57,7 +67,7 @@ The package includes the complete jsoncons C++ header-only library,
 available to other R packages by adding
 
 ```
-LinkingTo: jsonson
+LinkingTo: rjsoncons
 SystemRequirements: C++11
 ```
 
