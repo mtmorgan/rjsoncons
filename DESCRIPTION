@@ -1,0 +1,27 @@
+Package: rjsoncons
+Title: C++ header-only jsoncons library for JSON construction
+Version: 0.0.1
+Authors@R: c(
+    person(
+        "Martin", "Morgan", role = c("aut", "cre"),
+        email = "mtmorgan.bioc@gmail.com",
+        comment = c(ORCID = "0000-0002-5874-8148")
+    ),
+    person(
+        "Daniel", "Parker", role = "aut",
+        email = "danielaparker@yahoo.com",
+        comment = "jsoncons C++ library maintainer"
+    ))
+Description: The jsoncons C++ library constructs representations from
+    a JSON character vector. It includes extensions such as 'jsonpath'
+    and 'jmespath' for flexible queries into JSON objects. This
+    packages contains the complete header-only source for the library,
+    plus simple R wrappers to support jsonpath and jmespath queries
+    into JSON string representations.
+License: BSL-1.0
+LinkingTo: cpp11
+SystemRequirements: C++11
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
