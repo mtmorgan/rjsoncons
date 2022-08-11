@@ -15,35 +15,35 @@
 #include <jsoncons/source.hpp>
 #include <jsoncons/json_visitor.hpp>
 #include <jsoncons/config/jsoncons_config.hpp>
-#include <jsoncons_ext/bson/bson_detail.hpp>
+#include <jsoncons_ext/bson/bson_type.hpp>
 #include <jsoncons_ext/bson/bson_error.hpp>
 #include <jsoncons_ext/bson/bson_parser.hpp>
 
 namespace jsoncons { namespace bson {
 
-template <class Src,class Allocator=std::allocator<char>>
+template <class Source,class Allocator=std::allocator<char>>
 class basic_bson_reader 
 {
-    basic_bson_parser<Src,Allocator> parser_;
+    basic_bson_parser<Source,Allocator> parser_;
     json_visitor& visitor_;
 public:
-    template <class Source>
-    basic_bson_reader(Source&& source, 
+    template <class Sourceable>
+    basic_bson_reader(Sourceable&& source, 
                       json_visitor& visitor, 
                       const Allocator alloc)
-       : basic_bson_reader(std::forward<Source>(source),
+       : basic_bson_reader(std::forward<Sourceable>(source),
                            visitor,
                            bson_decode_options(),
                            alloc)
     {
     }
 
-    template <class Source>
-    basic_bson_reader(Source&& source, 
+    template <class Sourceable>
+    basic_bson_reader(Sourceable&& source, 
                       json_visitor& visitor, 
                       const bson_decode_options& options = bson_decode_options(),
                       const Allocator alloc=Allocator())
-       : parser_(std::forward<Source>(source), options, alloc),
+       : parser_(std::forward<Sourceable>(source), options, alloc),
          visitor_(visitor)
     {
     }

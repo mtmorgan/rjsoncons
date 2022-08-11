@@ -96,14 +96,14 @@ namespace detail {
                     }
                     else if (is_control_character(c) || escape_all_non_ascii)
                     {
-                        // convert utf8 to codepoint
-                        unicons::sequence_generator<const CharT*> g(it, end, unicons::conv_flags::strict);
-                        if (g.done() || g.status() != unicons::conv_errc())
+                        // convert to codepoint
+                        uint32_t cp;
+                        auto r = unicode_traits::to_codepoint(it, end, cp, unicode_traits::conv_flags::strict);
+                        if (r.ec != unicode_traits::conv_errc())
                         {
                             JSONCONS_THROW(ser_error(json_errc::illegal_codepoint));
                         }
-                        uint32_t cp = g.get().codepoint();
-                        it += (g.get().length() - 1);
+                        it = r.ptr - 1;
                         if (is_non_ascii_codepoint(cp) || is_control_character(c))
                         {
                             if (cp > 0xFFFF)
@@ -191,19 +191,19 @@ namespace detail {
     template<class CharT,class Sink=jsoncons::stream_sink<CharT>,class Allocator=std::allocator<char>>
     class basic_json_encoder final : public basic_json_visitor<CharT>
     {
-        static const std::array<CharT, 4>& null_k()
+        static const jsoncons::basic_string_view<CharT> null_constant()
         {
-            static constexpr std::array<CharT,4> k{'n','u','l','l'};
+            static const jsoncons::basic_string_view<CharT> k = JSONCONS_STRING_VIEW_CONSTANT(CharT, "null");
             return k;
         }
-        static const std::array<CharT, 4>& true_k()
+        static const jsoncons::basic_string_view<CharT> true_constant()
         {
-            static constexpr std::array<CharT,4> k{'t','r','u','e'};
+            static const jsoncons::basic_string_view<CharT> k = JSONCONS_STRING_VIEW_CONSTANT(CharT, "true");
             return k;
         }
-        static const std::array<CharT, 5>& false_k()
+        static const jsoncons::basic_string_view<CharT> false_constant()
         {
-            static constexpr std::array<CharT,5> k{'f','a','l','s','e'};
+            static const jsoncons::basic_string_view<CharT> k = JSONCONS_STRING_VIEW_CONSTANT(CharT, "false");
             return k;
         }
     public:
@@ -638,8 +638,8 @@ namespace detail {
                 }
             }
 
-            sink_.append(null_k().data(), null_k().size());
-            column_ += null_k().size();
+            sink_.append(null_constant().data(), null_constant().size());
+            column_ += null_constant().size();
 
             end_value();
             return true;
@@ -783,8 +783,8 @@ namespace detail {
                     }
                     else
                     {
-                        sink_.append(null_k().data(), null_k().size());
-                        column_ += null_k().size();
+                        sink_.append(null_constant().data(), null_constant().size());
+                        column_ += null_constant().size();
                     }
                 }
                 else if (value == std::numeric_limits<double>::infinity())
@@ -800,8 +800,8 @@ namespace detail {
                     }
                     else
                     {
-                        sink_.append(null_k().data(), null_k().size());
-                        column_ += null_k().size();
+                        sink_.append(null_constant().data(), null_constant().size());
+                        column_ += null_constant().size();
                     }
                 }
                 else
@@ -817,8 +817,8 @@ namespace detail {
                     }
                     else
                     {
-                        sink_.append(null_k().data(), null_k().size());
-                        column_ += null_k().size();
+                        sink_.append(null_constant().data(), null_constant().size());
+                        column_ += null_constant().size();
                     }
                 }
             }
@@ -892,13 +892,13 @@ namespace detail {
 
             if (value)
             {
-                sink_.append(true_k().data(), true_k().size());
-                column_ += true_k().size();
+                sink_.append(true_constant().data(), true_constant().size());
+                column_ += true_constant().size();
             }
             else
             {
-                sink_.append(false_k().data(), false_k().size());
-                column_ += false_k().size();
+                sink_.append(false_constant().data(), false_constant().size());
+                column_ += false_constant().size();
             }
 
             end_value();
@@ -1037,17 +1037,17 @@ namespace detail {
     template<class CharT,class Sink=jsoncons::stream_sink<CharT>,class Allocator=std::allocator<char>>
     class basic_compact_json_encoder final : public basic_json_visitor<CharT>
     {
-        static const std::array<CharT, 4>& null_k()
+        static const std::array<CharT, 4>& null_constant()
         {
             static constexpr std::array<CharT,4> k{'n','u','l','l'};
             return k;
         }
-        static const std::array<CharT, 4>& true_k()
+        static const std::array<CharT, 4>& true_constant()
         {
             static constexpr std::array<CharT,4> k{'t','r','u','e'};
             return k;
         }
-        static const std::array<CharT, 5>& false_k()
+        static const std::array<CharT, 5>& false_constant()
         {
             static constexpr std::array<CharT,5> k{'f','a','l','s','e'};
             return k;
@@ -1222,7 +1222,7 @@ namespace detail {
                 sink_.push_back(',');
             }
 
-            sink_.append(null_k().data(), null_k().size());
+            sink_.append(null_constant().data(), null_constant().size());
 
             if (!stack_.empty())
             {
@@ -1410,7 +1410,7 @@ namespace detail {
                     }
                     else
                     {
-                        sink_.append(null_k().data(), null_k().size());
+                        sink_.append(null_constant().data(), null_constant().size());
                     }
                 }
                 else if (value == std::numeric_limits<double>::infinity())
@@ -1425,7 +1425,7 @@ namespace detail {
                     }
                     else
                     {
-                        sink_.append(null_k().data(), null_k().size());
+                        sink_.append(null_constant().data(), null_constant().size());
                     }
                 }
                 else 
@@ -1440,7 +1440,7 @@ namespace detail {
                     }
                     else
                     {
-                        sink_.append(null_k().data(), null_k().size());
+                        sink_.append(null_constant().data(), null_constant().size());
                     }
                 }
             }
@@ -1499,11 +1499,11 @@ namespace detail {
 
             if (value)
             {
-                sink_.append(true_k().data(), true_k().size());
+                sink_.append(true_constant().data(), true_constant().size());
             }
             else
             {
-                sink_.append(false_k().data(), false_k().size());
+                sink_.append(false_constant().data(), false_constant().size());
             }
 
             if (!stack_.empty())

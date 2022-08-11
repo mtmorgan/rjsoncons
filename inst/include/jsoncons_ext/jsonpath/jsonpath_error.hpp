@@ -17,8 +17,8 @@ namespace jsoncons { namespace jsonpath {
         success = 0,
         expected_root_or_function,
         expected_current_node,
-        expected_right_bracket,
-        expected_key,
+        expected_rparen,
+        expected_rbracket,
         expected_separator,
         expected_forward_slash,
         expected_slice_start,
@@ -34,7 +34,7 @@ namespace jsoncons { namespace jsonpath {
         argument_parse_error,
         unidentified_error,
         unexpected_eof,
-        expected_colon_dot_left_bracket_comma_or_right_bracket,
+        expected_colon_dot_left_bracket_comma_or_rbracket,
         argument_to_unflatten_invalid,
         invalid_flattened_key,
         step_cannot_be_zero,
@@ -47,7 +47,10 @@ namespace jsoncons { namespace jsonpath {
         syntax_error,
         expected_comparator,
         expected_or,
-        expected_and
+        expected_and,
+        expected_comma_or_rparen,
+        expected_comma_or_rbracket,
+        expected_relative_path
     };
 
     class jsonpath_error_category_impl
@@ -66,10 +69,10 @@ namespace jsoncons { namespace jsonpath {
                     return "Expected '$' or function expression";
                 case jsonpath_errc::expected_current_node:
                     return "Expected @";
-                case jsonpath_errc::expected_right_bracket:
+                case jsonpath_errc::expected_rbracket:
                     return "Expected ]";
-                case jsonpath_errc::expected_key:
-                    return "Expected a name or index following the dot";
+                case jsonpath_errc::expected_rparen:
+                    return "Expected )";
                 case jsonpath_errc::expected_slice_start:
                     return "Expected slice start";
                 case jsonpath_errc::expected_slice_end:
@@ -98,7 +101,7 @@ namespace jsoncons { namespace jsonpath {
                     return "Unidentified error";
                 case jsonpath_errc::unexpected_eof:
                     return "Unexpected EOF while parsing jsonpath expression";
-                case jsonpath_errc::expected_colon_dot_left_bracket_comma_or_right_bracket:
+                case jsonpath_errc::expected_colon_dot_left_bracket_comma_or_rbracket:
                     return "Expected ':', '.', '[', ',', or ']'";
                 case jsonpath_errc::argument_to_unflatten_invalid:
                     return "Argument to unflatten must be an object";
@@ -126,6 +129,12 @@ namespace jsoncons { namespace jsonpath {
                     return "Expected operator '||'";
                 case jsonpath_errc::expected_and:
                     return "Expected operator '&&'";
+                case jsonpath_errc::expected_comma_or_rparen:
+                    return "Expected comma or right parenthesis";
+                case jsonpath_errc::expected_comma_or_rbracket:
+                    return "Expected comma or right bracket";
+                case jsonpath_errc::expected_relative_path:
+                    return "Expected unquoted string, or single or double quoted string, or index or '*'";
                 default:
                     return "Unknown jsonpath parser error";
             }

@@ -165,7 +165,7 @@ namespace jsoncons {
         bool byte_string_value(const Source& b, 
                                semantic_tag tag=semantic_tag::none, 
                                const ser_context& context=ser_context(),
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             std::error_code ec;
             bool more = visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), tag, context, ec);
@@ -180,7 +180,7 @@ namespace jsoncons {
         bool byte_string_value(const Source& b, 
                                uint64_t ext_tag, 
                                const ser_context& context=ser_context(),
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             std::error_code ec;
             bool more = visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), ext_tag, context, ec);
@@ -311,7 +311,7 @@ namespace jsoncons {
                                semantic_tag tag, 
                                const ser_context& context,
                                std::error_code& ec,
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             return visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), tag, context, ec);
         }
@@ -321,7 +321,7 @@ namespace jsoncons {
                                uint64_t ext_tag, 
                                const ser_context& context,
                                std::error_code& ec,
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             return visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), ext_tag, context, ec);
         }
@@ -607,12 +607,6 @@ namespace jsoncons {
             return string_value(value, semantic_tag::bigdec, context);
         }
 
-        JSONCONS_DEPRECATED_MSG("Instead, use int64_value with semantic_tag::epoch_second") 
-        bool epoch_second_value(int64_t val, const ser_context& context=ser_context()) 
-        {
-            return int64_value(val, semantic_tag::epoch_second, context);
-        }
-
     #endif
     private:
 
@@ -694,7 +688,7 @@ namespace jsoncons {
                              const ser_context& context,
                              std::error_code& ec)
         {
-            return visit_double(jsoncons::detail::decode_half(value),
+            return visit_double(binary::decode_half(value),
                              tag,
                              context,
                              ec);

@@ -147,12 +147,12 @@ namespace jsoncons { namespace jsonpath {
     enum class unflatten_state 
     {
         start,
-        expect_left_bracket,
-        left_bracket,
+        expect_lbracket,
+        lbracket,
         single_quoted_name_state,
         double_quoted_name_state,
         index_state,
-        expect_right_bracket,
+        expect_rbracket,
         double_quoted_string_escape_char,
         single_quoted_string_escape_char
     };
@@ -188,19 +188,19 @@ namespace jsoncons { namespace jsonpath {
                         switch (*it)
                         {
                             case '$':
-                                state = unflatten_state::expect_left_bracket;
+                                state = unflatten_state::expect_lbracket;
                                 break;
                             default:
                                 break;
                         }
                         break;
                     }
-                    case unflatten_state::expect_left_bracket:
+                    case unflatten_state::expect_lbracket:
                     {
                         switch (*it)
                         {
                             case '[':
-                                state = unflatten_state::left_bracket;
+                                state = unflatten_state::lbracket;
                                 break;
                             default:
                                 JSONCONS_THROW(jsonpath_error(jsonpath_errc::invalid_flattened_key));
@@ -208,7 +208,7 @@ namespace jsoncons { namespace jsonpath {
                         }
                         break;
                     }
-                    case unflatten_state::left_bracket:
+                    case unflatten_state::lbracket:
                     {
                         switch (*it)
                         {
@@ -244,7 +244,7 @@ namespace jsoncons { namespace jsonpath {
                                     part = &(res.first->value());
                                 }
                                 buffer.clear();
-                                state = unflatten_state::expect_right_bracket;
+                                state = unflatten_state::expect_rbracket;
                                 break;
                             case '\\':
                                 state = unflatten_state::single_quoted_string_escape_char;
@@ -271,7 +271,7 @@ namespace jsoncons { namespace jsonpath {
                                     part = &(res.first->value());
                                 }
                                 buffer.clear();
-                                state = unflatten_state::expect_right_bracket;
+                                state = unflatten_state::expect_rbracket;
                                 break;
                             case '\\':
                                 state = unflatten_state::double_quoted_string_escape_char;
@@ -366,7 +366,8 @@ namespace jsoncons { namespace jsonpath {
                         {
                             case ']':
                             {
-                                auto r = jsoncons::detail::to_integer<size_t>(buffer.data(), buffer.size());
+                                std::size_t n{0};
+                                auto r = jsoncons::detail::to_integer(buffer.data(), buffer.size(), n);
                                 if (r)
                                 {
                                     if (!part->is_array())
@@ -375,14 +376,14 @@ namespace jsoncons { namespace jsonpath {
                                     }
                                     if (it != last-1)
                                     {
-                                        if (r.value()+1 > part->size())
+                                        if (n+1 > part->size())
                                         {
                                             Json& ref = part->emplace_back();
                                             part = std::addressof(ref);
                                         }
                                         else
                                         {
-                                            part = &part->at(r.value());
+                                            part = &part->at(n);
                                         }
                                     }
                                     else
@@ -392,7 +393,7 @@ namespace jsoncons { namespace jsonpath {
                                     }
                                 }
                                 buffer.clear();
-                                state = unflatten_state::expect_left_bracket;
+                                state = unflatten_state::expect_lbracket;
                                 break;
                             }
                             case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
@@ -404,12 +405,12 @@ namespace jsoncons { namespace jsonpath {
                         }
                         break;
                     }
-                    case unflatten_state::expect_right_bracket:
+                    case unflatten_state::expect_rbracket:
                     {
                         switch (*it)
                         {
                             case ']':
-                                state = unflatten_state::expect_left_bracket;
+                                state = unflatten_state::expect_lbracket;
                                 break;
                             default:
                                 JSONCONS_THROW(jsonpath_error(jsonpath_errc::invalid_flattened_key));

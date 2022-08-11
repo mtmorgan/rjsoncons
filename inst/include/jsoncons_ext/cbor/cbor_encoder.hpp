@@ -149,7 +149,7 @@ private:
             ec = cbor_errc::max_nesting_depth_exceeded;
             return false;
         } 
-        stack_.push_back(stack_item(cbor_container_type::indefinite_length_object));
+        stack_.emplace_back(cbor_container_type::indefinite_length_object);
         
         sink_.push_back(0xbf);
         return true;
@@ -162,39 +162,39 @@ private:
             ec = cbor_errc::max_nesting_depth_exceeded;
             return false;
         } 
-        stack_.push_back(stack_item(cbor_container_type::object, length));
+        stack_.emplace_back(cbor_container_type::object, length);
 
         if (length <= 0x17)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xa0 + length), 
+            binary::native_to_big(static_cast<uint8_t>(0xa0 + length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xb8), 
+            binary::native_to_big(static_cast<uint8_t>(0xb8), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(length), 
+            binary::native_to_big(static_cast<uint8_t>(length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xb9), 
+            binary::native_to_big(static_cast<uint8_t>(0xb9), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(length), 
+            binary::native_to_big(static_cast<uint16_t>(length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xba), 
+            binary::native_to_big(static_cast<uint8_t>(0xba), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(length), 
+            binary::native_to_big(static_cast<uint32_t>(length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xffffffffffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xbb), 
+            binary::native_to_big(static_cast<uint8_t>(0xbb), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(length), 
+            binary::native_to_big(static_cast<uint64_t>(length), 
                                   std::back_inserter(sink_));
         }
 
@@ -237,7 +237,7 @@ private:
             ec = cbor_errc::max_nesting_depth_exceeded;
             return false;
         } 
-        stack_.push_back(stack_item(cbor_container_type::indefinite_length_array));
+        stack_.emplace_back(cbor_container_type::indefinite_length_array);
         sink_.push_back(0x9f);
         return true;
     }
@@ -249,38 +249,38 @@ private:
             ec = cbor_errc::max_nesting_depth_exceeded;
             return false;
         } 
-        stack_.push_back(stack_item(cbor_container_type::array, length));
+        stack_.emplace_back(cbor_container_type::array, length);
         if (length <= 0x17)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x80 + length), 
+            binary::native_to_big(static_cast<uint8_t>(0x80 + length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x98), 
+            binary::native_to_big(static_cast<uint8_t>(0x98), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(length), 
+            binary::native_to_big(static_cast<uint8_t>(length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x99), 
+            binary::native_to_big(static_cast<uint8_t>(0x99), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(length), 
+            binary::native_to_big(static_cast<uint16_t>(length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x9a), 
+            binary::native_to_big(static_cast<uint8_t>(0x9a), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(length), 
+            binary::native_to_big(static_cast<uint32_t>(length), 
                                   std::back_inserter(sink_));
         } 
         else if (length <= 0xffffffffffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x9b), 
+            binary::native_to_big(static_cast<uint8_t>(0x9b), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(length), 
+            binary::native_to_big(static_cast<uint64_t>(length), 
                                   std::back_inserter(sink_));
         }
         return true;
@@ -338,8 +338,8 @@ private:
 
     void write_string(const string_view& sv)
     {
-        auto sink = unicons::validate(sv.begin(), sv.end());
-        if (sink.ec != unicons::conv_errc())
+        auto sink = unicode_traits::validate(sv.data(), sv.size());
+        if (sink.ec != unicode_traits::conv_errc())
         {
             JSONCONS_THROW(ser_error(cbor_errc::invalid_utf8_text_string));
         }
@@ -372,35 +372,35 @@ private:
         if (length <= 0x17)
         {
             // fixstr stores a byte array whose length is upto 31 bytes
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x60 + length), 
+            binary::native_to_big(static_cast<uint8_t>(0x60 + length), 
                                             std::back_inserter(sink_));
         }
         else if (length <= 0xff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x78), 
+            binary::native_to_big(static_cast<uint8_t>(0x78), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(length), 
+            binary::native_to_big(static_cast<uint8_t>(length), 
                                             std::back_inserter(sink_));
         }
         else if (length <= 0xffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x79), 
+            binary::native_to_big(static_cast<uint8_t>(0x79), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(length), 
+            binary::native_to_big(static_cast<uint16_t>(length), 
                                             std::back_inserter(sink_));
         }
         else if (length <= 0xffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x7a), 
+            binary::native_to_big(static_cast<uint8_t>(0x7a), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(length), 
+            binary::native_to_big(static_cast<uint32_t>(length), 
                                             std::back_inserter(sink_));
         }
         else if (length <= 0xffffffffffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x7b), 
+            binary::native_to_big(static_cast<uint8_t>(0x7b), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(length), 
+            binary::native_to_big(static_cast<uint64_t>(length), 
                                             std::back_inserter(sink_));
         }
 
@@ -435,35 +435,35 @@ private:
         if (length <= 0x17)
         {
             // fixstr stores a byte array whose length is upto 31 bytes
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x40 + length), 
+            binary::native_to_big(static_cast<uint8_t>(0x40 + length), 
                                   std::back_inserter(sink_));
         }
         else if (length <= 0xff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x58), 
+            binary::native_to_big(static_cast<uint8_t>(0x58), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(length), 
+            binary::native_to_big(static_cast<uint8_t>(length), 
                                   std::back_inserter(sink_));
         }
         else if (length <= 0xffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x59), 
+            binary::native_to_big(static_cast<uint8_t>(0x59), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(length), 
+            binary::native_to_big(static_cast<uint16_t>(length), 
                                   std::back_inserter(sink_));
         }
         else if (length <= 0xffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x5a), 
+            binary::native_to_big(static_cast<uint8_t>(0x5a), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(length), 
+            binary::native_to_big(static_cast<uint32_t>(length), 
                                   std::back_inserter(sink_));
         }
         else if (length <= 0xffffffffffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x5b), 
+            binary::native_to_big(static_cast<uint8_t>(0x5b), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(length), 
+            binary::native_to_big(static_cast<uint64_t>(length), 
                                   std::back_inserter(sink_));
         }
 
@@ -588,24 +588,26 @@ private:
         if (!more) {return more;}
         if (exponent.length() > 0)
         {
-            auto sink = jsoncons::detail::to_integer<int64_t>(exponent.data(), exponent.length());
-            if (!sink)
+            int64_t val;
+            auto r = jsoncons::detail::to_integer(exponent.data(), exponent.length(), val);
+            if (!r)
             {
-                ec = sink.error_code();
+                ec = r.error_code();
                 return false;
             }
-            scale += sink.value();
+            scale += val;
         }
         more = visit_int64(scale, semantic_tag::none, context, ec);
         if (!more) {return more;}
 
-        auto sink = jsoncons::detail::to_integer<int64_t>(s.data(),s.length());
-        if (sink)
+        int64_t val{ 0 };
+        auto r = jsoncons::detail::to_integer(s.data(),s.length(), val);
+        if (r)
         {
-            more = visit_int64(sink.value(), semantic_tag::none, context, ec);
+            more = visit_int64(val, semantic_tag::none, context, ec);
             if (!more) {return more;}
         }
-        else if (sink.error_code() == jsoncons::detail::to_integer_errc::overflow)
+        else if (r.error_code() == jsoncons::detail::to_integer_errc::overflow)
         {
             bigint n = bigint::from_string(s.data(), s.length());
             write_bignum(n);
@@ -613,7 +615,7 @@ private:
         }
         else
         {
-            ec = sink.error_code();
+            ec = r.error_code();
             return false;
         }
         more = visit_end_array(context, ec);
@@ -768,24 +770,26 @@ private:
 
         if (exponent.length() > 0)
         {
-            auto sink = jsoncons::detail::base16_to_integer<int64_t>(exponent.data(), exponent.length());
-            if (!sink)
+            int64_t val{ 0 };
+            auto r = jsoncons::detail::base16_to_integer(exponent.data(), exponent.length(), val);
+            if (!r)
             {
-                ec = sink.error_code();
+                ec = r.error_code();
                 return false;
             }
-            scale += sink.value();
+            scale += val;
         }
         more = visit_int64(scale, semantic_tag::none, context, ec);
         if (!more) return more;
 
-        auto sink = jsoncons::detail::base16_to_integer<int64_t>(s.data(),s.length());
-        if (sink)
+        int64_t val{ 0 };
+        auto r = jsoncons::detail::base16_to_integer(s.data(),s.length(), val);
+        if (r)
         {
-            more = visit_int64(sink.value(), semantic_tag::none, context, ec);
+            more = visit_int64(val, semantic_tag::none, context, ec);
             if (!more) return more;
         }
-        else if (sink.error_code() == jsoncons::detail::to_integer_errc::overflow)
+        else if (r.error_code() == jsoncons::detail::to_integer_errc::overflow)
         {
             bigint n = bigint::from_string_radix(s.data(), s.length(), 16);
             write_bignum(n);
@@ -793,7 +797,7 @@ private:
         }
         else
         {
-            JSONCONS_THROW(json_runtime_error<std::invalid_argument>(sink.error_code().message()));
+            JSONCONS_THROW(json_runtime_error<std::invalid_argument>(r.error_code().message()));
         }
         return visit_end_array(context, ec);
     }
@@ -951,35 +955,35 @@ private:
         if (b.size() <= 0x17)
         {
             // fixstr stores a byte array whose length is upto 31 bytes
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x40 + b.size()), 
+            binary::native_to_big(static_cast<uint8_t>(0x40 + b.size()), 
                                             std::back_inserter(sink_));
         }
         else if (b.size() <= 0xff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x58), 
+            binary::native_to_big(static_cast<uint8_t>(0x58), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(b.size()), 
+            binary::native_to_big(static_cast<uint8_t>(b.size()), 
                                             std::back_inserter(sink_));
         }
         else if (b.size() <= 0xffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x59), 
+            binary::native_to_big(static_cast<uint8_t>(0x59), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(b.size()), 
+            binary::native_to_big(static_cast<uint16_t>(b.size()), 
                                             std::back_inserter(sink_));
         }
         else if (b.size() <= 0xffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x5a), 
+            binary::native_to_big(static_cast<uint8_t>(0x5a), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(b.size()), 
+            binary::native_to_big(static_cast<uint32_t>(b.size()), 
                                             std::back_inserter(sink_));
         }
         else // if (b.size() <= 0xffffffffffffffff)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0x5b), 
+            binary::native_to_big(static_cast<uint8_t>(0x5b), 
                                             std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(b.size()), 
+            binary::native_to_big(static_cast<uint64_t>(b.size()), 
                                             std::back_inserter(sink_));
         }
 
@@ -1020,15 +1024,15 @@ private:
         float valf = (float)val;
         if ((double)valf == val)
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xfa), 
+            binary::native_to_big(static_cast<uint8_t>(0xfa), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(valf, std::back_inserter(sink_));
+            binary::native_to_big(valf, std::back_inserter(sink_));
         }
         else
         {
-            jsoncons::detail::native_to_big(static_cast<uint8_t>(0xfb), 
+            binary::native_to_big(static_cast<uint8_t>(0xfb), 
                                   std::back_inserter(sink_));
-            jsoncons::detail::native_to_big(val, std::back_inserter(sink_));
+            binary::native_to_big(val, std::back_inserter(sink_));
         }
 
         // write double
@@ -1057,35 +1061,35 @@ private:
         {
             if (value <= 0x17)
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(value), 
+                binary::native_to_big(static_cast<uint8_t>(value), 
                                   std::back_inserter(sink_));
             } 
             else if (value <= (std::numeric_limits<uint8_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x18), 
+                binary::native_to_big(static_cast<uint8_t>(0x18), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(value), 
+                binary::native_to_big(static_cast<uint8_t>(value), 
                                   std::back_inserter(sink_));
             } 
             else if (value <= (std::numeric_limits<uint16_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x19), 
+                binary::native_to_big(static_cast<uint8_t>(0x19), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<uint16_t>(value), 
+                binary::native_to_big(static_cast<uint16_t>(value), 
                                   std::back_inserter(sink_));
             } 
             else if (value <= (std::numeric_limits<uint32_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x1a), 
+                binary::native_to_big(static_cast<uint8_t>(0x1a), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<uint32_t>(value), 
+                binary::native_to_big(static_cast<uint32_t>(value), 
                                   std::back_inserter(sink_));
             } 
             else if (value <= (std::numeric_limits<int64_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x1b), 
+                binary::native_to_big(static_cast<uint8_t>(0x1b), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<int64_t>(value), 
+                binary::native_to_big(static_cast<int64_t>(value), 
                                   std::back_inserter(sink_));
             }
         } else
@@ -1093,35 +1097,35 @@ private:
             const auto posnum = -1 - value;
             if (value >= -24)
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x20 + posnum), 
+                binary::native_to_big(static_cast<uint8_t>(0x20 + posnum), 
                                   std::back_inserter(sink_));
             } 
             else if (posnum <= (std::numeric_limits<uint8_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x38), 
+                binary::native_to_big(static_cast<uint8_t>(0x38), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(posnum), 
+                binary::native_to_big(static_cast<uint8_t>(posnum), 
                                   std::back_inserter(sink_));
             } 
             else if (posnum <= (std::numeric_limits<uint16_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x39), 
+                binary::native_to_big(static_cast<uint8_t>(0x39), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<uint16_t>(posnum), 
+                binary::native_to_big(static_cast<uint16_t>(posnum), 
                                   std::back_inserter(sink_));
             } 
             else if (posnum <= (std::numeric_limits<uint32_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x3a), 
+                binary::native_to_big(static_cast<uint8_t>(0x3a), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<uint32_t>(posnum), 
+                binary::native_to_big(static_cast<uint32_t>(posnum), 
                                   std::back_inserter(sink_));
             } 
             else if (posnum <= (std::numeric_limits<int64_t>::max)())
             {
-                jsoncons::detail::native_to_big(static_cast<uint8_t>(0x3b), 
+                binary::native_to_big(static_cast<uint8_t>(0x3b), 
                                   std::back_inserter(sink_));
-                jsoncons::detail::native_to_big(static_cast<int64_t>(posnum), 
+                binary::native_to_big(static_cast<int64_t>(posnum), 
                                   std::back_inserter(sink_));
             }
         }
@@ -1165,19 +1169,19 @@ private:
         else if (value <=(std::numeric_limits<uint16_t>::max)())
         {
             sink_.push_back(0xd9);
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(value), 
+            binary::native_to_big(static_cast<uint16_t>(value), 
                                             std::back_inserter(sink_));
         }
         else if (value <=(std::numeric_limits<uint32_t>::max)())
         {
             sink_.push_back(0xda);
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(value), 
+            binary::native_to_big(static_cast<uint32_t>(value), 
                                             std::back_inserter(sink_));
         }
         else 
         {
             sink_.push_back(0xdb);
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(value), 
+            binary::native_to_big(static_cast<uint64_t>(value), 
                                             std::back_inserter(sink_));
         }
     }
@@ -1196,19 +1200,19 @@ private:
         else if (value <=(std::numeric_limits<uint16_t>::max)())
         {
             sink_.push_back(static_cast<uint8_t>(0x19));
-            jsoncons::detail::native_to_big(static_cast<uint16_t>(value), 
+            binary::native_to_big(static_cast<uint16_t>(value), 
                                             std::back_inserter(sink_));
         } 
         else if (value <=(std::numeric_limits<uint32_t>::max)())
         {
             sink_.push_back(static_cast<uint8_t>(0x1a));
-            jsoncons::detail::native_to_big(static_cast<uint32_t>(value), 
+            binary::native_to_big(static_cast<uint32_t>(value), 
                                             std::back_inserter(sink_));
         } 
         else if (value <=(std::numeric_limits<uint64_t>::max)())
         {
             sink_.push_back(static_cast<uint8_t>(0x1b));
-            jsoncons::detail::native_to_big(static_cast<uint64_t>(value), 
+            binary::native_to_big(static_cast<uint64_t>(value), 
                                             std::back_inserter(sink_));
         }
     }
@@ -1273,7 +1277,7 @@ private:
                                   uint16_t(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(uint16_t));
-            memcpy(v.data(),data.data(),data.size()*sizeof(uint16_t));
+            std::memcpy(v.data(),data.data(),data.size()*sizeof(uint16_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1303,7 +1307,7 @@ private:
                                   uint32_t(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(uint32_t));
-            memcpy(v.data(), data.data(), data.size()*sizeof(uint32_t));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(uint32_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1333,7 +1337,7 @@ private:
                                   uint64_t(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(uint64_t));
-            memcpy(v.data(), data.data(), data.size()*sizeof(uint64_t));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(uint64_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1361,7 +1365,7 @@ private:
         {
             write_tag(0x48);
             std::vector<uint8_t> v(data.size()*sizeof(int8_t));
-            memcpy(v.data(), data.data(), data.size()*sizeof(int8_t));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(int8_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1391,7 +1395,7 @@ private:
                                   int16_t(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(int16_t));
-            memcpy(v.data(), data.data(), data.size()*sizeof(int16_t));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(int16_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1421,7 +1425,7 @@ private:
                                   int32_t(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(int32_t));
-            memcpy(v.data(), data.data(), data.size()*sizeof(int32_t));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(int32_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1451,7 +1455,7 @@ private:
                                   int64_t(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(int64_t));
-            memcpy(v.data(), data.data(), data.size()*sizeof(int64_t));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(int64_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1481,7 +1485,7 @@ private:
                                   half_arg, 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(uint16_t));
-            memcpy(v.data(),data.data(),data.size()*sizeof(uint16_t));
+            std::memcpy(v.data(),data.data(),data.size()*sizeof(uint16_t));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1511,7 +1515,7 @@ private:
                                   float(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(float));
-            memcpy(v.data(), data.data(), data.size()*sizeof(float));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(float));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1541,7 +1545,7 @@ private:
                                   double(), 
                                   tag);
             std::vector<uint8_t> v(data.size()*sizeof(double));
-            memcpy(v.data(), data.data(), data.size()*sizeof(double));
+            std::memcpy(v.data(), data.data(), data.size()*sizeof(double));
             write_byte_string_value(byte_string_view(v));
             return true;
         }
@@ -1711,14 +1715,12 @@ private:
                                double,
                                semantic_tag)
     {
-        std::cout << "write_typed_array_tag big\n";
         write_tag(0x52); // big endian
     }
     void write_typed_array_tag(std::false_type,
                                double,
                                semantic_tag)
     {
-        std::cout << "write_typed_array_tag little\n";
         write_tag(0x56);  // little endian
     }
 

@@ -55,7 +55,7 @@ enum class csv_parse_state
     exp1,
     exp2,
     exp3,
-    before_done,
+    accept,
     before_unquoted_field,
     before_unquoted_field_tail, 
     before_unquoted_field_tail1,
@@ -629,15 +629,14 @@ public:
         return state_ == csv_parse_state::done;
     }
 
+    bool accept() const
+    {
+        return state_ == csv_parse_state::accept || state_ == csv_parse_state::done;
+    }
+
     bool stopped() const
     {
         return !more_;
-    }
-
-    bool finished() const
-    {
-        return !more_;
-        //return !more_ && (state_ != csv_parse_state::no_more_records || state_ != csv_parse_state::before_done);
     }
 
     bool source_exhausted() const
@@ -667,9 +666,9 @@ public:
 
     void parse_some(basic_json_visitor<CharT>& visitor, std::error_code& ec)
     {
-        switch (options_.mapping())
+        switch (options_.mapping_kind())
         {
-            case mapping_kind::m_columns:
+            case csv_mapping_kind::m_columns:
                 visitor_ = &m_columns_filter_;
                 break;
             default:
@@ -765,7 +764,7 @@ public:
                             break;
                     }
                     more_ = visitor_->end_array(*this, ec);
-                    if (options_.mapping() == mapping_kind::m_columns)
+                    if (options_.mapping_kind() == csv_mapping_kind::m_columns)
                     {
                         if (!m_columns_filter_.done())
                         {
@@ -773,15 +772,15 @@ public:
                         }
                         else
                         {
-                            state_ = csv_parse_state::before_done;
+                            state_ = csv_parse_state::accept;
                         }
                     }
                     else
                     {
-                        state_ = csv_parse_state::before_done;
+                        state_ = csv_parse_state::accept;
                     }
                     break;
-                case csv_parse_state::before_done:
+                case csv_parse_state::accept:
                     if (!(stack_.size() == 1 && stack_.back() == csv_mode::initial))
                     {
                         err_handler_(csv_errc::unexpected_eof, *this);
@@ -821,11 +820,11 @@ public:
                     }
                     break;
                 case csv_parse_state::start:
-                    if (options_.mapping() != mapping_kind::m_columns)
+                    if (options_.mapping_kind() != csv_mapping_kind::m_columns)
                     {
                         more_ = visitor_->begin_array(semantic_tag::none, *this, ec);
                     }
-                    if (options_.assume_header() && options_.mapping() == mapping_kind::n_rows && options_.column_names().size() > 0)
+                    if (options_.assume_header() && options_.mapping_kind() == csv_mapping_kind::n_rows && options_.column_names().size() > 0)
                     {
                         column_index_ = 0;
                         state_ = csv_parse_state::column_labels;
@@ -1314,14 +1313,14 @@ private:
                 if (line_ == header_line_)
                 {
                     column_names_.push_back(buffer_);
-                    if (options_.assume_header() && options_.mapping() == mapping_kind::n_rows)
+                    if (options_.assume_header() && options_.mapping_kind() == csv_mapping_kind::n_rows)
                     {
                         more_ = visitor_->string_value(buffer_, semantic_tag::none, *this, ec);
                     }
                 }
                 break;
             case csv_mode::data:
-                if (options_.mapping() == mapping_kind::n_objects)
+                if (options_.mapping_kind() == csv_mapping_kind::n_objects)
                 {
                     if (!(options_.ignore_empty_values() && buffer_.empty()))
                     {
@@ -1347,22 +1346,22 @@ private:
             case csv_mode::header:
                 if (options_.assume_header() && line_ == header_line_)
                 {
-                    if (options_.mapping() == mapping_kind::n_rows)
+                    if (options_.mapping_kind() == csv_mapping_kind::n_rows)
                     {
                         more_ = visitor_->begin_array(semantic_tag::none, *this, ec);
                     }
                 }
                 break;
             case csv_mode::data:
-                switch (options_.mapping())
+                switch (options_.mapping_kind())
                 {
-                    case mapping_kind::n_rows:
+                    case csv_mapping_kind::n_rows:
                         more_ = visitor_->begin_array(semantic_tag::none, *this, ec);
                         break;
-                    case mapping_kind::n_objects:
+                    case csv_mapping_kind::n_objects:
                         more_ = visitor_->begin_object(semantic_tag::none, *this, ec);
                         break;
-                    case mapping_kind::m_columns:
+                    case csv_mapping_kind::m_columns:
                         break;
                     default:
                         break;
@@ -1391,15 +1390,15 @@ private:
                 {
                     stack_.back() = csv_mode::data;
                 }
-                switch (options_.mapping())
+                switch (options_.mapping_kind())
                 {
-                    case mapping_kind::n_rows:
+                    case csv_mapping_kind::n_rows:
                         if (options_.assume_header())
                         {
                             more_ = visitor_->end_array(*this, ec);
                         }
                         break;
-                    case mapping_kind::m_columns:
+                    case csv_mapping_kind::m_columns:
                         m_columns_filter_.initialize(column_names_);
                         break;
                     default:
@@ -1409,15 +1408,15 @@ private:
             case csv_mode::data:
             case csv_mode::subfields:
             {
-                switch (options_.mapping())
+                switch (options_.mapping_kind())
                 {
-                    case mapping_kind::n_rows:
+                    case csv_mapping_kind::n_rows:
                         more_ = visitor_->end_array(*this, ec);
                         break;
-                    case mapping_kind::n_objects:
+                    case csv_mapping_kind::n_objects:
                         more_ = visitor_->end_object(*this, ec);
                         break;
-                    case mapping_kind::m_columns:
+                    case csv_mapping_kind::m_columns:
                         more_ = visitor_->end_array(*this, ec);
                         break;
                 }
@@ -1478,9 +1477,9 @@ private:
         {
             case csv_mode::data:
             case csv_mode::subfields:
-                switch (options_.mapping())
+                switch (options_.mapping_kind())
                 {
-                case mapping_kind::n_rows:
+                case csv_mapping_kind::n_rows:
                     if (options_.unquoted_empty_value_is_null() && buffer_.length() == 0)
                     {
                         more_ = visitor_->null_value(semantic_tag::none, *this, ec);
@@ -1490,7 +1489,7 @@ private:
                         end_value(options_.infer_types(), ec);
                     }
                     break;
-                case mapping_kind::n_objects:
+                case csv_mapping_kind::n_objects:
                     if (!(options_.ignore_empty_values() && buffer_.empty()))
                     {
                         if (column_index_ < column_names_.size() + offset_)
@@ -1517,7 +1516,7 @@ private:
                         }
                     }
                     break;
-                case mapping_kind::m_columns:
+                case csv_mapping_kind::m_columns:
                     if (!(options_.ignore_empty_values() && buffer_.empty()))
                     {
                         end_value(options_.infer_types(), ec);
@@ -1544,12 +1543,12 @@ private:
                 {
                     trim_string_buffer(options_.trim_leading_inside_quotes(),options_.trim_trailing_inside_quotes());
                 }
-                switch (options_.mapping())
+                switch (options_.mapping_kind())
                 {
-                case mapping_kind::n_rows:
+                case csv_mapping_kind::n_rows:
                     end_value(false, ec);
                     break;
-                case mapping_kind::n_objects:
+                case csv_mapping_kind::n_objects:
                     if (!(options_.ignore_empty_values() && buffer_.empty()))
                     {
                         if (column_index_ < column_names_.size() + offset_)
@@ -1576,7 +1575,7 @@ private:
                         }
                     }
                     break;
-                case mapping_kind::m_columns:
+                case csv_mapping_kind::m_columns:
                     if (!(options_.ignore_empty_values() && buffer_.empty()))
                     {
                         end_value(false, ec);
@@ -1765,7 +1764,7 @@ private:
         fraction,
         exp1,
         exp,
-        done
+        not_a_number
     };
 
     /*
@@ -1781,7 +1780,7 @@ private:
         auto last = buffer_.end();
 
         std::string buffer;
-        for (auto p = buffer_.begin(); state != numeric_check_state::done && p != last; ++p)
+        for (auto p = buffer_.begin(); state != numeric_check_state::not_a_number && p != last; ++p)
         {
             switch (state)
             {
@@ -1796,7 +1795,7 @@ private:
                         }
                         else
                         {
-                            state = numeric_check_state::done;
+                            state = numeric_check_state::not_a_number;
                         }
                         break;
                     case 't':case 'T':
@@ -1806,7 +1805,7 @@ private:
                         }
                         else
                         {
-                            state = numeric_check_state::done;
+                            state = numeric_check_state::not_a_number;
                         }
                         break;
                     case 'f':case 'F':
@@ -1816,7 +1815,7 @@ private:
                         }
                         else
                         {
-                            state = numeric_check_state::done;
+                            state = numeric_check_state::not_a_number;
                         }
                         break;
                     case '-':
@@ -1835,7 +1834,7 @@ private:
                         state = numeric_check_state::integer;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1853,7 +1852,7 @@ private:
                         state = numeric_check_state::exp1;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1875,7 +1874,7 @@ private:
                         state = numeric_check_state::exp1;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1895,7 +1894,7 @@ private:
                         state = numeric_check_state::integer;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1911,7 +1910,7 @@ private:
                         state = numeric_check_state::fraction;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1930,7 +1929,7 @@ private:
                         state = numeric_check_state::exp1;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1941,17 +1940,15 @@ private:
                     {
                     case '-':
                         buffer.push_back(*p);
-                        state = numeric_check_state::exp;
                         break;
                     case '+':
-                        state = numeric_check_state::exp;
                         break;
-                    case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
+                    case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
+                        state = numeric_check_state::exp;
                         buffer.push_back(*p);
-                        state = numeric_check_state::integer;
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1964,7 +1961,7 @@ private:
                         buffer.push_back(*p);
                         break;
                     default:
-                        state = numeric_check_state::done;
+                        state = numeric_check_state::not_a_number;
                         break;
                     }
                     break;
@@ -1990,10 +1987,11 @@ private:
             {
                 if (is_negative)
                 {
-                    auto result = jsoncons::detail::to_integer_decimal<int64_t>(buffer_.data(), buffer_.length());
+                    int64_t val{ 0 };
+                    auto result = jsoncons::detail::to_integer_decimal(buffer_.data(), buffer_.length(), val);
                     if (result)
                     {
-                        more_ = visitor_->int64_value(result.value(), semantic_tag::none, *this, ec);
+                        more_ = visitor_->int64_value(val, semantic_tag::none, *this, ec);
                     }
                     else // Must be overflow
                     {
@@ -2002,18 +2000,19 @@ private:
                 }
                 else
                 {
-                    auto result = jsoncons::detail::to_integer_decimal<uint64_t>(buffer_.data(), buffer_.length());
+                    uint64_t val{ 0 };
+                    auto result = jsoncons::detail::to_integer_decimal(buffer_.data(), buffer_.length(), val);
                     if (result)
                     {
-                        more_ = visitor_->uint64_value(result.value(), semantic_tag::none, *this, ec);
+                        more_ = visitor_->uint64_value(val, semantic_tag::none, *this, ec);
                     }
-                    else if (result.error() == jsoncons::detail::to_integer_errc::overflow)
+                    else if (result.ec == jsoncons::detail::to_integer_errc::overflow)
                     {
                         more_ = visitor_->string_value(buffer_, semantic_tag::bigint, *this, ec);
                     }
                     else
                     {
-                        ec = result.error();
+                        ec = result.ec;
                         more_ = false;
                         return;
                     }

@@ -37,7 +37,7 @@ enum class json_parse_state : uint8_t
 {
     root,
     start, 
-    before_done, 
+    accept, 
     slash,  
     slash_slash, 
     slash_star, 
@@ -134,10 +134,10 @@ private:
     using char_allocator_type = typename std::allocator_traits<temp_allocator_type>:: template rebind_alloc<CharT>;
     using parse_state_allocator_type = typename std::allocator_traits<temp_allocator_type>:: template rebind_alloc<json_parse_state>;
 
-    static constexpr size_t initial_string_buffer_capacity_ = 1024;
-    static constexpr int default_initial_stack_capacity_ = 100;
+    static constexpr std::size_t initial_string_buffer_capacity_ = 1024;
+    static constexpr std::size_t default_initial_stack_capacity_ = 100;
 
-    basic_json_decode_options<CharT> options_;
+    basic_json_decode_options<char_type> options_;
 
     std::function<bool(json_errc,const ser_context&)> err_handler_;
     int initial_stack_capacity_;
@@ -148,14 +148,14 @@ private:
     std::size_t position_;
     std::size_t mark_position_;
     std::size_t saved_position_;
-    const CharT* begin_input_;
-    const CharT* input_end_;
-    const CharT* input_ptr_;
+    const char_type* begin_input_;
+    const char_type* end_input_;
+    const char_type* input_ptr_;
     json_parse_state state_;
     bool more_;
     bool done_;
 
-    std::basic_string<CharT,std::char_traits<CharT>,char_allocator_type> string_buffer_;
+    std::basic_string<char_type,std::char_traits<char_type>,char_allocator_type> string_buffer_;
     jsoncons::detail::to_double_t to_double_;
 
     std::vector<json_parse_state,parse_state_allocator_type> state_stack_;
@@ -167,23 +167,23 @@ private:
 
 public:
     basic_json_parser(const TempAllocator& alloc = TempAllocator())
-        : basic_json_parser(basic_json_decode_options<CharT>(), default_json_parsing(), alloc)
+        : basic_json_parser(basic_json_decode_options<char_type>(), default_json_parsing(), alloc)
     {
     }
 
     basic_json_parser(std::function<bool(json_errc,const ser_context&)> err_handler, 
                       const TempAllocator& alloc = TempAllocator())
-        : basic_json_parser(basic_json_decode_options<CharT>(), err_handler, alloc)
+        : basic_json_parser(basic_json_decode_options<char_type>(), err_handler, alloc)
     {
     }
 
-    basic_json_parser(const basic_json_decode_options<CharT>& options, 
+    basic_json_parser(const basic_json_decode_options<char_type>& options, 
                       const TempAllocator& alloc = TempAllocator())
         : basic_json_parser(options, default_json_parsing(), alloc)
     {
     }
 
-    basic_json_parser(const basic_json_decode_options<CharT>& options,
+    basic_json_parser(const basic_json_decode_options<char_type>& options,
                       std::function<bool(json_errc,const ser_context&)> err_handler, 
                       const TempAllocator& alloc = TempAllocator())
        : options_(options),
@@ -197,7 +197,7 @@ public:
          mark_position_(0),
          saved_position_(0),
          begin_input_(nullptr),
-         input_end_(nullptr),
+         end_input_(nullptr),
          input_ptr_(nullptr),
          state_(json_parse_state::start),
          more_(true),
@@ -226,7 +226,7 @@ public:
 
     bool source_exhausted() const
     {
-        return input_ptr_ == input_end_;
+        return input_ptr_ == end_input_;
     }
 
     ~basic_json_parser() noexcept
@@ -244,19 +244,49 @@ public:
         return done_;
     }
 
+    bool enter() const
+    {
+        return state_ == json_parse_state::start;
+    }
+
+    bool accept() const
+    {
+        return state_ == json_parse_state::accept || done_;
+    }
+
     bool stopped() const
     {
         return !more_;
     }
 
+    json_parse_state state() const
+    {
+        return state_;
+    }
+
     bool finished() const
     {
-        return !more_ && state_ != json_parse_state::before_done;
+        return !more_ && state_ != json_parse_state::accept;
+    }
+
+    const char_type* first() const
+    {
+        return begin_input_;
+    }
+
+    const char_type* current() const
+    {
+        return input_ptr_;
+    }
+
+    const char_type* last() const
+    {
+        return end_input_;
     }
 
     void skip_space()
     {
-        const CharT* local_input_end = input_end_;
+        const char_type* local_input_end = end_input_;
         while (input_ptr_ != local_input_end) 
         {
             switch (*input_ptr_)
@@ -286,7 +316,7 @@ public:
 
     void skip_whitespace()
     {
-        const CharT* local_input_end = input_end_;
+        const char_type* local_input_end = end_input_;
 
         while (input_ptr_ != local_input_end) 
         {
@@ -326,7 +356,7 @@ public:
         }
     }
 
-    void begin_object(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void begin_object(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         if (JSONCONS_UNLIKELY(++nesting_depth_ > options_.max_nesting_depth()))
         {
@@ -343,12 +373,12 @@ public:
         more_ = visitor.begin_object(semantic_tag::none, *this, ec);
     }
 
-    void end_object(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void end_object(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         if (JSONCONS_UNLIKELY(nesting_depth_ < 1))
         {
-            err_handler_(json_errc::unexpected_right_brace, *this);
-            ec = json_errc::unexpected_right_brace;
+            err_handler_(json_errc::unexpected_rbrace, *this);
+            ec = json_errc::unexpected_rbrace;
             more_ = false;
             return;
         }
@@ -360,22 +390,22 @@ public:
         }
         else if (state_ == json_parse_state::array)
         {
-            err_handler_(json_errc::expected_comma_or_right_bracket, *this);
-            ec = json_errc::expected_comma_or_right_bracket;
+            err_handler_(json_errc::expected_comma_or_rbracket, *this);
+            ec = json_errc::expected_comma_or_rbracket;
             more_ = false;
             return;
         }
         else
         {
-            err_handler_(json_errc::unexpected_right_brace, *this);
-            ec = json_errc::unexpected_right_brace;
+            err_handler_(json_errc::unexpected_rbrace, *this);
+            ec = json_errc::unexpected_rbrace;
             more_ = false;
             return;
         }
 
         if (parent() == json_parse_state::root)
         {
-            state_ = json_parse_state::before_done;
+            state_ = json_parse_state::accept;
         }
         else
         {
@@ -383,7 +413,7 @@ public:
         }
     }
 
-    void begin_array(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void begin_array(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         if (++nesting_depth_ > options_.max_nesting_depth())
         {
@@ -400,12 +430,12 @@ public:
         more_ = visitor.begin_array(semantic_tag::none, *this, ec);
     }
 
-    void end_array(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void end_array(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         if (nesting_depth_ < 1)
         {
-            err_handler_(json_errc::unexpected_right_bracket, *this);
-            ec = json_errc::unexpected_right_bracket;
+            err_handler_(json_errc::unexpected_rbracket, *this);
+            ec = json_errc::unexpected_rbracket;
             more_ = false;
             return;
         }
@@ -417,21 +447,21 @@ public:
         }
         else if (state_ == json_parse_state::object)
         {
-            err_handler_(json_errc::expected_comma_or_right_brace, *this);
-            ec = json_errc::expected_comma_or_right_brace;
+            err_handler_(json_errc::expected_comma_or_rbrace, *this);
+            ec = json_errc::expected_comma_or_rbrace;
             more_ = false;
             return;
         }
         else
         {
-            err_handler_(json_errc::unexpected_right_bracket, *this);
-            ec = json_errc::unexpected_right_bracket;
+            err_handler_(json_errc::unexpected_rbracket, *this);
+            ec = json_errc::unexpected_rbracket;
             more_ = false;
             return;
         }
         if (parent() == json_parse_state::root)
         {
-            state_ = json_parse_state::before_done;
+            state_ = json_parse_state::accept;
         }
         else
         {
@@ -470,9 +500,9 @@ public:
 
     void check_done(std::error_code& ec)
     {
-        for (; input_ptr_ != input_end_; ++input_ptr_)
+        for (; input_ptr_ != end_input_; ++input_ptr_)
         {
-            CharT curr_char_ = *input_ptr_;
+            char_type curr_char_ = *input_ptr_;
             switch (curr_char_)
             {
                 case '\n':
@@ -492,24 +522,19 @@ public:
         }
     }
 
-    json_parse_state state() const
-    {
-        return state_;
-    }
-
     void update(const string_view_type sv)
     {
         update(sv.data(),sv.length());
     }
 
-    void update(const CharT* data, std::size_t length)
+    void update(const char_type* data, std::size_t length)
     {
         begin_input_ = data;
-        input_end_ = data + length;
+        end_input_ = data + length;
         input_ptr_ = begin_input_;
     }
 
-    void parse_some(basic_json_visitor<CharT>& visitor)
+    void parse_some(basic_json_visitor<char_type>& visitor)
     {
         std::error_code ec;
         parse_some(visitor, ec);
@@ -519,12 +544,12 @@ public:
         }
     }
 
-    void parse_some(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_some(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         parse_some_(visitor, ec);
     }
 
-    void finish_parse(basic_json_visitor<CharT>& visitor)
+    void finish_parse(basic_json_visitor<char_type>& visitor)
     {
         std::error_code ec;
         finish_parse(visitor, ec);
@@ -534,7 +559,7 @@ public:
         }
     }
 
-    void finish_parse(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void finish_parse(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         while (!finished())
         {
@@ -542,9 +567,9 @@ public:
         }
     }
 
-    void parse_some_(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_some_(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
-        if (state_ == json_parse_state::before_done)
+        if (state_ == json_parse_state::accept)
         {
             visitor.flush();
             done_ = true;
@@ -552,7 +577,7 @@ public:
             more_ = false;
             return;
         }
-        const CharT* local_input_end = input_end_;
+        const char_type* local_input_end = end_input_;
 
         if (input_ptr_ == local_input_end && more_)
         {
@@ -571,12 +596,13 @@ public:
                     end_fraction_value(visitor, ec);
                     if (ec) return;
                     break;
-                case json_parse_state::before_done:
+                case json_parse_state::accept:
                     visitor.flush();
                     done_ = true;
                     state_ = json_parse_state::done;
                     more_ = false;
                     break;
+                case json_parse_state::start:
                 case json_parse_state::done:
                     more_ = false;
                     break;
@@ -595,7 +621,7 @@ public:
         {
             switch (state_)
             {
-                case json_parse_state::before_done:
+                case json_parse_state::accept:
                     visitor.flush();
                     done_ = true;
                     state_ = json_parse_state::done;
@@ -709,13 +735,13 @@ public:
                                 if (ec) {return;}
                                 break;
                             case '}':
-                                err_handler_(json_errc::unexpected_right_brace, *this);
-                                ec = json_errc::unexpected_right_brace;
+                                err_handler_(json_errc::unexpected_rbrace, *this);
+                                ec = json_errc::unexpected_rbrace;
                                 more_ = false;
                                 return;
                             case ']':
-                                err_handler_(json_errc::unexpected_right_bracket, *this);
-                                ec = json_errc::unexpected_right_bracket;
+                                err_handler_(json_errc::unexpected_rbracket, *this);
+                                ec = json_errc::unexpected_rbracket;
                                 more_ = false;
                                 return;
                             default:
@@ -783,19 +809,19 @@ public:
                             default:
                                 if (parent() == json_parse_state::array)
                                 {
-                                    more_ = err_handler_(json_errc::expected_comma_or_right_bracket, *this);
+                                    more_ = err_handler_(json_errc::expected_comma_or_rbracket, *this);
                                     if (!more_)
                                     {
-                                        ec = json_errc::expected_comma_or_right_bracket;
+                                        ec = json_errc::expected_comma_or_rbracket;
                                         return;
                                     }
                                 }
                                 else if (parent() == json_parse_state::object)
                                 {
-                                    more_ = err_handler_(json_errc::expected_comma_or_right_brace, *this);
+                                    more_ = err_handler_(json_errc::expected_comma_or_rbrace, *this);
                                     if (!more_)
                                     {
-                                        ec = json_errc::expected_comma_or_right_brace;
+                                        ec = json_errc::expected_comma_or_rbrace;
                                         return;
                                     }
                                 }
@@ -1338,7 +1364,7 @@ public:
                             more_ = visitor.bool_value(true,  semantic_tag::none, *this, ec);
                             if (parent() == json_parse_state::root)
                             {
-                                state_ = json_parse_state::before_done;
+                                state_ = json_parse_state::accept;
                             }
                             else
                             {
@@ -1406,7 +1432,7 @@ public:
                             more_ = visitor.bool_value(false, semantic_tag::none, *this, ec);
                             if (parent() == json_parse_state::root)
                             {
-                                state_ = json_parse_state::before_done;
+                                state_ = json_parse_state::accept;
                             }
                             else
                             {
@@ -1459,7 +1485,7 @@ public:
                         more_ = visitor.null_value(semantic_tag::none, *this, ec);
                         if (parent() == json_parse_state::root)
                         {
-                            state_ = json_parse_state::before_done;
+                            state_ = json_parse_state::accept;
                         }
                         else
                         {
@@ -1576,10 +1602,10 @@ public:
         }
     }
 
-    void parse_true(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_true(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         saved_position_ = position_;
-        if (JSONCONS_LIKELY(input_end_ - input_ptr_ >= 4))
+        if (JSONCONS_LIKELY(end_input_ - input_ptr_ >= 4))
         {
             if (*(input_ptr_+1) == 'r' && *(input_ptr_+2) == 'u' && *(input_ptr_+3) == 'e')
             {
@@ -1588,7 +1614,7 @@ public:
                 position_ += 4;
                 if (parent() == json_parse_state::root)
                 {
-                    state_ = json_parse_state::before_done;
+                    state_ = json_parse_state::accept;
                 }
                 else
                 {
@@ -1611,10 +1637,10 @@ public:
         }
     }
 
-    void parse_null(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_null(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         saved_position_ = position_;
-        if (JSONCONS_LIKELY(input_end_ - input_ptr_ >= 4))
+        if (JSONCONS_LIKELY(end_input_ - input_ptr_ >= 4))
         {
             if (*(input_ptr_+1) == 'u' && *(input_ptr_+2) == 'l' && *(input_ptr_+3) == 'l')
             {
@@ -1623,7 +1649,7 @@ public:
                 position_ += 4;
                 if (parent() == json_parse_state::root)
                 {
-                    state_ = json_parse_state::before_done;
+                    state_ = json_parse_state::accept;
                 }
                 else
                 {
@@ -1646,10 +1672,10 @@ public:
         }
     }
 
-    void parse_false(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_false(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         saved_position_ = position_;
-        if (JSONCONS_LIKELY(input_end_ - input_ptr_ >= 5))
+        if (JSONCONS_LIKELY(end_input_ - input_ptr_ >= 5))
         {
             if (*(input_ptr_+1) == 'a' && *(input_ptr_+2) == 'l' && *(input_ptr_+3) == 's' && *(input_ptr_+4) == 'e')
             {
@@ -1658,7 +1684,7 @@ public:
                 position_ += 5;
                 if (parent() == json_parse_state::root)
                 {
-                    state_ = json_parse_state::before_done;
+                    state_ = json_parse_state::accept;
                 }
                 else
                 {
@@ -1681,10 +1707,10 @@ public:
         }
     }
 
-    void parse_number(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_number(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         saved_position_ = position_ - 1;
-        const CharT* local_input_end = input_end_;
+        const char_type* local_input_end = end_input_;
 
         switch (state_)
         {
@@ -2099,11 +2125,11 @@ exp3:
         JSONCONS_UNREACHABLE();               
     }
 
-    void parse_string(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void parse_string(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         saved_position_ = position_ - 1;
-        const CharT* local_input_end = input_end_;
-        const CharT* sb = input_ptr_;
+        const char_type* local_input_end = end_input_;
+        const char_type* sb = input_ptr_;
 
         switch (state_)
         {
@@ -2372,7 +2398,7 @@ escape_u4:
                 state_ = json_parse_state::escape_u4;
                 return;
             }
-            if (unicons::is_high_surrogate(cp_))
+            if (unicode_traits::is_high_surrogate(cp_))
             {
                 ++input_ptr_;
                 ++position_;
@@ -2380,7 +2406,7 @@ escape_u4:
             }
             else
             {
-                unicons::convert(&cp_, &cp_ + 1, std::back_inserter(string_buffer_));
+                unicode_traits::convert(&cp_, 1, string_buffer_);
                 sb = ++input_ptr_;
                 ++position_;
                 state_ = json_parse_state::string;
@@ -2501,7 +2527,7 @@ escape_u8:
                 return;
             }
             uint32_t cp = 0x10000 + ((cp_ & 0x3FF) << 10) + (cp2_ & 0x3FF);
-            unicons::convert(&cp, &cp + 1, std::back_inserter(string_buffer_));
+            unicode_traits::convert(&cp, 1, string_buffer_);
             sb = ++input_ptr_;
             ++position_;
             goto string_u1;
@@ -2510,13 +2536,13 @@ escape_u8:
         JSONCONS_UNREACHABLE();               
     }
 
-    void translate_conv_errc(unicons::conv_errc result, std::error_code& ec)
+    void translate_conv_errc(unicode_traits::conv_errc result, std::error_code& ec)
     {
         switch (result)
         {
-        case unicons::conv_errc():
+        case unicode_traits::conv_errc():
             break;
-        case unicons::conv_errc::over_long_utf8_sequence:
+        case unicode_traits::conv_errc::over_long_utf8_sequence:
             more_ = err_handler_(json_errc::over_long_utf8_sequence, *this);
             if (!more_)
             {
@@ -2524,7 +2550,7 @@ escape_u8:
                 return;
             }
             break;
-        case unicons::conv_errc::unpaired_high_surrogate:
+        case unicode_traits::conv_errc::unpaired_high_surrogate:
             more_ = err_handler_(json_errc::unpaired_high_surrogate, *this);
             if (!more_)
             {
@@ -2532,7 +2558,7 @@ escape_u8:
                 return;
             }
             break;
-        case unicons::conv_errc::expected_continuation_byte:
+        case unicode_traits::conv_errc::expected_continuation_byte:
             more_ = err_handler_(json_errc::expected_continuation_byte, *this);
             if (!more_)
             {
@@ -2540,7 +2566,7 @@ escape_u8:
                 return;
             }
             break;
-        case unicons::conv_errc::illegal_surrogate_value:
+        case unicode_traits::conv_errc::illegal_surrogate_value:
             more_ = err_handler_(json_errc::illegal_surrogate_value, *this);
             if (!more_)
             {
@@ -2561,8 +2587,8 @@ escape_u8:
 
 #if !defined(JSONCONS_NO_DEPRECATED)
 
-    JSONCONS_DEPRECATED_MSG("Instead, use finish_parse(basic_json_visitor<CharT>&)")
-    void end_parse(basic_json_visitor<CharT>& visitor)
+    JSONCONS_DEPRECATED_MSG("Instead, use finish_parse(basic_json_visitor<char_type>&)")
+    void end_parse(basic_json_visitor<char_type>& visitor)
     {
         std::error_code ec;
         finish_parse(visitor, ec);
@@ -2572,8 +2598,8 @@ escape_u8:
         }
     }
 
-    JSONCONS_DEPRECATED_MSG("Instead, use finish_parse(basic_json_visitor<CharT>&, std::error_code&)")
-    void end_parse(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    JSONCONS_DEPRECATED_MSG("Instead, use finish_parse(basic_json_visitor<char_type>&, std::error_code&)")
+    void end_parse(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         while (!finished())
         {
@@ -2581,11 +2607,11 @@ escape_u8:
         }
     }
 
-    JSONCONS_DEPRECATED_MSG("Instead, use update(const CharT*, std::size_t)")
-    void set_source(const CharT* data, std::size_t length)
+    JSONCONS_DEPRECATED_MSG("Instead, use update(const char_type*, std::size_t)")
+    void set_source(const char_type* data, std::size_t length)
     {
         begin_input_ = data;
-        input_end_ = data + length;
+        end_input_ = data + length;
         input_ptr_ = begin_input_;
     }
 #endif
@@ -2611,7 +2637,7 @@ escape_u8:
     }
 private:
 
-    void end_integer_value(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void end_integer_value(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         if (string_buffer_[0] == '-')
         {
@@ -2623,12 +2649,13 @@ private:
         }
     }
 
-    void end_negative_value(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void end_negative_value(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
-        auto result = jsoncons::detail::to_integer_unchecked<int64_t>(string_buffer_.data(), string_buffer_.length());
+        int64_t val;
+        auto result = jsoncons::detail::to_integer_unchecked(string_buffer_.data(), string_buffer_.length(), val);
         if (result)
         {
-            more_ = visitor.int64_value(result.value(), semantic_tag::none, *this, ec);
+            more_ = visitor.int64_value(val, semantic_tag::none, *this, ec);
         }
         else // Must be overflow
         {
@@ -2637,12 +2664,13 @@ private:
         after_value(ec);
     }
 
-    void end_positive_value(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void end_positive_value(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
-        auto result = jsoncons::detail::to_integer_unchecked<uint64_t>(string_buffer_.data(), string_buffer_.length());
+        uint64_t val;
+        auto result = jsoncons::detail::to_integer_unchecked(string_buffer_.data(), string_buffer_.length(), val);
         if (result)
         {
-            more_ = visitor.uint64_value(result.value(), semantic_tag::none, *this, ec);
+            more_ = visitor.uint64_value(val, semantic_tag::none, *this, ec);
         }
         else // Must be overflow
         {
@@ -2651,7 +2679,7 @@ private:
         after_value(ec);
     }
 
-    void end_fraction_value(basic_json_visitor<CharT>& visitor, std::error_code& ec)
+    void end_fraction_value(basic_json_visitor<char_type>& visitor, std::error_code& ec)
     {
         JSONCONS_TRY
         {
@@ -2679,14 +2707,14 @@ private:
         after_value(ec);
     }
 
-    void end_string_value(const CharT* s, std::size_t length, basic_json_visitor<CharT>& visitor, std::error_code& ec) 
+    void end_string_value(const char_type* s, std::size_t length, basic_json_visitor<char_type>& visitor, std::error_code& ec) 
     {
         string_view_type sv(s, length);
-        auto result = unicons::validate(s,s+length);
-        if (result.ec != unicons::conv_errc())
+        auto result = unicode_traits::validate(s, length);
+        if (result.ec != unicode_traits::conv_errc())
         {
             translate_conv_errc(result.ec,ec);
-            position_ += (result.it - s);
+            position_ += (result.ptr - s);
             return;
         }
         switch (parent())
@@ -2722,7 +2750,7 @@ private:
             {
                 more_ = visitor.string_value(sv, semantic_tag::none, *this, ec);
             }
-            state_ = json_parse_state::before_done;
+            state_ = json_parse_state::accept;
             break;
         }
         default:
@@ -2768,7 +2796,7 @@ private:
             state_ = json_parse_state::expect_comma_or_end;
             break;
         case json_parse_state::root:
-            state_ = json_parse_state::before_done;
+            state_ = json_parse_state::accept;
             break;
         default:
             more_ = err_handler_(json_errc::syntax_error, *this);

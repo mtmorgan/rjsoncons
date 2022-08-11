@@ -18,13 +18,6 @@
 
 namespace jsoncons { namespace csv {
 
-namespace detail {
-    JSONCONS_STRING_LITERAL(string_literal,'s','t','r','i','n','g')
-    JSONCONS_STRING_LITERAL(integer_literal,'i','n','t','e','g','e','r')
-    JSONCONS_STRING_LITERAL(float_literal,'f','l','o','a','t')
-    JSONCONS_STRING_LITERAL(boolean_literal,'b','o','o','l','e','a','n')
-}
-
 enum class csv_column_type : uint8_t 
 {
     string_t,integer_t,float_t,boolean_t,repeat_t
@@ -35,7 +28,7 @@ enum class quote_style_kind : uint8_t
     minimal,all,nonnumeric,none
 };
 
-enum class mapping_kind : uint8_t 
+enum class csv_mapping_kind : uint8_t 
 {
     n_rows = 1, 
     n_objects, 
@@ -43,9 +36,10 @@ enum class mapping_kind : uint8_t
 };
 
 #if !defined(JSONCONS_NO_DEPRECATED)
+using mapping_kind = csv_mapping_kind;
 JSONCONS_DEPRECATED_MSG("Instead, use quote_style_kind") typedef quote_style_kind quote_styles;
 JSONCONS_DEPRECATED_MSG("Instead, use quote_style_kind") typedef quote_style_kind quote_style_type;
-JSONCONS_DEPRECATED_MSG("Instead, use mapping_kind") typedef mapping_kind mapping_type;
+JSONCONS_DEPRECATED_MSG("Instead, use csv_mapping_kind") typedef csv_mapping_kind mapping_type;
 #endif
 
 enum class column_state {sequence,label};
@@ -126,14 +120,13 @@ template <class CharT,class Container>
 void parse_column_types(const std::basic_string<CharT>& types, 
                         Container& column_types)
 {
-    using char_type = CharT;
     const std::map<jsoncons::basic_string_view<CharT>,csv_column_type> type_dictionary =
     {
 
-        {detail::string_literal<char_type>(),csv_column_type::string_t},
-        {detail::integer_literal<char_type>(),csv_column_type::integer_t},
-        {detail::float_literal<char_type>(),csv_column_type::float_t},
-        {detail::boolean_literal<char_type>(),csv_column_type::boolean_t}
+        {JSONCONS_STRING_VIEW_CONSTANT(CharT,"string"),csv_column_type::string_t},
+        {JSONCONS_STRING_VIEW_CONSTANT(CharT,"integer"),csv_column_type::integer_t},
+        {JSONCONS_STRING_VIEW_CONSTANT(CharT,"float"),csv_column_type::float_t},
+        {JSONCONS_STRING_VIEW_CONSTANT(CharT,"boolean"),csv_column_type::boolean_t}
     };
 
     column_state state = column_state::sequence;
@@ -479,7 +472,7 @@ private:
     bool infer_types_:1;
     bool lossless_number_:1;
     char_type comment_starter_;
-    mapping_kind mapping_;
+    csv_mapping_kind mapping_;
     std::size_t header_lines_;
     std::size_t max_lines_;
     string_type column_types_;
@@ -594,10 +587,17 @@ public:
         return comment_starter_;
     }
 
-    mapping_kind mapping() const 
+    csv_mapping_kind mapping_kind() const 
     {
-        return mapping_ != mapping_kind() ? mapping_ : (assume_header() || this->column_names().size() > 0 ? mapping_kind::n_objects : mapping_kind::n_rows);
+        return mapping_ != csv_mapping_kind() ? mapping_ : (assume_header() || this->column_names().size() > 0 ? csv_mapping_kind::n_objects : csv_mapping_kind::n_rows);
     }
+
+#if !defined(JSONCONS_NO_DEPRECATED)
+    csv_mapping_kind mapping() const 
+    {
+        return mapping_kind();
+    }
+#endif
 
     std::size_t max_lines() const 
     {
@@ -833,7 +833,7 @@ public:
         return *this;
     }
 
-    basic_csv_options& line_delimiter(string_type value)
+    basic_csv_options& line_delimiter(const string_type& value)
     {
         this->line_delimiter_ = value;
         return *this;
@@ -875,7 +875,15 @@ public:
         return *this;
     }
 
-    basic_csv_options& mapping(mapping_kind value)
+//#if !defined(JSONCONS_NO_DEPRECATED)
+    basic_csv_options& mapping(csv_mapping_kind value)
+    {
+        this->mapping_ = value;
+        return *this;
+    }
+//#endif
+
+    basic_csv_options& mapping_kind(csv_mapping_kind value)
     {
         this->mapping_ = value;
         return *this;

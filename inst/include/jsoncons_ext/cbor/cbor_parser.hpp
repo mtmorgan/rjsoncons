@@ -23,7 +23,7 @@
 
 namespace jsoncons { namespace cbor {
 
-enum class parse_mode {root,before_done,array,indefinite_array,map_key,map_value,indefinite_map_key,indefinite_map_value,multi_dim};
+enum class parse_mode {root,accept,array,indefinite_array,map_key,map_value,indefinite_map_key,indefinite_map_value,multi_dim};
 
 struct mapped_string
 {
@@ -76,7 +76,7 @@ struct parse_state
     parse_state(parse_state&&) = default;
 };
 
-template <class Src,class Allocator=std::allocator<char>>
+template <class Source,class Allocator=std::allocator<char>>
 class basic_cbor_parser : public ser_context
 {
     using char_type = char;
@@ -99,7 +99,7 @@ class basic_cbor_parser : public ser_context
     std::bitset<num_of_tags> other_tags_;
 
     allocator_type alloc_;
-    Src source_;
+    Source source_;
     cbor_decode_options options_;
 
     bool more_;
@@ -136,9 +136,9 @@ class basic_cbor_parser : public ser_context
 
     struct read_byte_string_from_source
     {
-        basic_cbor_parser<Src,Allocator>* source;
+        basic_cbor_parser<Source,Allocator>* source;
 
-        read_byte_string_from_source(basic_cbor_parser<Src,Allocator>* source)
+        read_byte_string_from_source(basic_cbor_parser<Source,Allocator>* source)
             : source(source)
         {
         }
@@ -150,12 +150,12 @@ class basic_cbor_parser : public ser_context
     };
 
 public:
-    template <class Source>
-    basic_cbor_parser(Source&& source,
+    template <class Sourceable>
+    basic_cbor_parser(Sourceable&& source,
                       const cbor_decode_options& options = cbor_decode_options(),
                       const Allocator alloc = Allocator())
        : alloc_(alloc),
-         source_(std::forward<Source>(source)),
+         source_(std::forward<Sourceable>(source)),
          options_(options),
          more_(true), 
          done_(false),
@@ -238,14 +238,14 @@ public:
                 }
                 case parse_mode::indefinite_array:
                 {
-                    auto c = source_.peek_character();
-                    if (!c)
+                    auto c = source_.peek();
+                    if (c.eof)
                     {
                         ec = cbor_errc::unexpected_eof;
                         more_ = false;
                         return;
                     }
-                    if (c.value() == 0xff)
+                    if (c.value == 0xff)
                     {
                         source_.ignore(1);
                         end_array(visitor, ec);
@@ -278,14 +278,14 @@ public:
                 }
                 case parse_mode::indefinite_map_key:
                 {
-                    auto c = source_.peek_character();
-                    if (!c)
+                    auto c = source_.peek();
+                    if (c.eof)
                     {
                         ec = cbor_errc::unexpected_eof;
                         more_ = false;
                         return;
                     }
-                    if (c.value() == 0xff)
+                    if (c.value == 0xff)
                     {
                         source_.ignore(1);
                         end_object(visitor, ec);
@@ -305,11 +305,11 @@ public:
                 }
                 case parse_mode::root:
                 {
-                    state_stack_.back().mode = parse_mode::before_done;
+                    state_stack_.back().mode = parse_mode::accept;
                     read_item(visitor, ec);
                     break;
                 }
-                case parse_mode::before_done:
+                case parse_mode::accept:
                 {
                     JSONCONS_ASSERT(state_stack_.size() == 1);
                     state_stack_.clear();
@@ -329,15 +329,15 @@ private:
         {
             return;
         }
-        auto c = source_.peek_character();
-        if (!c)
+        auto c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
-        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value());
-        uint8_t info = get_additional_information_value(c.value());
+        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value);
+        uint8_t info = get_additional_information_value(c.value);
 
         switch (major_type)
         {
@@ -443,8 +443,8 @@ private:
                 {
                     return;
                 }
-                auto result = unicons::validate(text_buffer_.begin(),text_buffer_.end());
-                if (result.ec != unicons::conv_errc())
+                auto result = unicode_traits::validate(text_buffer_.data(),text_buffer_.size());
+                if (result.ec != unicode_traits::conv_errc())
                 {
                     ec = cbor_errc::invalid_utf8_text_string;
                     more_ = false;
@@ -676,20 +676,20 @@ private:
 
     void read_text_string(string_type& s, std::error_code& ec)
     {
-        auto c = source_.peek_character();
-        if (!c)
+        auto c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
-        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value());
-        uint8_t info = get_additional_information_value(c.value());
+        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value);
+        uint8_t info = get_additional_information_value(c.value);
 
         JSONCONS_ASSERT(major_type == jsoncons::cbor::detail::cbor_major_type::text_string);
-        auto func = [&s](Src& source, std::size_t length, std::error_code& ec) -> bool
+        auto func = [&s](Source& source, std::size_t length, std::error_code& ec) -> bool
         {
-            if (source_reader<Src>::read(source, s, length) != length)
+            if (source_reader<Source>::read(source, s, length) != length)
             {
                 ec = cbor_errc::unexpected_eof;
                 return false;
@@ -712,7 +712,7 @@ private:
         {
             return 0;
         }
-        std::size_t len = (std::size_t)u;
+        std::size_t len = static_cast<std::size_t>(u);
         if (len != u)
         {
             ec = cbor_errc::number_too_large;
@@ -725,15 +725,15 @@ private:
     {
         bool more = true;
         v.clear();
-        auto c = source_.peek_character();
-        if (!c)
+        auto c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more = false;
             return more;
         }
-        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value());
-        uint8_t info = get_additional_information_value(c.value());
+        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value);
+        uint8_t info = get_additional_information_value(c.value);
 
         JSONCONS_ASSERT(major_type == jsoncons::cbor::detail::cbor_major_type::byte_string);
 
@@ -741,9 +741,9 @@ private:
         {
             case jsoncons::cbor::detail::additional_info::indefinite_length:
             {
-                auto func = [&v,&more](Src& source, std::size_t length, std::error_code& ec) -> bool
+                auto func = [&v,&more](Source& source, std::size_t length, std::error_code& ec) -> bool
                 {
-                    if (source_reader<Src>::read(source, v, length) != length)
+                    if (source_reader<Source>::read(source, v, length) != length)
                     {
                         ec = cbor_errc::unexpected_eof;
                         more = false;
@@ -762,7 +762,7 @@ private:
                     more = false;
                     return more;
                 }
-                if (source_reader<Src>::read(source_, v, length) != length)
+                if (source_reader<Source>::read(source_, v, length) != length)
                 {
                     ec = cbor_errc::unexpected_eof;
                     more = false;
@@ -787,14 +787,14 @@ private:
         bool done = false;
         while (!done)
         {
-            auto c = source_.peek_character();
-            if (!c)
+            auto c = source_.peek();
+            if (c.eof)
             {
                 ec = cbor_errc::unexpected_eof;
                 more_ = false;
                 return;
             }
-            if (nesting_level > 0 && c.value() == 0xff)
+            if (nesting_level > 0 && c.value == 0xff)
             {
                 --nesting_level;
                 if (nesting_level == 0)
@@ -805,14 +805,14 @@ private:
                 continue;
             }
 
-            jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value());
+            jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value);
             if (major_type != type)
             {
                 ec = cbor_errc::illegal_chunked_string;
                 more_ = false;
                 return;
             }
-            uint8_t info = get_additional_information_value(c.value());
+            uint8_t info = get_additional_information_value(c.value);
 
             switch (info)
             {
@@ -848,14 +848,14 @@ private:
     {
         uint64_t val = 0;
 
-        auto type = source_.get_character();
-        if (!type)
+        uint8_t initial_b;
+        if (source_.read(&initial_b, 1) == 0)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return 0;
         }
-        uint8_t info = get_additional_information_value(type.value());
+        uint8_t info = get_additional_information_value(initial_b);
         switch (info)
         {
             case JSONCONS_CBOR_0x00_0x17: // Integer 0x00..0x17 (0..23)
@@ -866,14 +866,14 @@ private:
 
             case 0x18: // Unsigned integer (one-byte uint8_t follows)
             {
-                auto c = source_.get_character();
-                if (!c)
+                uint8_t b;
+                if (source_.read(&b, 1) == 0)
                 {
                     ec = cbor_errc::unexpected_eof;
                     more_ = false;
                     return val;
                 }
-                val = c.value();
+                val = b;
                 break;
             }
 
@@ -881,7 +881,7 @@ private:
             {
                 uint8_t buf[sizeof(uint16_t)];
                 source_.read(buf, sizeof(uint16_t));
-                val = jsoncons::detail::big_to_native<uint16_t>(buf, sizeof(buf));
+                val = binary::big_to_native<uint16_t>(buf, sizeof(buf));
                 break;
             }
 
@@ -889,7 +889,7 @@ private:
             {
                 uint8_t buf[sizeof(uint32_t)];
                 source_.read(buf, sizeof(uint32_t));
-                val = jsoncons::detail::big_to_native<uint32_t>(buf, sizeof(buf));
+                val = binary::big_to_native<uint32_t>(buf, sizeof(buf));
                 break;
             }
 
@@ -897,7 +897,7 @@ private:
             {
                 uint8_t buf[sizeof(uint64_t)];
                 source_.read(buf, sizeof(uint64_t));
-                val = jsoncons::detail::big_to_native<uint64_t>(buf, sizeof(buf));
+                val = binary::big_to_native<uint64_t>(buf, sizeof(buf));
                 break;
             }
             default:
@@ -910,16 +910,16 @@ private:
     {
         int64_t val = 0;
 
-        auto ch = source_.peek_character();
-        if (!ch)
+        auto ch = source_.peek();
+        if (ch.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return val;
         }
 
-        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(ch.value());
-        uint8_t info = get_additional_information_value(ch.value());
+        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(ch.value);
+        uint8_t info = get_additional_information_value(ch.value);
         switch (major_type)
         {
             case jsoncons::cbor::detail::cbor_major_type::negative_integer:
@@ -933,14 +933,14 @@ private:
                     }
                     case 0x18: // Negative integer (one-byte uint8_t follows)
                         {
-                            auto c = source_.get_character();
-                            if (!c)
+                            uint8_t b;
+                            if (source_.read(&b, 1) == 0)
                             {
                                 ec = cbor_errc::unexpected_eof;
                                 more_ = false;
                                 return val;
                             }
-                            val = static_cast<int64_t>(-1) - static_cast<int64_t>(c.value());
+                            val = static_cast<int64_t>(-1) - static_cast<int64_t>(b);
                             break;
                         }
 
@@ -953,7 +953,7 @@ private:
                                 more_ = false;
                                 return val;
                             }
-                            auto x = jsoncons::detail::big_to_native<uint16_t>(buf, sizeof(buf));
+                            auto x = binary::big_to_native<uint16_t>(buf, sizeof(buf));
                             val = static_cast<int64_t>(-1)- x;
                             break;
                         }
@@ -967,7 +967,7 @@ private:
                                 more_ = false;
                                 return val;
                             }
-                            auto x = jsoncons::detail::big_to_native<uint32_t>(buf, sizeof(buf));
+                            auto x = binary::big_to_native<uint32_t>(buf, sizeof(buf));
                             val = static_cast<int64_t>(-1)- x;
                             break;
                         }
@@ -981,7 +981,7 @@ private:
                                 more_ = false;
                                 return val;
                             }
-                            auto x = jsoncons::detail::big_to_native<uint64_t>(buf, sizeof(buf));
+                            auto x = binary::big_to_native<uint64_t>(buf, sizeof(buf));
                             val = static_cast<int64_t>(-1)- static_cast<int64_t>(x);
                             break;
                         }
@@ -1018,14 +1018,14 @@ private:
     {
         double val = 0;
 
-        auto type = source_.get_character();
-        if (!type)
+        uint8_t b;
+        if (source_.read(&b, 1) == 0)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return 0;
         }
-        uint8_t info = get_additional_information_value(type.value());
+        uint8_t info = get_additional_information_value(b);
         switch (info)
         {
         case 0x1a: // Single-Precision Float (four-byte IEEE 754)
@@ -1037,7 +1037,7 @@ private:
                     more_ = false;
                     return 0;
                 }
-                val = jsoncons::detail::big_to_native<float>(buf, sizeof(buf));
+                val = binary::big_to_native<float>(buf, sizeof(buf));
                 break;
             }
 
@@ -1050,7 +1050,7 @@ private:
                     more_ = false;
                     return 0;
                 }
-                val = jsoncons::detail::big_to_native<double>(buf, sizeof(buf));
+                val = binary::big_to_native<double>(buf, sizeof(buf));
                 break;
             }
             default:
@@ -1074,15 +1074,15 @@ private:
             return;
         }
 
-        auto c = source_.peek_character();
-        if (!c)
+        auto c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
         int64_t exponent = 0;
-        switch (get_major_type(c.value()))
+        switch (get_major_type(c.value))
         {
             case jsoncons::cbor::detail::cbor_major_type::unsigned_integer:
             {
@@ -1112,15 +1112,15 @@ private:
 
         string_type s;
 
-        c = source_.peek_character();
-        if (!c)
+        c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
 
-        switch (get_major_type(c.value()))
+        switch (get_major_type(c.value))
         {
             case jsoncons::cbor::detail::cbor_major_type::unsigned_integer:
             {
@@ -1144,26 +1144,26 @@ private:
             }
             case jsoncons::cbor::detail::cbor_major_type::semantic_tag:
             {
-                c = source_.get_character();
-                if (!c)
+                uint8_t b;
+                if (source_.read(&b, 1) == 0)
                 {
                     ec = cbor_errc::unexpected_eof;
                     more_ = false;
                     return;
                 }
-                uint8_t tag = get_additional_information_value(c.value());
-                c = source_.peek_character();
-                if (!c)
+                uint8_t tag = get_additional_information_value(b);
+                c = source_.peek();
+                if (c.eof)
                 {
                     ec = cbor_errc::unexpected_eof;
                     more_ = false;
                     return;
                 }
 
-                if (get_major_type(c.value()) == jsoncons::cbor::detail::cbor_major_type::byte_string)
+                if (get_major_type(c.value) == jsoncons::cbor::detail::cbor_major_type::byte_string)
                 {
-                    std::vector<uint8_t> v;
-                    read_byte_string(v, ec);
+                    bytes_buffer_.clear();
+                    read_byte_string(bytes_buffer_, ec);
                     if (ec)
                     {
                         more_ = false;
@@ -1171,12 +1171,12 @@ private:
                     }
                     if (tag == 2)
                     {
-                        bigint n = bigint::from_bytes_be(1, v.data(), v.size());
+                        bigint n = bigint::from_bytes_be(1, bytes_buffer_.data(), bytes_buffer_.size());
                         n.write_string(s);
                     }
                     else if (tag == 3)
                     {
-                        bigint n = bigint::from_bytes_be(1, v.data(), v.size());
+                        bigint n = bigint::from_bytes_be(1, bytes_buffer_.data(), bytes_buffer_.size());
                         n = -1 - n;
                         n.write_string(s);
                     }
@@ -1233,15 +1233,15 @@ private:
             return;
         }
 
-        auto c = source_.peek_character();
-        if (!c)
+        auto c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
         int64_t exponent = 0;
-        switch (get_major_type(c.value()))
+        switch (get_major_type(c.value))
         {
             case jsoncons::cbor::detail::cbor_major_type::unsigned_integer:
             {
@@ -1269,14 +1269,14 @@ private:
             }
         }
 
-        c = source_.peek_character();
-        if (!c)
+        c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
-        switch (get_major_type(c.value()))
+        switch (get_major_type(c.value))
         {
             case jsoncons::cbor::detail::cbor_major_type::unsigned_integer:
             {
@@ -1305,27 +1305,27 @@ private:
             }
             case jsoncons::cbor::detail::cbor_major_type::semantic_tag:
             {
-                c = source_.get_character();
-                if (!c)
+                uint8_t b;
+                if (source_.read(&b, 1) == 0)
                 {
                     ec = cbor_errc::unexpected_eof;
                     more_ = false;
                     return;
                 }
-                uint8_t tag = get_additional_information_value(c.value());
+                uint8_t tag = get_additional_information_value(b);
 
-                c = source_.peek_character();
-                if (!c)
+                c = source_.peek();
+                if (c.eof)
                 {
                     ec = cbor_errc::unexpected_eof;
                     more_ = false;
                     return;
                 }
 
-                if (get_major_type(c.value()) == jsoncons::cbor::detail::cbor_major_type::byte_string)
+                if (get_major_type(c.value) == jsoncons::cbor::detail::cbor_major_type::byte_string)
                 {
-                    std::vector<uint8_t> v; 
-                    more_ = read_byte_string(v, ec);
+                    bytes_buffer_.clear(); 
+                    more_ = read_byte_string(bytes_buffer_, ec);
                     if (!more_)
                     {
                         return;
@@ -1334,14 +1334,14 @@ private:
                     {
                         s.push_back('0');
                         s.push_back('x');
-                        bigint n = bigint::from_bytes_be(1, v.data(), v.size());
+                        bigint n = bigint::from_bytes_be(1, bytes_buffer_.data(), bytes_buffer_.size());
                         n.write_string_hex(s);
                     }
                     else if (tag == 3)
                     {
                         s.push_back('-');
                         s.push_back('0');
-                        bigint n = bigint::from_bytes_be(1, v.data(), v.size());
+                        bigint n = bigint::from_bytes_be(1, bytes_buffer_.data(), bytes_buffer_.size());
                         n = -1 - n;
                         n.write_string_hex(s);
                         s[2] = 'x'; // overwrite minus
@@ -1385,14 +1385,14 @@ private:
 
     void read_tags(std::error_code& ec)
     {
-        auto c = source_.peek_character();
-        if (!c)
+        auto c = source_.peek();
+        if (c.eof)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
-        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value());
+        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value);
 
         while (major_type == jsoncons::cbor::detail::cbor_major_type::semantic_tag)
         {
@@ -1414,14 +1414,14 @@ private:
                     item_tag_ = val;
                     break;
             }
-            c = source_.peek_character();
-            if (!c)
+            c = source_.peek();
+            if (c.eof)
             {
                 ec = cbor_errc::unexpected_eof;
                 more_ = false;
                 return;
             }
-            major_type = get_major_type(c.value());
+            major_type = get_major_type(c.value);
         }
     }
 
@@ -1474,14 +1474,14 @@ private:
             {
                 case 0x2:
                 {
-                    std::vector<uint8_t> v;
-                    read(v,ec);
+                    bytes_buffer_.clear();
+                    read(bytes_buffer_,ec);
                     if (ec)
                     {
                         more_ = false;
                         return;
                     }
-                    bigint n = bigint::from_bytes_be(1, v.data(), v.size());
+                    bigint n = bigint::from_bytes_be(1, bytes_buffer_.data(), bytes_buffer_.size());
                     text_buffer_.clear();
                     n.write_string(text_buffer_);
                     more_ = visitor.string_value(text_buffer_, semantic_tag::bigint, *this, ec);
@@ -1489,14 +1489,14 @@ private:
                 }
                 case 0x3:
                 {
-                    std::vector<uint8_t> v;
-                    read(v,ec);
+                    bytes_buffer_.clear();
+                    read(bytes_buffer_,ec);
                     if (ec)
                     {
                         more_ = false;
                         return;
                     }
-                    bigint n = bigint::from_bytes_be(1, v.data(), v.size());
+                    bigint n = bigint::from_bytes_be(1, bytes_buffer_.data(), bytes_buffer_.size());
                     n = -1 - n;
                     text_buffer_.clear();
                     n.write_string(text_buffer_);
@@ -1511,7 +1511,7 @@ private:
                         more_ = false;
                         return;
                     }
-                    more_ = visitor.byte_string_value(byte_string_view(bytes_buffer_), semantic_tag::base64url, *this, ec);
+                    more_ = visitor.byte_string_value(bytes_buffer_, semantic_tag::base64url, *this, ec);
                     break;
                 }
                 case 0x16:
@@ -1522,7 +1522,7 @@ private:
                         more_ = false;
                         return;
                     }
-                    more_ = visitor.byte_string_value(byte_string_view(bytes_buffer_), semantic_tag::base64, *this, ec);
+                    more_ = visitor.byte_string_value(bytes_buffer_, semantic_tag::base64, *this, ec);
                     break;
                 }
                 case 0x17:
@@ -1533,7 +1533,7 @@ private:
                         more_ = false;
                         return;
                     }
-                    more_ = visitor.byte_string_value(byte_string_view(bytes_buffer_), semantic_tag::base16, *this, ec);
+                    more_ = visitor.byte_string_value(bytes_buffer_, semantic_tag::base16, *this, ec);
                     break;
                 }
                 case 0x40:
@@ -1585,7 +1585,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<uint16_t>(data[i]);
+                            data[i] = binary::byte_swap<uint16_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const uint16_t>(data,size), semantic_tag::none, *this, ec);
@@ -1611,7 +1611,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<uint32_t>(data[i]);
+                            data[i] = binary::byte_swap<uint32_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const uint32_t>(data,size), semantic_tag::none, *this, ec);
@@ -1637,7 +1637,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<uint64_t>(data[i]);
+                            data[i] = binary::byte_swap<uint64_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const uint64_t>(data,size), semantic_tag::none, *this, ec);
@@ -1677,7 +1677,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<int16_t>(data[i]);
+                            data[i] = binary::byte_swap<int16_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const int16_t>(data,size), semantic_tag::none, *this, ec);
@@ -1703,7 +1703,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<int32_t>(data[i]);
+                            data[i] = binary::byte_swap<int32_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const int32_t>(data,size), semantic_tag::none, *this, ec);
@@ -1729,7 +1729,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<int64_t>(data[i]);
+                            data[i] = binary::byte_swap<int64_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const int64_t>(data,size), semantic_tag::none, *this, ec);
@@ -1755,7 +1755,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<uint16_t>(data[i]);
+                            data[i] = binary::byte_swap<uint16_t>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(half_arg, jsoncons::span<const uint16_t>(data,size), semantic_tag::none, *this, ec);
@@ -1781,7 +1781,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<float>(data[i]);
+                            data[i] = binary::byte_swap<float>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const float>(data,size), semantic_tag::none, *this, ec);
@@ -1808,7 +1808,7 @@ private:
                     {
                         for (std::size_t i = 0; i < size; ++i)
                         {
-                            data[i] = jsoncons::detail::byte_swap<double>(data[i]);
+                            data[i] = binary::byte_swap<double>(data[i]);
                         }
                     }
                     more_ = visitor.typed_array(jsoncons::span<const double>(data,size), semantic_tag::none, *this, ec);
@@ -1822,7 +1822,7 @@ private:
                         more_ = false;
                         return;
                     }
-                    more_ = visitor.byte_string_value(byte_string_view(bytes_buffer_), item_tag_, *this, ec);
+                    more_ = visitor.byte_string_value(bytes_buffer_, item_tag_, *this, ec);
                     break;
                 }
             }
@@ -1835,7 +1835,7 @@ private:
             {
                 return;
             }
-            more_ = visitor.byte_string_value(byte_string_view(bytes_buffer_), semantic_tag::none, *this, ec);
+            more_ = visitor.byte_string_value(bytes_buffer_, semantic_tag::none, *this, ec);
         }
     }
 
@@ -1843,16 +1843,16 @@ private:
                                  semantic_tag tag,
                                  std::error_code& ec)
     {
-        auto c = source_.get_character();
-        if (!c)
+        uint8_t b;
+        if (source_.read(&b, 1) == 0)
         {
             ec = cbor_errc::unexpected_eof;
             more_ = false;
             return;
         }
-        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(c.value());
+        jsoncons::cbor::detail::cbor_major_type major_type = get_major_type(b);
         JSONCONS_ASSERT(major_type == jsoncons::cbor::detail::cbor_major_type::array);
-        uint8_t info = get_additional_information_value(c.value());
+        uint8_t info = get_additional_information_value(b);
        
         read_shape(info, ec);   
         if (ec)
@@ -1879,14 +1879,14 @@ private:
             {
                 while (true)
                 {
-                    auto c = source_.peek_character();
-                    if (!c)
+                    auto c = source_.peek();
+                    if (c.eof)
                     {
                         ec = cbor_errc::unexpected_eof;
                         more_ = false;
                         return;
                     }
-                    if (c.value() == 0xff)
+                    if (c.value == 0xff)
                     {
                         source_.ignore(1);
                     }
