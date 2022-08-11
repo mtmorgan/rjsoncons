@@ -20,14 +20,14 @@ NULL
 #'
 #' @description
 #'
-#'     `version()` reports the version of the C++ jsoncons library in
-#'     use.
+#'   `version()` reports the version of the C++ jsoncons library in
+#'   use.
 #'
-#'     `jsonpath()` executes a query against a json string using the
-#'     'jsonpath' specification
+#'   `jsonpath()` executes a query against a json string using the
+#'   'jsonpath' specification
 #'
-#'     `jmespath()` executes a query against a json string sing the
-#'     'jmespath' specification.
+#'   `jmespath()` executes a query against a json string sing the
+#'   'jmespath' specification.
 #'
 #' @param data character(1) JSON string.
 #'
@@ -35,11 +35,11 @@ NULL
 #'
 #' @return
 #'
-#'     `version()` returns a character(1) major.minor.patch version
-#'     string .
+#'   `version()` returns a character(1) major.minor.patch version
+#'   string .
 #'
-#'     `jsonpath()` aand `jmespath()` return a character(1) json
-#'     string representing the result of the query.
+#'   `jsonpath()` aand `jmespath()` return a character(1) json
+#'   string representing the result of the query.
 #'
 #' @examples
 #' version()
@@ -58,7 +58,7 @@ NULL
 #'
 #' jmespath(json, "locations[?state == 'WA'].name | sort(@)") |>
 #'     cat("\n")
-#' 
+#'
 #' @export
 version <- cpp_version
 

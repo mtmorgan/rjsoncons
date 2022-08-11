@@ -18,23 +18,21 @@ jmespath(data, path)
 \item{path}{character(1) jsonpath or jmespath query string.}
 }
 \value{
-\preformatted{`version()` returns a character(1) major.minor.patch version
+\code{version()} returns a character(1) major.minor.patch version
 string .
 
-`jsonpath()` aand `jmespath()` return a character(1) json
+\code{jsonpath()} aand \code{jmespath()} return a character(1) json
 string representing the result of the query.
 }
-}
 \description{
-\preformatted{`version()` reports the version of the C++ jsoncons library in
+\code{version()} reports the version of the C++ jsoncons library in
 use.
 
-`jsonpath()` executes a query against a json string using the
+\code{jsonpath()} executes a query against a json string using the
 'jsonpath' specification
 
-`jmespath()` executes a query against a json string sing the
+\code{jmespath()} executes a query against a json string sing the
 'jmespath' specification.
-}
 }
 \examples{
 version()
