@@ -13,7 +13,8 @@ jsonpath(data, path)
 jmespath(data, path)
 }
 \arguments{
-\item{data}{character(1) JSON string.}
+\item{data}{character(1) or list() Either a single JSON string or an R list
+structure as obtained from \code{jsonlite::fromJSON}}
 
 \item{path}{character(1) jsonpath or jmespath query string.}
 }

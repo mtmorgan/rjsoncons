@@ -18,6 +18,8 @@ Description: The jsoncons C++ library constructs representations from
     packages contains the complete header-only source for the library,
     plus simple R wrappers to support jsonpath and jmespath queries
     into JSON string representations.
+Imports: jsonlite
+Suggests: tinytest
 License: BSL-1.0
 LinkingTo: cpp11
 NeedsCompilation: yes

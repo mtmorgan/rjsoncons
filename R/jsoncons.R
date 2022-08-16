@@ -4,13 +4,12 @@ NULL
 .is_scalar_character <-
     function(x)
 {
-    stopifnot(
+    all(
         is.character(x),
         length(x) == 1L,
         !is.na(x),
         nzchar(x)
     )
-    TRUE
 }
 
 #' @rdname jsoncons
@@ -29,7 +28,8 @@ NULL
 #'   `jmespath()` executes a query against a json string sing the
 #'   'jmespath' specification.
 #'
-#' @param data character(1) JSON string.
+#' @param data character(1) or list() Either a single JSON string or an R list
+#'   structure as obtained from `jsonlite::fromJSON`
 #'
 #' @param path character(1) jsonpath or jmespath query string.
 #'
@@ -69,9 +69,11 @@ jsonpath <-
     function(data, path)
 {
     stopifnot(
-        .is_scalar_character(data),
+        .is_scalar_character(data) || is.list(data),
         .is_scalar_character(path)
     )
+    if (is.list(data))
+        data <- as.character(jsonlite::toJSON(data, auto_unbox = TRUE))
     cpp_jsonpath(data, path)
 }
 
@@ -82,8 +84,10 @@ jmespath <-
     function(data, path)
 {
     stopifnot(
-        .is_scalar_character(data),
+        .is_scalar_character(data) || is.list(data),
         .is_scalar_character(path)
     )
+    if (is.list(data))
+        data <- as.character(jsonlite::toJSON(data, auto_unbox = TRUE))
     cpp_jmespath(data, path)
 }
