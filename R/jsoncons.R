@@ -33,6 +33,10 @@ NULL
 #'
 #' @param path character(1) jsonpath or jmespath query string.
 #'
+#' @param ... arguments passed on to `jsonlite::toJSON`
+#'
+#' @inheritParams jsonlite::toJSON
+#'
 #' @return
 #'
 #'   `version()` returns a character(1) major.minor.patch version
@@ -66,14 +70,16 @@ version <- cpp_version
 #'
 #' @export
 jsonpath <-
-    function(data, path)
+    function(data, path, auto_unbox = FALSE, ...)
 {
     stopifnot(
         .is_scalar_character(data) || is.list(data),
         .is_scalar_character(path)
     )
     if (is.list(data))
-        data <- as.character(jsonlite::toJSON(data, auto_unbox = TRUE))
+        data <- as.character(
+            jsonlite::toJSON(data, auto_unbox = auto_unbox, ...)
+        )
     cpp_jsonpath(data, path)
 }
 
@@ -81,13 +87,15 @@ jsonpath <-
 #'
 #' @export
 jmespath <-
-    function(data, path)
+    function(data, path, auto_unbox = FALSE, ...)
 {
     stopifnot(
         .is_scalar_character(data) || is.list(data),
         .is_scalar_character(path)
     )
     if (is.list(data))
-        data <- as.character(jsonlite::toJSON(data, auto_unbox = TRUE))
+        data <- as.character(
+            jsonlite::toJSON(data, auto_unbox = auto_unbox, ...)
+        )
     cpp_jmespath(data, path)
 }

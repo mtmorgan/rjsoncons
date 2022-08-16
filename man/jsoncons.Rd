@@ -8,15 +8,20 @@
 \usage{
 version()
 
-jsonpath(data, path)
+jsonpath(data, path, auto_unbox = FALSE, ...)
 
-jmespath(data, path)
+jmespath(data, path, auto_unbox = FALSE, ...)
 }
 \arguments{
 \item{data}{character(1) or list() Either a single JSON string or an R list
 structure as obtained from \code{jsonlite::fromJSON}}
 
 \item{path}{character(1) jsonpath or jmespath query string.}
+
+\item{auto_unbox}{automatically \code{\link[jsonlite:unbox]{unbox()}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link[jsonlite:unbox]{unbox()}} function to unbox individual elements.
+An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{\link[=I]{I()}}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.}
+
+\item{...}{arguments passed on to \code{jsonlite::toJSON}}
 }
 \value{
 \code{version()} returns a character(1) major.minor.patch version
