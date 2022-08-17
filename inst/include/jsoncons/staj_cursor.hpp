@@ -50,19 +50,19 @@ enum class staj_event_type
 template <class CharT>
 std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, staj_event_type tag)
 {
-    JSONCONS_CSTRING(CharT,begin_array_name,'b','e','g','i','n','_','a','r','r','a','y')
-    JSONCONS_CSTRING(CharT,end_array_name,'e','n','d','_','a','r','r','a','y')
-    JSONCONS_CSTRING(CharT,begin_object_name,'b','e','g','i','n','_','o','b','j','e','c','t')
-    JSONCONS_CSTRING(CharT,end_object_name,'e','n','d','_','o','b','j','e','c','t')
-    JSONCONS_CSTRING(CharT,key_name,'k','e','y')
-    JSONCONS_CSTRING(CharT,string_value_name,'s','t','r','i','n','g','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,byte_string_value_name,'b','y','t','e','_','s','t','r','i','n','g','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,null_value_name,'n','u','l','l','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,bool_value_name,'b','o','o','l','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,uint64_value_name,'u','i','n','t','6','4','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,int64_value_name,'i','n','t','6','4','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,half_value_name,'h','a','l','f','_','v','a','l','u','e')
-    JSONCONS_CSTRING(CharT,double_value_name,'d','o','u','b','l','e','_','v','a','l','u','e')
+    static constexpr const CharT* begin_array_name = JSONCONS_CSTRING_CONSTANT(CharT, "begin_array");
+    static constexpr const CharT* end_array_name = JSONCONS_CSTRING_CONSTANT(CharT, "end_array");
+    static constexpr const CharT* begin_object_name = JSONCONS_CSTRING_CONSTANT(CharT, "begin_object");
+    static constexpr const CharT* end_object_name = JSONCONS_CSTRING_CONSTANT(CharT, "end_object");
+    static constexpr const CharT* key_name = JSONCONS_CSTRING_CONSTANT(CharT, "key");
+    static constexpr const CharT* string_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "string_value");
+    static constexpr const CharT* byte_string_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "byte_string_value");
+    static constexpr const CharT* null_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "null_value");
+    static constexpr const CharT* bool_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "bool_value");
+    static constexpr const CharT* uint64_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "uint64_value");
+    static constexpr const CharT* int64_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "int64_value");
+    static constexpr const CharT* half_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "half_value");
+    static constexpr const CharT* double_value_name = JSONCONS_CSTRING_CONSTANT(CharT, "double_value");
 
     switch (tag)
     {
@@ -232,7 +232,7 @@ public:
     }
 
     template<class T, class CharT_ = CharT>
-    typename std::enable_if<detail::is_basic_string<T>::value && std::is_same<typename T::value_type, CharT_>::value, T>::type
+    typename std::enable_if<type_traits::is_basic_string<T>::value && std::is_same<typename T::value_type, CharT_>::value, T>::type
     get(std::error_code& ec) const
     {
         converter<T> conv;
@@ -280,7 +280,7 @@ public:
     }
 
     template<class T, class CharT_ = CharT>
-    typename std::enable_if<detail::is_basic_string_view<T>::value && std::is_same<typename T::value_type, CharT_>::value, T>::type
+    typename std::enable_if<type_traits::is_basic_string_view<T>::value && std::is_same<typename T::value_type, CharT_>::value, T>::type
         get(std::error_code& ec) const
     {
         T s;
@@ -315,7 +315,7 @@ public:
     }
 
     template<class T>
-    typename std::enable_if<detail::is_list_like<T>::value &&
+    typename std::enable_if<type_traits::is_list_like<T>::value &&
                             std::is_same<typename T::value_type,uint8_t>::value,T>::type
     get(std::error_code& ec) const
     {
@@ -333,20 +333,21 @@ public:
     }
 
     template <class IntegerType>
-    typename std::enable_if<detail::is_integer<IntegerType>::value, IntegerType>::type
+    typename std::enable_if<type_traits::is_integer<IntegerType>::value, IntegerType>::type
     get(std::error_code& ec) const
     {
         switch (event_type_)
         {
             case staj_event_type::string_value:
             {
-                auto result = jsoncons::detail::to_integer<IntegerType>(value_.string_data_, length_);
+                IntegerType val;
+                auto result = jsoncons::detail::to_integer(value_.string_data_, length_, val);
                 if (!result)
                 {
                     ec = conv_errc::not_integer;
                     return IntegerType();
                 }
-                return result.value();
+                return val;
             }
             case staj_event_type::half_value:
                 return static_cast<IntegerType>(value_.half_value_);
@@ -372,7 +373,7 @@ public:
     }
 
     template<class T>
-    typename std::enable_if<detail::is_bool<T>::value, T>::type
+    typename std::enable_if<type_traits::is_bool<T>::value, T>::type
         get(std::error_code& ec) const
     {
         return as_bool(ec);
@@ -414,7 +415,7 @@ private:
                 return static_cast<double>(value_.uint64_value_);
             case staj_event_type::half_value:
             {
-                double x = jsoncons::detail::decode_half(value_.half_value_);
+                double x = binary::decode_half(value_.half_value_);
                 return static_cast<double>(x);
             }
             default:

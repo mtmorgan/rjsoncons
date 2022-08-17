@@ -11,7 +11,7 @@
 #include <jsoncons/uri.hpp>
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <jsoncons_ext/jsonschema/schema_loader.hpp>
+#include <jsoncons_ext/jsonschema/keyword_validator_factory.hpp>
 #include <cassert>
 #include <set>
 #include <sstream>
@@ -82,10 +82,10 @@ namespace jsonschema {
         Json validate(const Json& instance) const
         {
             throwing_error_reporter reporter;
-            uri_wrapper instance_location("#");
+            jsonpointer::json_pointer instance_location("#");
             Json patch(json_array_arg);
 
-            root_->validate(instance_location, instance, reporter, patch);
+            root_->validate(instance, instance_location, reporter, patch);
             return patch;
         }
 
@@ -93,23 +93,23 @@ namespace jsonschema {
         bool is_valid(const Json& instance) const
         {
             fail_early_reporter reporter;
-            uri_wrapper instance_location("#");
+            jsonpointer::json_pointer instance_location("#");
             Json patch(json_array_arg);
 
-            root_->validate(instance_location, instance, reporter, patch);
+            root_->validate(instance, instance_location, reporter, patch);
             return reporter.error_count() == 0;
         }
 
         // Validate input JSON against a JSON Schema with a provided error reporter
         template <class Reporter>
-        typename std::enable_if<jsoncons::detail::is_unary_function_object_exact<Reporter,void,validation_output>::value,Json>::type
+        typename std::enable_if<type_traits::is_unary_function_object_exact<Reporter,void,validation_output>::value,Json>::type
         validate(const Json& instance, const Reporter& reporter) const
         {
-            uri_wrapper instance_location("#");
+            jsonpointer::json_pointer instance_location("#");
             Json patch(json_array_arg);
 
             error_reporter_adaptor adaptor(reporter);
-            root_->validate(instance_location, instance, adaptor, patch);
+            root_->validate(instance, instance_location, adaptor, patch);
             return patch;
         }
     };

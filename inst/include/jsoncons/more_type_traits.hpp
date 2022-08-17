@@ -4,8 +4,8 @@
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_DETAIL_MORE_TYPE_TRAITS_HPP
-#define JSONCONS_DETAIL_MORE_TYPE_TRAITS_HPP
+#ifndef JSONCONS_MORE_TYPE_TRAITS_HPP
+#define JSONCONS_MORE_TYPE_TRAITS_HPP
 
 #include <stdexcept>
 #include <string>
@@ -21,7 +21,34 @@
 #include <jsoncons/config/compiler_support.hpp>
 
 namespace jsoncons {
-namespace detail {
+namespace type_traits {
+
+    // is_char8
+    template <typename CharT, typename Enable=void>
+    struct is_char8 : std::false_type {};
+
+    template <typename CharT>
+    struct is_char8<CharT, typename std::enable_if<std::is_integral<CharT>::value &&
+                                                   !std::is_same<CharT,bool>::value &&
+                                                   sizeof(uint8_t) == sizeof(CharT)>::type> : std::true_type {};
+
+    // is_char16
+    template <typename CharT, typename Enable=void>
+    struct is_char16 : std::false_type {};
+
+    template <typename CharT>
+    struct is_char16<CharT, typename std::enable_if<std::is_integral<CharT>::value &&
+                                                   !std::is_same<CharT,bool>::value &&
+                                                   (std::is_same<CharT,char16_t>::value || sizeof(uint16_t) == sizeof(CharT))>::type> : std::true_type {};
+
+    // is_char32
+    template <typename CharT, typename Enable=void>
+    struct is_char32 : std::false_type {};
+
+    template <typename CharT>
+    struct is_char32<CharT, typename std::enable_if<std::is_integral<CharT>::value &&
+                                                   !std::is_same<CharT,bool>::value &&
+                                                   (std::is_same<CharT,char32_t>::value || (!std::is_same<CharT,char16_t>::value && sizeof(uint32_t) == sizeof(CharT)))>::type> : std::true_type {};
 
     // is_int128
 
@@ -57,6 +84,7 @@ namespace detail {
         static constexpr bool is_specialized = true;
         static constexpr bool is_signed = std::numeric_limits<T>::is_signed;
         static constexpr int digits =  std::numeric_limits<T>::digits;
+        static constexpr std::size_t buffer_size = static_cast<std::size_t>(sizeof(T)*CHAR_BIT*0.302) + 3;
 
         static constexpr T(max)() noexcept
         {
@@ -73,12 +101,13 @@ namespace detail {
     };
 
     template <class T>
-    class integer_limits<T,typename std::enable_if<!std::is_integral<T>::value && jsoncons::detail::is_int128_type<T>::value>::type>
+    class integer_limits<T,typename std::enable_if<!std::is_integral<T>::value && is_int128_type<T>::value>::type>
     {
     public:
         static constexpr bool is_specialized = true;
         static constexpr bool is_signed = true;
         static constexpr int digits =  sizeof(T)*CHAR_BIT - 1;
+        static constexpr std::size_t buffer_size = (sizeof(T)*CHAR_BIT*0.302) + 3;
 
         static constexpr T(max)() noexcept
         {
@@ -95,7 +124,7 @@ namespace detail {
     };
 
     template <class T>
-    class integer_limits<T,typename std::enable_if<!std::is_integral<T>::value && jsoncons::detail::is_uint128_type<T>::value>::type>
+    class integer_limits<T,typename std::enable_if<!std::is_integral<T>::value && is_uint128_type<T>::value>::type>
     {
     public:
         static constexpr bool is_specialized = true;
@@ -260,7 +289,30 @@ namespace detail {
            typename std::enable_if<is_character<T>::value && (sizeof(T) != sizeof(char))
     >::type> : std::true_type {};
 
-    // is_int
+    // From boost
+    namespace ut_detail {
+
+    template<typename T>
+    struct is_cstring_impl : public std::false_type {};
+
+    template<typename T>
+    struct is_cstring_impl<T const*> : public is_cstring_impl<T*> {};
+
+    template<typename T>
+    struct is_cstring_impl<T const* const> : public is_cstring_impl<T*> {};
+
+    template<>
+    struct is_cstring_impl<char*> : public std::true_type {};
+
+    template<>
+    struct is_cstring_impl<wchar_t*> : public std::true_type {};
+
+    } // namespace ut_detail
+
+    template<typename T>
+    struct is_cstring : public ut_detail::is_cstring_impl<typename std::decay<T>::type> {};
+
+    // is_bool
 
     template <class T, class Enable=void>
     struct is_bool : std::false_type {};
@@ -270,7 +322,7 @@ namespace detail {
                    typename std::enable_if<std::is_same<T,bool>::value
     >::type> : std::true_type {};
 
-    // is_uint
+    // is_u8_u16_u32_or_u64
 
     template <class T, class Enable=void>
     struct is_u8_u16_u32_or_u64 : std::false_type {};
@@ -630,7 +682,7 @@ namespace impl {
     struct is_typed_array
     <
         T, 
-        typename std::enable_if<jsoncons::detail::is_list_like<T>::value && 
+        typename std::enable_if<is_list_like<T>::value && 
                                 (std::is_same<typename std::decay<typename T::value_type>::type,uint8_t>::value ||  
                                  std::is_same<typename std::decay<typename T::value_type>::type,uint16_t>::value ||
                                  std::is_same<typename std::decay<typename T::value_type>::type,uint32_t>::value ||
@@ -709,7 +761,15 @@ namespace impl {
     using
     is_binary_function_object_exact = is_detected_exact<T,binary_function_object_t, FunctionObject, Arg1, Arg2>;
 
-} // detail
+    template <class Source, class Enable=void>
+    struct is_convertible_to_string_view : std::false_type {};
+
+    template <class Source>
+    struct is_convertible_to_string_view<Source,typename std::enable_if<is_string_or_string_view<Source>::value ||
+                                                               is_cstring<Source>::value
+        >::type> : std::true_type {};
+
+} // type_traits
 } // jsoncons
 
 #endif

@@ -17,6 +17,7 @@
 #include <type_traits> // std::enable_if
 #include <exception>
 #include <jsoncons/config/jsoncons_config.hpp>
+#include <jsoncons/json_exception.hpp>
 #include <cctype>
 
 namespace jsoncons { namespace detail {
@@ -39,6 +40,8 @@ namespace jsoncons { namespace detail {
                     return "Integer overflow";
                 case to_integer_errc::invalid_digit:
                     return "Invalid digit";
+                case to_integer_errc::invalid_number:
+                    return "Invalid number";
                 default:
                     return "Unknown to_integer_unchecked error";
             }
@@ -70,18 +73,17 @@ namespace std {
 
 namespace jsoncons { namespace detail {
 
-template <class T>
-class to_integer_result
+template <class T,class CharT>
+struct to_integer_result
 {
-    T value_;
+    const CharT* ptr;
     to_integer_errc ec;
-public:
-    constexpr to_integer_result(T value_)
-        : value_(value_), ec(to_integer_errc::success)
+    constexpr to_integer_result(const CharT* ptr_)
+        : ptr(ptr_), ec(to_integer_errc())
     {
     }
-    constexpr to_integer_result(to_integer_errc ec)
-        : value_(), ec(ec)
+    constexpr to_integer_result(const CharT* ptr_, to_integer_errc ec_)
+        : ptr(ptr_), ec(ec_)
     {
     }
 
@@ -91,27 +93,16 @@ public:
 
     constexpr explicit operator bool() const noexcept
     {
-        return ec == to_integer_errc::success;
+        return ec == to_integer_errc();
     }
-
-    T value() const
-    {
-        return value_;
-    }
-
     std::error_code error_code() const
     {
         return make_error_code(ec);
     }
-
-    to_integer_errc error() const
-    {
-        return ec;
-    }
 };
 
 enum class integer_chars_format : uint8_t {decimal=1,hex};
-enum class integer_chars_state {initial,minus,integer,binary,octal,decimal,hex};
+enum class integer_chars_state {initial,minus,integer,binary,octal,decimal,base16};
 
 template <class CharT>
 bool is_base10(const CharT* s, std::size_t length)
@@ -169,11 +160,12 @@ bool is_base10(const CharT* s, std::size_t length)
 }
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && !jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-to_integer_decimal(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && !type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer_decimal(const CharT* s, std::size_t length, T& n)
 {
+    n = 0;
+
     integer_chars_state state = integer_chars_state::initial;
-    T n = 0;
 
     const CharT* end = s + length; 
     while (s < end)
@@ -185,18 +177,25 @@ to_integer_decimal(const CharT* s, std::size_t length)
                 switch(*s)
                 {
                     case '0':
-                        return (++s == end) ? to_integer_result<T>(0) : to_integer_result<T>(to_integer_errc::invalid_digit);
+                        if (++s == end)
+                        {
+                            return (++s == end) ? to_integer_result<T,CharT>(s) : to_integer_result<T, CharT>(s, to_integer_errc());
+                        }
+                        else
+                        {
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
+                        }
                     case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9': // Must be decimal
                         state = integer_chars_state::decimal;
                         break;
                     default:
-                        return to_integer_result<T>(to_integer_errc::invalid_digit);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                 }
                 break;
             }
             case integer_chars_state::decimal:
             {
-                static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+                static constexpr T max_value = (type_traits::integer_limits<T>::max)();
                 static constexpr T max_value_div_10 = max_value / 10;
                 for (; s < end; ++s)
                 {
@@ -207,16 +206,16 @@ to_integer_decimal(const CharT* s, std::size_t length)
                             x = static_cast<T>(*s) - static_cast<T>('0');
                             break;
                         default:
-                            return to_integer_result<T>(to_integer_errc::invalid_digit);
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                     }
                     if (n > max_value_div_10)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n = n * 10;
                     if (n > max_value - x)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n += x;
                 }
@@ -227,16 +226,18 @@ to_integer_decimal(const CharT* s, std::size_t length)
                 break;
         }
     }
-    return (state == integer_chars_state::initial) ? to_integer_result<T>(to_integer_errc::invalid_number) : to_integer_result<T>(n);
+    return (state == integer_chars_state::initial) ? to_integer_result<T,CharT>(s, to_integer_errc::invalid_number) : to_integer_result<T,CharT>(s, to_integer_errc());
 }
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-to_integer_decimal(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer_decimal(const CharT* s, std::size_t length, T& n)
 {
+    n = 0;
+
     if (length == 0)
     {
-        return to_integer_result<T>(to_integer_errc::invalid_number);
+        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_number);
     }
 
     bool is_negative = *s == '-' ? true : false;
@@ -246,43 +247,178 @@ to_integer_decimal(const CharT* s, std::size_t length)
         --length;
     }
 
-    using U = typename jsoncons::detail::make_unsigned<T>::type;
+    using U = typename type_traits::make_unsigned<T>::type;
 
-    auto u = to_integer_decimal<U>(s, length);
-    if (!u)
+    U u;
+    auto ru = to_integer_decimal(s, length, u);
+    if (ru.ec != to_integer_errc())
     {
-        return to_integer_result<T>(u.error());
+        return to_integer_result<T,CharT>(ru.ptr, ru.ec);
     }
     if (is_negative)
     {
-        if (u.value() > static_cast<U>(-((jsoncons::detail::integer_limits<T>::lowest)()+T(1))) + U(1))
+        if (u > static_cast<U>(-((type_traits::integer_limits<T>::lowest)()+T(1))) + U(1))
         {
-            return to_integer_result<T>(to_integer_errc::overflow);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc::overflow);
         }
         else
         {
-            return to_integer_result<T>(static_cast<T>(U(0) - u.value()));
+            n = static_cast<T>(U(0) - u);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc());
         }
     }
     else
     {
-        if (u.value() > static_cast<U>((jsoncons::detail::integer_limits<T>::max)()))
+        if (u > static_cast<U>((type_traits::integer_limits<T>::max)()))
         {
-            return to_integer_result<T>(to_integer_errc::overflow);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc::overflow);
         }
         else
         {
-            return to_integer_result<T>(static_cast<T>(u.value()));
+            n = static_cast<T>(u);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc());
         }
     }
 }
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && !jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-to_integer(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && !type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer_base16(const CharT* s, std::size_t length, T& n)
 {
+    n = 0;
+
     integer_chars_state state = integer_chars_state::initial;
-    T n = 0;
+
+    const CharT* end = s + length; 
+    while (s < end)
+    {
+        switch(state)
+        {
+            case integer_chars_state::initial:
+            {
+                switch(*s)
+                {
+                    case '0':
+                        if (++s == end)
+                        {
+                            return (++s == end) ? to_integer_result<T,CharT>(s) : to_integer_result<T, CharT>(s, to_integer_errc());
+                        }
+                        else
+                        {
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
+                        }
+                    case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9': // Must be base16
+                    case 'a':case 'b':case 'c':case 'd':case 'e':case 'f':
+                    case 'A':case 'B':case 'C':case 'D':case 'E':case 'F':
+                        state = integer_chars_state::base16;
+                        break;
+                    default:
+                        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
+                }
+                break;
+            }
+            case integer_chars_state::base16:
+            {
+                static constexpr T max_value = (type_traits::integer_limits<T>::max)();
+                static constexpr T max_value_div_16 = max_value / 16;
+                for (; s < end; ++s)
+                {
+                    CharT c = *s;
+                    T x = 0;
+                    switch(*s)
+                    {
+                        case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9':
+                            x = c - '0';
+                            break;
+                        case 'a':case 'b':case 'c':case 'd':case 'e':case 'f':
+                            x = c - ('a' - 10);
+                            break;
+                        case 'A':case 'B':case 'C':case 'D':case 'E':case 'F':
+                            x = c - ('A' - 10);
+                            break;
+                        default:
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
+                    }
+                    if (n > max_value_div_16)
+                    {
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
+                    }
+                    n = n * 16;
+                    if (n > max_value - x)
+                    {
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
+                    }
+                    n += x;
+                }
+                break;
+            }
+            default:
+                JSONCONS_UNREACHABLE();
+                break;
+        }
+    }
+    return (state == integer_chars_state::initial) ? to_integer_result<T,CharT>(s, to_integer_errc::invalid_number) : to_integer_result<T,CharT>(s, to_integer_errc());
+}
+
+template <class T, class CharT>
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer_base16(const CharT* s, std::size_t length, T& n)
+{
+    n = 0;
+
+    if (length == 0)
+    {
+        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_number);
+    }
+
+    bool is_negative = *s == '-' ? true : false;
+    if (is_negative)
+    {
+        ++s;
+        --length;
+    }
+
+    using U = typename type_traits::make_unsigned<T>::type;
+
+    U u;
+    auto ru = to_integer_base16(s, length, u);
+    if (ru.ec != to_integer_errc())
+    {
+        return to_integer_result<T,CharT>(ru.ptr, ru.ec);
+    }
+    if (is_negative)
+    {
+        if (u > static_cast<U>(-((type_traits::integer_limits<T>::lowest)()+T(1))) + U(1))
+        {
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc::overflow);
+        }
+        else
+        {
+            n = static_cast<T>(U(0) - u);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc());
+        }
+    }
+    else
+    {
+        if (u > static_cast<U>((type_traits::integer_limits<T>::max)()))
+        {
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc::overflow);
+        }
+        else
+        {
+            n = static_cast<T>(u);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc());
+        }
+    }
+}
+
+template <class T, class CharT>
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && !type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer(const CharT* s, std::size_t length, T& n)
+{
+    n = 0;
+
+    integer_chars_state state = integer_chars_state::initial;
 
     const CharT* end = s + length; 
     while (s < end)
@@ -301,7 +437,7 @@ to_integer(const CharT* s, std::size_t length)
                         state = integer_chars_state::decimal;
                         break;
                     default:
-                        return to_integer_result<T>(to_integer_errc::invalid_digit);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                 }
                 break;
             }
@@ -317,7 +453,7 @@ to_integer(const CharT* s, std::size_t length)
                     }
                     case 'x':case 'X':
                     {
-                        state = integer_chars_state::hex;
+                        state = integer_chars_state::base16;
                         ++s;
                         break;
                     }
@@ -327,13 +463,13 @@ to_integer(const CharT* s, std::size_t length)
                         break;
                     }
                     default:
-                        return to_integer_result<T>(to_integer_errc::invalid_digit);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                 }
                 break;
             }
             case integer_chars_state::binary:
             {
-                static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+                static constexpr T max_value = (type_traits::integer_limits<T>::max)();
                 static constexpr T max_value_div_2 = max_value / 2;
                 for (; s < end; ++s)
                 {
@@ -344,16 +480,16 @@ to_integer(const CharT* s, std::size_t length)
                             x = static_cast<T>(*s) - static_cast<T>('0');
                             break;
                         default:
-                            return to_integer_result<T>(to_integer_errc::invalid_digit);
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                     }
                     if (n > max_value_div_2)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n = n * 2;
                     if (n > max_value - x)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n += x;
                 }
@@ -361,7 +497,7 @@ to_integer(const CharT* s, std::size_t length)
             }
             case integer_chars_state::octal:
             {
-                static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+                static constexpr T max_value = (type_traits::integer_limits<T>::max)();
                 static constexpr T max_value_div_8 = max_value / 8;
                 for (; s < end; ++s)
                 {
@@ -372,16 +508,16 @@ to_integer(const CharT* s, std::size_t length)
                             x = static_cast<T>(*s) - static_cast<T>('0');
                             break;
                         default:
-                            return to_integer_result<T>(to_integer_errc::invalid_digit);
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                     }
                     if (n > max_value_div_8)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n = n * 8;
                     if (n > max_value - x)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n += x;
                 }
@@ -389,7 +525,7 @@ to_integer(const CharT* s, std::size_t length)
             }
             case integer_chars_state::decimal:
             {
-                static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+                static constexpr T max_value = (type_traits::integer_limits<T>::max)();
                 static constexpr T max_value_div_10 = max_value / 10;
                 for (; s < end; ++s)
                 {
@@ -400,24 +536,24 @@ to_integer(const CharT* s, std::size_t length)
                             x = static_cast<T>(*s) - static_cast<T>('0');
                             break;
                         default:
-                            return to_integer_result<T>(to_integer_errc::invalid_digit);
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                     }
                     if (n > max_value_div_10)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n = n * 10;
                     if (n > max_value - x)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n += x;
                 }
                 break;
             }
-            case integer_chars_state::hex:
+            case integer_chars_state::base16:
             {
-                static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+                static constexpr T max_value = (type_traits::integer_limits<T>::max)();
                 static constexpr T max_value_div_16 = max_value / 16;
                 for (; s < end; ++s)
                 {
@@ -435,16 +571,16 @@ to_integer(const CharT* s, std::size_t length)
                             x = c - ('A' - 10);
                             break;
                         default:
-                            return to_integer_result<T>(to_integer_errc::invalid_digit);
+                            return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
                     }
                     if (n > max_value_div_16)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
                     n = n * 16;
                     if (n > max_value - x)
                     {
-                        return to_integer_result<T>(to_integer_errc::overflow);
+                        return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
                     }
 
                     n += x;
@@ -456,16 +592,18 @@ to_integer(const CharT* s, std::size_t length)
                 break;
         }
     }
-    return (state == integer_chars_state::initial) ? to_integer_result<T>(to_integer_errc::invalid_number) : to_integer_result<T>(n);
+    return (state == integer_chars_state::initial) ? to_integer_result<T,CharT>(s, to_integer_errc::invalid_number) : to_integer_result<T,CharT>(s, to_integer_errc());
 }
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-to_integer(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer(const CharT* s, std::size_t length, T& n)
 {
+    n = 0;
+
     if (length == 0)
     {
-        return to_integer_result<T>(to_integer_errc::invalid_number);
+        return to_integer_result<T,CharT>(s, to_integer_errc::invalid_number);
     }
 
     bool is_negative = *s == '-' ? true : false;
@@ -475,42 +613,45 @@ to_integer(const CharT* s, std::size_t length)
         --length;
     }
 
-    using U = typename jsoncons::detail::make_unsigned<T>::type;
+    using U = typename type_traits::make_unsigned<T>::type;
 
-    auto u = to_integer<U>(s, length);
-    if (!u)
+    U u;
+    auto ru = to_integer(s, length, u);
+    if (ru.ec != to_integer_errc())
     {
-        return to_integer_result<T>(u.error());
+        return to_integer_result<T,CharT>(ru.ptr, ru.ec);
     }
     if (is_negative)
     {
-        if (u.value() > static_cast<U>(-((jsoncons::detail::integer_limits<T>::lowest)()+T(1))) + U(1))
+        if (u > static_cast<U>(-((type_traits::integer_limits<T>::lowest)()+T(1))) + U(1))
         {
-            return to_integer_result<T>(to_integer_errc::overflow);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc::overflow);
         }
         else
         {
-            return to_integer_result<T>(static_cast<T>(U(0) - u.value()));
+            n = static_cast<T>(U(0) - u);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc());
         }
     }
     else
     {
-        if (u.value() > static_cast<U>((jsoncons::detail::integer_limits<T>::max)()))
+        if (u > static_cast<U>((type_traits::integer_limits<T>::max)()))
         {
-            return to_integer_result<T>(to_integer_errc::overflow);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc::overflow);
         }
         else
         {
-            return to_integer_result<T>(static_cast<T>(u.value()));
+            n = static_cast<T>(u);
+            return to_integer_result<T,CharT>(ru.ptr, to_integer_errc());
         }
     }
 }
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized,to_integer_result<T>>::type
-to_integer(const CharT* s)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized,to_integer_result<T,CharT>>::type
+to_integer(const CharT* s, T& n)
 {
-    return to_integer<T,CharT>(s, std::char_traits<CharT>::length(s));
+    return to_integer<T,CharT>(s, std::char_traits<CharT>::length(s), n);
 }
 
 // Precondition: s satisfies
@@ -521,17 +662,17 @@ to_integer(const CharT* s)
 // - digit1-digits
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && !jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-to_integer_unchecked(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && !type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer_unchecked(const CharT* s, std::size_t length, T& n)
 {
-    static_assert(jsoncons::detail::integer_limits<T>::is_specialized, "Integer type not specialized");
+    static_assert(type_traits::integer_limits<T>::is_specialized, "Integer type not specialized");
     JSONCONS_ASSERT(length > 0);
 
-    T n = 0;
+    n = 0;
     const CharT* end = s + length; 
     if (*s == '-')
     {
-        static constexpr T min_value = (jsoncons::detail::integer_limits<T>::lowest)();
+        static constexpr T min_value = (type_traits::integer_limits<T>::lowest)();
         static constexpr T min_value_div_10 = min_value / 10;
         ++s;
         for (; s < end; ++s)
@@ -539,12 +680,12 @@ to_integer_unchecked(const CharT* s, std::size_t length)
             T x = (T)*s - (T)('0');
             if (n < min_value_div_10)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n = n * 10;
             if (n < min_value + x)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
 
             n -= x;
@@ -552,26 +693,26 @@ to_integer_unchecked(const CharT* s, std::size_t length)
     }
     else
     {
-        static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+        static constexpr T max_value = (type_traits::integer_limits<T>::max)();
         static constexpr T max_value_div_10 = max_value / 10;
         for (; s < end; ++s)
         {
             T x = static_cast<T>(*s) - static_cast<T>('0');
             if (n > max_value_div_10)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n = n * 10;
             if (n > max_value - x)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
 
             n += x;
         }
     }
 
-    return to_integer_result<T>(n);
+    return to_integer_result<T,CharT>(s, to_integer_errc());
 }
 
 // Precondition: s satisfies
@@ -582,17 +723,18 @@ to_integer_unchecked(const CharT* s, std::size_t length)
 // - digit1-digits
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-to_integer_unchecked(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+to_integer_unchecked(const CharT* s, std::size_t length, T& n)
 {
-    static_assert(jsoncons::detail::integer_limits<T>::is_specialized, "Integer type not specialized");
+    static_assert(type_traits::integer_limits<T>::is_specialized, "Integer type not specialized");
     JSONCONS_ASSERT(length > 0);
 
-    T n = 0;
+    n = 0;
+
     const CharT* end = s + length; 
     if (*s == '-')
     {
-        static constexpr T min_value = (jsoncons::detail::integer_limits<T>::lowest)();
+        static constexpr T min_value = (type_traits::integer_limits<T>::lowest)();
         static constexpr T min_value_div_10 = min_value / 10;
         ++s;
         for (; s < end; ++s)
@@ -600,12 +742,12 @@ to_integer_unchecked(const CharT* s, std::size_t length)
             T x = (T)*s - (T)('0');
             if (n < min_value_div_10)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n = n * 10;
             if (n < min_value + x)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
 
             n -= x;
@@ -613,42 +755,43 @@ to_integer_unchecked(const CharT* s, std::size_t length)
     }
     else
     {
-        static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+        static constexpr T max_value = (type_traits::integer_limits<T>::max)();
         static constexpr T max_value_div_10 = max_value / 10;
         for (; s < end; ++s)
         {
             T x = static_cast<T>(*s) - static_cast<T>('0');
             if (n > max_value_div_10)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n = n * 10;
             if (n > max_value - x)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
 
             n += x;
         }
     }
 
-    return to_integer_result<T>(n);
+    return to_integer_result<T,CharT>(s, to_integer_errc());
 }
 
 // base16_to_integer
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-base16_to_integer(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+base16_to_integer(const CharT* s, std::size_t length, T& n)
 {
-    static_assert(jsoncons::detail::integer_limits<T>::is_specialized, "Integer type not specialized");
+    static_assert(type_traits::integer_limits<T>::is_specialized, "Integer type not specialized");
     JSONCONS_ASSERT(length > 0);
 
-    T n = 0;
+    n = 0;
+
     const CharT* end = s + length; 
     if (*s == '-')
     {
-        static constexpr T min_value = (jsoncons::detail::integer_limits<T>::lowest)();
+        static constexpr T min_value = (type_traits::integer_limits<T>::lowest)();
         static constexpr T min_value_div_16 = min_value / 16;
         ++s;
         for (; s < end; ++s)
@@ -667,23 +810,23 @@ base16_to_integer(const CharT* s, std::size_t length)
                     x = c - ('A' - 10);
                     break;
                 default:
-                    return to_integer_result<T>(to_integer_errc::invalid_digit);
+                    return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
             }
             if (n < min_value_div_16)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n = n * 16;
             if (n < min_value + x)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n -= x;
         }
     }
     else
     {
-        static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+        static constexpr T max_value = (type_traits::integer_limits<T>::max)();
         static constexpr T max_value_div_16 = max_value / 16;
         for (; s < end; ++s)
         {
@@ -701,36 +844,36 @@ base16_to_integer(const CharT* s, std::size_t length)
                     x = c - ('A' - 10);
                     break;
                 default:
-                    return to_integer_result<T>(to_integer_errc::invalid_digit);
+                    return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
             }
             if (n > max_value_div_16)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
             n = n * 16;
             if (n > max_value - x)
             {
-                return to_integer_result<T>(to_integer_errc::overflow);
+                return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
             }
 
             n += x;
         }
     }
 
-    return to_integer_result<T>(n);
+    return to_integer_result<T,CharT>(s, to_integer_errc());
 }
 
 template <class T, class CharT>
-typename std::enable_if<jsoncons::detail::integer_limits<T>::is_specialized && !jsoncons::detail::integer_limits<T>::is_signed,to_integer_result<T>>::type
-base16_to_integer(const CharT* s, std::size_t length)
+typename std::enable_if<type_traits::integer_limits<T>::is_specialized && !type_traits::integer_limits<T>::is_signed,to_integer_result<T,CharT>>::type
+base16_to_integer(const CharT* s, std::size_t length, T& n)
 {
-    static_assert(jsoncons::detail::integer_limits<T>::is_specialized, "Integer type not specialized");
+    static_assert(type_traits::integer_limits<T>::is_specialized, "Integer type not specialized");
     JSONCONS_ASSERT(length > 0);
 
-    T n = 0;
+    n = 0;
     const CharT* end = s + length; 
 
-    static constexpr T max_value = (jsoncons::detail::integer_limits<T>::max)();
+    static constexpr T max_value = (type_traits::integer_limits<T>::max)();
     static constexpr T max_value_div_16 = max_value / 16;
     for (; s < end; ++s)
     {
@@ -748,22 +891,22 @@ base16_to_integer(const CharT* s, std::size_t length)
                 x = c - ('A' - 10);
                 break;
             default:
-                return to_integer_result<T>(to_integer_errc::invalid_digit);
+                return to_integer_result<T,CharT>(s, to_integer_errc::invalid_digit);
         }
         if (n > max_value_div_16)
         {
-            return to_integer_result<T>(to_integer_errc::overflow);
+            return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
         }
         n = n * 16;
         if (n > max_value - x)
         {
-            return to_integer_result<T>(to_integer_errc::overflow);
+            return to_integer_result<T,CharT>(s, to_integer_errc::overflow);
         }
 
         n += x;
     }
 
-    return to_integer_result<T>(n);
+    return to_integer_result<T,CharT>(s, to_integer_errc());
 }
 
 #if defined(JSONCONS_HAS_MSC_STRTOD_L)
@@ -858,7 +1001,7 @@ public:
 
     template <class CharT>
     typename std::enable_if<std::is_same<CharT,char>::value,double>::type
-    operator()(const CharT* s, std::size_t length) const
+    operator()(const CharT* s, std::size_t) const
     {
         char *end = nullptr;
         double val = strtold_l(s, &end, locale_);
@@ -871,7 +1014,7 @@ public:
 
     template <class CharT>
     typename std::enable_if<std::is_same<CharT,wchar_t>::value,double>::type
-    operator()(const CharT* s, std::size_t length) const
+    operator()(const CharT* s, std::size_t) const
     {
         CharT *end = nullptr;
         double val = wcstold_l(s, &end, locale_);

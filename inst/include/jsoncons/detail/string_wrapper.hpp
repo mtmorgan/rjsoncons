@@ -72,8 +72,8 @@ namespace detail {
 
             ~str_t() noexcept = default; 
 
-            const char_type* c_str() const { return to_plain_pointer(p_); }
-            const char_type* data() const { return to_plain_pointer(p_); }
+            const char_type* c_str() const { return type_traits::to_plain_pointer(p_); }
+            const char_type* data() const { return type_traits::to_plain_pointer(p_); }
             std::size_t length() const { return length_; }
         
             str_t(const Allocator& alloc)
@@ -98,7 +98,7 @@ namespace detail {
             str_t data;
             char_type c[1];
         };
-        typedef typename std::aligned_storage<sizeof(storage_t), alignof(storage_t)>::type storage_kind;
+        typedef typename std::aligned_storage<sizeof(storage_t), alignof(storage_t)>::type json_storage_kind;
 
         string_pointer ptr_;
     public:
@@ -159,7 +159,7 @@ namespace detail {
     private:
         static size_t aligned_size(std::size_t n)
         {
-            return sizeof(storage_kind) + n;
+            return sizeof(json_storage_kind) + n;
         }
 
         static string_pointer create(const char_type* s, std::size_t length, const Allocator& alloc)
@@ -169,7 +169,7 @@ namespace detail {
             byte_allocator_type byte_alloc(alloc);
             byte_pointer ptr = byte_alloc.allocate(mem_size);
 
-            char* storage = to_plain_pointer(ptr);
+            char* storage = type_traits::to_plain_pointer(ptr);
             str_t* ps = new(storage)str_t(byte_alloc);
 
             auto psa = launder_cast<storage_t*>(storage); 
@@ -184,7 +184,7 @@ namespace detail {
 
         static void destroy(string_pointer ptr)
         {
-            str_t* rawp = to_plain_pointer(ptr);
+            str_t* rawp = type_traits::to_plain_pointer(ptr);
 
             char* p = launder_cast<char*>(rawp);
 
@@ -236,8 +236,8 @@ namespace detail {
 
             ~str_t() noexcept = default; 
 
-            const char_type* c_str() const { return to_plain_pointer(p_); }
-            const char_type* data() const { return to_plain_pointer(p_); }
+            const char_type* c_str() const { return type_traits::to_plain_pointer(p_); }
+            const char_type* data() const { return type_traits::to_plain_pointer(p_); }
             std::size_t length() const { return length_; }
             uint64_t tag() const { return tag_; }
 
@@ -263,7 +263,7 @@ namespace detail {
             str_t data;
             char_type c[1];
         };
-        typedef typename std::aligned_storage<sizeof(storage_t), alignof(storage_t)>::type storage_kind;
+        typedef typename std::aligned_storage<sizeof(storage_t), alignof(storage_t)>::type json_storage_kind;
 
         string_pointer ptr_;
     public:
@@ -329,7 +329,7 @@ namespace detail {
     private:
         static size_t aligned_size(std::size_t n)
         {
-            return sizeof(storage_kind) + n;
+            return sizeof(json_storage_kind) + n;
         }
 
         static string_pointer create(const char_type* s, std::size_t length, uint64_t tag, const Allocator& alloc)
@@ -339,7 +339,7 @@ namespace detail {
             byte_allocator_type byte_alloc(alloc);
             byte_pointer ptr = byte_alloc.allocate(mem_size);
 
-            char* storage = to_plain_pointer(ptr);
+            char* storage = type_traits::to_plain_pointer(ptr);
             str_t* ps = new(storage)str_t(tag, byte_alloc);
 
             auto psa = launder_cast<storage_t*>(storage); 
@@ -354,7 +354,7 @@ namespace detail {
 
         static void destroy(string_pointer ptr)
         {
-            str_t* rawp = to_plain_pointer(ptr);
+            str_t* rawp = type_traits::to_plain_pointer(ptr);
 
             char* p = launder_cast<char*>(rawp);
 

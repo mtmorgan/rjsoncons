@@ -45,15 +45,13 @@
 #endif
 
 namespace jsoncons { 
-namespace detail { 
+namespace binary { 
 
     struct uint128_holder
     {
         uint64_t lo;
         uint64_t hi;
     };
-
-    namespace detail {
 
     static inline bool add_check_overflow(std::size_t v1, std::size_t v2, std::size_t *r)
     {
@@ -64,8 +62,6 @@ namespace detail {
         *r = v1 + v2;
         return v1 > v1 + v2;
     #endif
-    }
-
     }
 
     #if defined(__apple_build_version__) && ((__clang_major__ < 8) || ((__clang_major__ == 8) && (__clang_minor__ < 1)))
@@ -185,10 +181,10 @@ namespace detail {
     byte_swap(T val)
     {
         uint32_t x;
-        memcpy(&x,&val,sizeof(uint32_t));
+        std::memcpy(&x,&val,sizeof(uint32_t));
         uint32_t y = byte_swap(x);
         T val2;
-        memcpy(&val2,&y,sizeof(uint32_t));
+        std::memcpy(&val2,&y,sizeof(uint32_t));
         return val2;
     }
 
@@ -197,10 +193,10 @@ namespace detail {
     byte_swap(T val)
     {
         uint64_t x;
-        memcpy(&x,&val,sizeof(uint64_t));
+        std::memcpy(&x,&val,sizeof(uint64_t));
         uint64_t y = byte_swap(x);
         T val2;
-        memcpy(&val2,&y,sizeof(uint64_t));
+        std::memcpy(&val2,&y,sizeof(uint64_t));
         return val2;
     }
 
@@ -210,7 +206,7 @@ namespace detail {
     {
         uint128_holder x;
         uint8_t buf[2*sizeof(uint64_t)];
-        memcpy(buf,&val,2*sizeof(uint64_t));
+        std::memcpy(buf,&val,2*sizeof(uint64_t));
         std::memcpy(&x.lo,buf,sizeof(uint64_t));
         std::memcpy(&x.hi,buf+sizeof(uint64_t),sizeof(uint64_t));
 
@@ -219,12 +215,12 @@ namespace detail {
         y.hi = byte_swap(x.lo);
 
         T val2;
-        memcpy(&val2,&y,2*sizeof(uint64_t));
+        std::memcpy(&val2,&y,2*sizeof(uint64_t));
 
         return val2;
     }
 
-} // detail
+} // binary
 } // jsoncons
 
 #endif

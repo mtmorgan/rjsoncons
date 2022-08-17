@@ -10,9 +10,9 @@
 #include <string> // std::string
 #include <sstream> // std::ostringstream
 #include <system_error> // std::error_code
-#include <jsoncons/unicode_traits.hpp> // unicons::convert
+#include <jsoncons/unicode_traits.hpp> // unicode_traits::convert
 #include <jsoncons/config/jsoncons_config.hpp>
-#include <jsoncons/detail/more_type_traits.hpp>
+#include <jsoncons/more_type_traits.hpp>
 
 namespace jsoncons {
 
@@ -35,7 +35,7 @@ namespace jsoncons {
     template <class Base>
     class json_runtime_error<Base,
                              typename std::enable_if<std::is_convertible<Base*,std::exception*>::value &&
-                                                     jsoncons::detail::is_constructible_from_string<Base>::value>::type> 
+                                                     type_traits::is_constructible_from_string<Base>::value>::type> 
         : public Base, public virtual json_exception
     {
     public:
@@ -63,8 +63,8 @@ namespace jsoncons {
         {
             JSONCONS_TRY
             {
-                unicons::convert(key, key+length, std::back_inserter(name_),
-                                 unicons::conv_flags::strict);
+                unicode_traits::convert(key, length, name_,
+                                 unicode_traits::conv_flags::strict);
             }
             JSONCONS_CATCH(...)
             {
@@ -110,8 +110,8 @@ namespace jsoncons {
         {
             JSONCONS_TRY
             {
-                unicons::convert(key, key+length, std::back_inserter(name_),
-                                 unicons::conv_flags::strict);
+                unicode_traits::convert(key, length, name_,
+                                 unicode_traits::conv_flags::strict);
             }
             JSONCONS_CATCH(...)
             {

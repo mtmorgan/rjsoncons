@@ -530,8 +530,8 @@ class json_visitor_adaptor
 };
 
 template <class From,class To>
-class json_visitor_adaptor<From,To,typename std::enable_if<jsoncons::detail::is_narrow_character<typename From::char_type>::value &&
-                                                           jsoncons::detail::is_narrow_character<typename To::char_type>::value>::type> : public json_visitor_adaptor_base<From,To>
+class json_visitor_adaptor<From,To,typename std::enable_if<type_traits::is_narrow_character<typename From::char_type>::value &&
+                                                           type_traits::is_narrow_character<typename To::char_type>::value>::type> : public json_visitor_adaptor_base<From,To>
 {
     using supertype = json_visitor_adaptor_base<From,To>;
     using to_char_type = typename To::char_type;
@@ -573,8 +573,8 @@ private:
 };
 
 template <class From,class To>
-class json_visitor_adaptor<From,To,typename std::enable_if<!(jsoncons::detail::is_narrow_character<typename From::char_type>::value &&
-                                                             jsoncons::detail::is_narrow_character<typename To::char_type>::value)>::type> : public json_visitor_adaptor_base<From,To>
+class json_visitor_adaptor<From,To,typename std::enable_if<!(type_traits::is_narrow_character<typename From::char_type>::value &&
+                                                             type_traits::is_narrow_character<typename To::char_type>::value)>::type> : public json_visitor_adaptor_base<From,To>
 {
     using supertype = json_visitor_adaptor_base<From,To>;
 public:
@@ -602,8 +602,8 @@ private:
                  std::error_code& ec) override
     {
         std::basic_string<typename To::char_type> target;
-        auto result = unicons::convert(name.begin(),name.end(),std::back_inserter(target),unicons::conv_flags::strict);
-        if (result.ec != unicons::conv_errc())
+        auto result = unicode_traits::convert(name.data(), name.size(), target, unicode_traits::conv_flags::strict);
+        if (result.ec != unicode_traits::conv_errc())
         {
             ec = result.ec;
         }
@@ -616,8 +616,9 @@ private:
                       std::error_code& ec) override
     {
         std::basic_string<typename To::char_type> target;
-        auto result = unicons::convert(value.begin(),value.end(),std::back_inserter(target),unicons::conv_flags::strict);
-        if (result.ec != unicons::conv_errc())
+        auto result = unicode_traits::convert(value.data(), value.size(),
+                                              target,unicode_traits::conv_flags::strict);
+        if (result.ec != unicode_traits::conv_errc())
         {
             JSONCONS_THROW(ser_error(result.ec));
         }

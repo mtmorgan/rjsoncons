@@ -4,8 +4,8 @@
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_JSONSCHEMA_FORMAT_CHECKERS_HPP
-#define JSONCONS_JSONSCHEMA_FORMAT_CHECKERS_HPP
+#ifndef JSONCONS_JSONSCHEMA_FORMAT_VALIDATOR_HPP
+#define JSONCONS_JSONSCHEMA_FORMAT_VALIDATOR_HPP
 
 #include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/uri.hpp>
@@ -832,104 +832,118 @@ namespace jsonschema {
 
     // format checkers
     using format_checker = std::function<void(const std::string& absolute_keyword_location,
-                                              const uri_wrapper& instance_location, 
+                                              const jsonpointer::json_pointer& instance_location, 
                                               const std::string&, 
                                               error_reporter& reporter)>;
 
     inline
     void rfc3339_date_check(const std::string& absolute_keyword_location,
-                            const uri_wrapper& instance_location, 
+                            const jsonpointer::json_pointer& instance_location, 
                             const std::string& value,
                             error_reporter& reporter)
     {
         if (!validate_date_time_rfc3339(value,date_time_type::date))
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a RFC 3339 date string", "date", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("date", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a RFC 3339 date string"));
         }
     }
 
     inline
     void rfc3339_time_check(const std::string& absolute_keyword_location,
-                            const uri_wrapper& instance_location, 
+                            const jsonpointer::json_pointer& instance_location, 
                             const std::string &value,
                             error_reporter& reporter)
     {
         if (!validate_date_time_rfc3339(value, date_time_type::time))        
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a RFC 3339 time string", "time", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("time", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a RFC 3339 time string"));
         }
     }
 
     inline
     void rfc3339_date_time_check(const std::string& absolute_keyword_location,
-                                 const uri_wrapper& instance_location, 
+                                 const jsonpointer::json_pointer& instance_location, 
                                  const std::string &value,
                                  error_reporter& reporter)
     {
         if (!validate_date_time_rfc3339(value, date_time_type::date_time))        
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a RFC 3339 date-time string", "date-time", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("date-time",  
+                                             absolute_keyword_location,
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a RFC 3339 date-time string"));
         }
     }
 
     inline
     void email_check(const std::string& absolute_keyword_location,
-                     const uri_wrapper& instance_location, 
+                     const jsonpointer::json_pointer& instance_location, 
                      const std::string& value,
                      error_reporter& reporter) 
     {
         if (!validate_email_rfc5322(value))        
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a valid email address as defined by RFC 5322", "email", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("email", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a valid email address as defined by RFC 5322"));
         }
     } 
 
     inline
     void hostname_check(const std::string& absolute_keyword_location,
-                        const uri_wrapper& instance_location, 
+                        const jsonpointer::json_pointer& instance_location, 
                         const std::string& value,
                         error_reporter& reporter) 
     {
         if (!validate_hostname_rfc1034(value))
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a valid hostname as defined by RFC 3986 Appendix A", "hostname", 
-                                             absolute_keyword_location));
+            reporter.error(validation_output("hostname", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a valid hostname as defined by RFC 3986 Appendix A"));
         }
     } 
 
     inline
     void ipv4_check(const std::string& absolute_keyword_location,
-                    const uri_wrapper& instance_location, 
+                    const jsonpointer::json_pointer& instance_location, 
                     const std::string& value,
                     error_reporter& reporter) 
     {
         if (!validate_ipv4_rfc2673(value))
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a valid IPv4 address as defined by RFC 2673", "ipv4", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("ipv4", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a valid IPv4 address as defined by RFC 2673"));
         }
     } 
 
     inline
     void ipv6_check(const std::string& absolute_keyword_location,
-                    const uri_wrapper& instance_location, 
+                    const jsonpointer::json_pointer& instance_location, 
                     const std::string& value,
                     error_reporter& reporter) 
     {
         if (!validate_ipv6_rfc2373(value))
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a valid IPv6 address as defined by RFC 2373", "ipv6", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("ipv6", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a valid IPv6 address as defined by RFC 2373"));
         }
     } 
 
     inline
     void regex_check(const std::string& absolute_keyword_location,
-                     const uri_wrapper& instance_location, 
+                     const jsonpointer::json_pointer& instance_location, 
                      const std::string& value,
                      error_reporter& reporter) 
     {
@@ -940,8 +954,10 @@ namespace jsonschema {
         } 
         catch (const std::exception& e) 
         {
-            reporter.error(validation_output(instance_location.string(), "\"" + value + "\" is not a valid ECMAScript regular expression. " + e.what(), "pattern", 
-                                            absolute_keyword_location));
+            reporter.error(validation_output("pattern", 
+                                             absolute_keyword_location, 
+                                             instance_location.to_uri_fragment(), 
+                                             "\"" + value + "\" is not a valid ECMAScript regular expression. " + e.what()));
         }
 #endif
     } 

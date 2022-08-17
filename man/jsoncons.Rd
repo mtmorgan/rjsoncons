@@ -8,33 +8,43 @@
 \usage{
 version()
 
-jsonpath(data, path)
+jsonpath(data, path, ...)
 
-jmespath(data, path)
+jmespath(data, path, ...)
 }
 \arguments{
-\item{data}{character(1) JSON string.}
+\item{data}{an \emph{R} object. If \code{data} is a scalar (length 1)
+character vector, it is treated as a single JSON
+string. Otherwise, it is parsed to a JSON string using
+\code{jsonlite::toJSON()}. Use \code{I()} to treat a scalar character
+vector as an \emph{R} object rather than JSON string, e.g., \code{I("A")}
+will be parsed to \verb{["A"]} before processing.}
 
 \item{path}{character(1) jsonpath or jmespath query string.}
+
+\item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
+not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
+scalar values.}
 }
 \value{
-\preformatted{`version()` returns a character(1) major.minor.patch version
-string .
+\code{version()} returns a character(1) major.minor.patch
+version string .
 
-`jsonpath()` aand `jmespath()` return a character(1) json
-string representing the result of the query.
-}
+\code{jsonpath()} returns a character(1) json string
+representing the result of the query.
+
+\code{jmespath()} return a character(1) json string representing
+the result of the query.
 }
 \description{
-\preformatted{`version()` reports the version of the C++ jsoncons library in
-use.
+\code{version()} reports the version of the C++ jsoncons
+library in use.
 
-`jsonpath()` executes a query against a json string using the
-'jsonpath' specification
+\code{jsonpath()} executes a query against a json string
+using the 'jsonpath' specification
 
-`jmespath()` executes a query against a json string sing the
-'jmespath' specification.
-}
+\code{jmespath()} executes a query against a json string
+using the 'jmespath' specification.
 }
 \examples{
 version()
@@ -51,7 +61,35 @@ json <- '{
 jsonpath(json, "$..name") |>
     cat("\n")
 
-jmespath(json, "locations[?state == 'WA'].name | sort(@)") |>
+## create a list with state and name as scalar vectors
+lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+
+## objects other than scalar character vectors are automatically
+## coerced to JSON; use `auto_unbox = TRUE` to represent R scalar
+## vectors in the object as JSON scalar vectors
+jsonpath(lst, "$..name", auto_unbox = TRUE) |>
+    cat("\n")
+
+## a scalar character vector like "Seattle" is not valid JSON...
+try(jsonpath("Seattle", "$[0]"))
+
+## use I("Seattle") to coerce to a JSON object ["Seattle"]
+jsonpath(I("Seattle"), "$[0]") |>
+    cat("\n")
+
+path <- "locations[?state == 'WA'].name | sort(@)"
+jmespath(json, path) |>
+    cat("\n")
+
+## original filter always fails, e.g., '["WA"] != 'WA'
+jmespath(lst, path)  # empty result set, '[]'
+
+## filter with unboxed state, and return unboxed name
+jmespath(lst, "locations[?state[0] == 'WA'].name[0] | sort(@)") |>
+    cat("\n")
+
+## automatically unbox scalar values when creating the JSON string
+jmespath(lst, path, auto_unbox = TRUE) |>
     cat("\n")
 
 }

@@ -4,8 +4,8 @@
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_JSONPOINTER_JSONPATCH_HPP
-#define JSONCONS_JSONPOINTER_JSONPATCH_HPP
+#ifndef JSONCONS_JSONPATCH_JSONPATCH_HPP
+#define JSONCONS_JSONPATCH_JSONPATCH_HPP
 
 #include <string>
 #include <vector> 
@@ -20,63 +20,103 @@ namespace jsoncons { namespace jsonpatch {
 
 namespace detail {
 
-    template<class Json>
-    std::basic_string<typename Json::char_type> normalized_path(const Json& root, const typename Json::string_view_type& location)
+    template <class CharT>
+    struct jsonpatch_names
     {
-        using string_type = std::basic_string<typename Json::char_type>;
-        using string_view_type = typename Json::string_view_type;
+        static std::basic_string<CharT> test_name()
+        {
+            static std::basic_string<CharT> name{'t','e','s','t'};
+            return name;
+        }
+        static std::basic_string<CharT> add_name()
+        {
+            static std::basic_string<CharT> name{'a','d','d'};
+            return name;
+        }
+        static std::basic_string<CharT> remove_name()
+        {
+            static std::basic_string<CharT> name{'r','e','m','o','v','e'};
+            return name;
+        }
+        static std::basic_string<CharT> replace_name()
+        {
+            static std::basic_string<CharT> name{'r','e','p','l','a','c','e'};
+            return name;
+        }
+        static std::basic_string<CharT> move_name()
+        {
+            static std::basic_string<CharT> name{'m','o','v','e'};
+            return name;
+        }
+        static std::basic_string<CharT> copy_name()
+        {
+            static std::basic_string<CharT> name{'c','o','p','y'};
+            return name;
+        }
+        static std::basic_string<CharT> op_name()
+        {
+            static std::basic_string<CharT> name{'o','p'};
+            return name;
+        }
+        static std::basic_string<CharT> path_name()
+        {
+            static std::basic_string<CharT> name{'p','a','t','h'};
+            return name;
+        }
+        static std::basic_string<CharT> from_name()
+        {
+            static std::basic_string<CharT> name{'f','r','o','m'};
+            return name;
+        }
+        static std::basic_string<CharT> value_name()
+        {
+            static std::basic_string<CharT> name{'v','a','l','u','e'};
+            return name;
+        }
+        static std::basic_string<CharT> dash_name()
+        {
+            static std::basic_string<CharT> name{'-'};
+            return name;
+        }
+    };
+
+    template<class Json>
+    jsonpointer::basic_json_pointer<typename Json::char_type> definite_path(const Json& root, jsonpointer::basic_json_pointer<typename Json::char_type>& location)
+    {
+        using char_type = typename Json::char_type;
+        using string_type = std::basic_string<char_type>;
+
+        auto rit = location.rbegin();
+        if (rit == location.rend())
+        {
+            return location;
+        }
+
+        if (*rit != jsonpatch_names<char_type>::dash_name())
+        {
+            return location;
+        }
+
+        std::vector<string_type> tokens;
+        for (auto it = location.begin(); it != location.rbegin().base()-1; ++it)
+        {
+            tokens.push_back(*it);
+        }
+        jsonpointer::basic_json_pointer<char_type> pointer(tokens);
 
         std::error_code ec;
 
-        const Json* current = std::addressof(root);
-        if (location.empty())
+        Json val = jsonpointer::get(root, pointer, ec);
+        if (ec || !val.is_array())
         {
-            return string_type();
+            return location;
         }
+        string_type last_token;
+        jsoncons::detail::from_integer(val.size(), last_token);
+        tokens.emplace_back(std::move(last_token));
 
-        string_type buffer;
-        jsonpointer::json_pointer_iterator<typename string_view_type::iterator> it(location.begin(), location.end());
-        jsonpointer::json_pointer_iterator<typename string_view_type::iterator> end(location.begin(), location.end(), location.end());
-        while (it != end)
-        {
-            buffer = *it;
-            it.increment(ec);
-            if (ec)
-                return string_type(location);
-            if (it != end)
-            {
-                current = jsoncons::jsonpointer::detail::resolve(current, buffer, ec);
-                if (ec)
-                    return string_type(location);
-            }
-        }
-
-        if (current->is_array() && buffer.size() == 1 && buffer[0] == '-')
-        {
-            string_type p = string_type(location.substr(0,location.length()-1));
-            std::string s = std::to_string(current->size());
-            for (auto c : s)
-            {
-                p.push_back(c);
-            }
-            return p;
-        }
-        else
-        {
-            return string_type(location);
-        }
+        return jsonpointer::basic_json_pointer<char_type>(std::move(tokens));
     }
-
-    JSONCONS_STRING_LITERAL(test_literal,'t','e','s','t')
-    JSONCONS_STRING_LITERAL(add_literal,'a','d','d')
-    JSONCONS_STRING_LITERAL(remove_literal,'r','e','m','o','v','e')
-    JSONCONS_STRING_LITERAL(replace_literal,'r','e','p','l','a','c','e')
-    JSONCONS_STRING_LITERAL(move_literal,'m','o','v','e')
-    JSONCONS_STRING_LITERAL(copy_literal,'c','o','p','y')
-    JSONCONS_STRING_LITERAL(op_literal,'o','p')
-    JSONCONS_STRING_LITERAL(path_literal,'p','a','t','h')
-    JSONCONS_STRING_LITERAL(from_literal,'f','r','o','m')
-    JSONCONS_STRING_LITERAL(value_literal,'v','a','l','u','e')
 
     enum class op_type {add,remove,replace};
     enum class state_type {begin,abort,commit};
@@ -86,15 +126,15 @@ namespace detail {
     {
         using char_type = typename Json::char_type;
         using string_type = std::basic_string<char_type>;
-        using string_view_type = typename Json::string_view_type;
+        using json_pointer_type = jsonpointer::basic_json_pointer<char_type>;
 
         struct entry
         {
             op_type op;
-            string_type path;
+            json_pointer_type path;
             Json value;
 
-            entry(op_type op, const string_type& path, const Json& value)
+            entry(op_type op, const json_pointer_type& path, const Json& value)
                 : op(op), path(path), value(value)
             {
             }
@@ -120,7 +160,6 @@ namespace detail {
         ~operation_unwinder() noexcept
         {
             std::error_code ec;
-            //std::cout << "state: " << std::boolalpha << (state == state_type::commit) << ", stack size: " << stack.size() << std::endl;
             if (state != state_type::commit)
             {
                 for (auto it = stack.rbegin(); it != stack.rend(); ++it)
@@ -187,8 +226,8 @@ namespace detail {
                 ss.push_back('/');
                 jsoncons::detail::from_integer(i,ss);
                 Json val(json_object_arg);
-                val.insert_or_assign(op_literal<char_type>(), remove_literal<char_type>());
-                val.insert_or_assign(path_literal<char_type>(), ss);
+                val.insert_or_assign(jsonpatch_names<char_type>::op_name(), jsonpatch_names<char_type>::remove_name());
+                val.insert_or_assign(jsonpatch_names<char_type>::path_name(), ss);
                 result.push_back(std::move(val));
             }
             // Element in target, not in source - add, 
@@ -200,9 +239,9 @@ namespace detail {
                 ss.push_back('/');
                 jsoncons::detail::from_integer(i,ss);
                 Json val(json_object_arg);
-                val.insert_or_assign(op_literal<char_type>(), add_literal<char_type>());
-                val.insert_or_assign(path_literal<char_type>(), ss);
-                val.insert_or_assign(value_literal<char_type>(), a);
+                val.insert_or_assign(jsonpatch_names<char_type>::op_name(), jsonpatch_names<char_type>::add_name());
+                val.insert_or_assign(jsonpatch_names<char_type>::path_name(), ss);
+                val.insert_or_assign(jsonpatch_names<char_type>::value_name(), a);
                 result.push_back(std::move(val));
             }
         }
@@ -222,8 +261,8 @@ namespace detail {
                 else
                 {
                     Json val(json_object_arg);
-                    val.insert_or_assign(op_literal<char_type>(), remove_literal<char_type>());
-                    val.insert_or_assign(path_literal<char_type>(), ss);
+                    val.insert_or_assign(jsonpatch_names<char_type>::op_name(), jsonpatch_names<char_type>::remove_name());
+                    val.insert_or_assign(jsonpatch_names<char_type>::path_name(), ss);
                     result.push_back(std::move(val));
                 }
             }
@@ -236,9 +275,9 @@ namespace detail {
                     ss.push_back('/');
                     jsonpointer::escape(a.key(),ss);
                     Json val(json_object_arg);
-                    val.insert_or_assign(op_literal<char_type>(), add_literal<char_type>());
-                    val.insert_or_assign(path_literal<char_type>(), ss);
-                    val.insert_or_assign(value_literal<char_type>(), a.value());
+                    val.insert_or_assign(jsonpatch_names<char_type>::op_name(), jsonpatch_names<char_type>::add_name());
+                    val.insert_or_assign(jsonpatch_names<char_type>::path_name(), ss);
+                    val.insert_or_assign(jsonpatch_names<char_type>::value_name(), a.value());
                     result.push_back(std::move(val));
                 }
             }
@@ -246,9 +285,9 @@ namespace detail {
         else
         {
             Json val(json_object_arg);
-            val.insert_or_assign(op_literal<char_type>(), replace_literal<char_type>());
-            val.insert_or_assign(path_literal<char_type>(), path);
-            val.insert_or_assign(value_literal<char_type>(), target);
+            val.insert_or_assign(jsonpatch_names<char_type>::op_name(), jsonpatch_names<char_type>::replace_name());
+            val.insert_or_assign(jsonpatch_names<char_type>::path_name(), path);
+            val.insert_or_assign(jsonpatch_names<char_type>::value_name(), target);
             result.push_back(std::move(val));
         }
 
@@ -257,273 +296,258 @@ namespace detail {
 }
 
 template <class Json>
-void apply_patch(Json& target, const Json& patch, std::error_code& patch_ec)
+void apply_patch(Json& target, const Json& patch, std::error_code& ec)
 {
     using char_type = typename Json::char_type;
     using string_type = std::basic_string<char_type>;
-    using string_view_type = typename Json::string_view_type;
+    using json_pointer_type = jsonpointer::basic_json_pointer<char_type>;
 
    jsoncons::jsonpatch::detail::operation_unwinder<Json> unwinder(target);
+   std::error_code local_ec;
 
     // Validate
-    
-    string_type bad_path;
+     
     for (const auto& operation : patch.array_range())
     {
         unwinder.state =jsoncons::jsonpatch::detail::state_type::begin;
 
-        if (operation.count(detail::op_literal<char_type>()) != 1 || operation.count(detail::path_literal<char_type>()) != 1)
+        auto it_op = operation.find(detail::jsonpatch_names<char_type>::op_name());
+        if (it_op == operation.object_range().end())
         {
-            patch_ec = jsonpatch_errc::invalid_patch;
+            ec = jsonpatch_errc::invalid_patch;
             unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+            return;
         }
-        else
+        string_type op = it_op->value().template as<string_type>();
+
+        auto it_path = operation.find(detail::jsonpatch_names<char_type>::path_name());
+        if (it_path == operation.object_range().end())
         {
-            string_view_type op = operation.at(detail::op_literal<char_type>()).as_string_view();
-            string_view_type path = operation.at(detail::path_literal<char_type>()).as_string_view();
+            ec = jsonpatch_errc::invalid_patch;
+            unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+            return;
+        }
+        string_type path = it_path->value().template as<string_type>();
+        auto location = json_pointer_type::parse(path, local_ec);
+        if (local_ec)
+        {
+            ec = jsonpatch_errc::invalid_patch;
+            unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+            return;
+        }
 
-            if (op ==jsoncons::jsonpatch::detail::test_literal<char_type>())
+        if (op ==jsoncons::jsonpatch::detail::jsonpatch_names<char_type>::test_name())
+        {
+            Json val = jsonpointer::get(target,location,local_ec);
+            if (local_ec)
             {
-                std::error_code ec;
-                Json val = jsonpointer::get(target,path,ec);
-                if (ec)
-                {
-                    patch_ec = jsonpatch_errc::test_failed;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else if (operation.count(detail::value_literal<char_type>()) != 1)
-                {
-                    patch_ec = jsonpatch_errc::invalid_patch;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else if (val != operation.at(detail::value_literal<char_type>()))
-                {
-                    patch_ec = jsonpatch_errc::test_failed;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
+                ec = jsonpatch_errc::test_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
             }
-            else if (op ==jsoncons::jsonpatch::detail::add_literal<char_type>())
+            auto it_value = operation.find(detail::jsonpatch_names<char_type>::value_name());
+            if (it_value == operation.object_range().end())
             {
-                if (operation.count(detail::value_literal<char_type>()) != 1)
-                {
-                    patch_ec = jsonpatch_errc::invalid_patch;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else
-                {
-                    std::error_code insert_ec;
-                    Json val = operation.at(detail::value_literal<char_type>());
-                    auto npath = jsonpatch::detail::normalized_path(target,path);
-                    jsonpointer::add_if_absent(target,npath,val,insert_ec); // try insert without replace
-                    if (insert_ec) // try a replace
-                    {
-                        std::error_code select_ec;
-                        Json orig_val = jsonpointer::get(target,npath,select_ec);
-                        if (select_ec) // shouldn't happen
-                        {
-                            patch_ec = jsonpatch_errc::add_failed;
-                            unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                        }
-                        else
-                        {
-                            std::error_code replace_ec;
-                            jsonpointer::replace(target,npath,val,replace_ec);
-                            if (replace_ec)
-                            {
-                                patch_ec = jsonpatch_errc::add_failed;
-                                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                            }
-                            else
-                            {
-                                unwinder.stack.emplace_back(detail::op_type::replace,npath,orig_val);
-                            }
-                        }
-                    }
-                    else // insert without replace succeeded
-                    {
-                        unwinder.stack.emplace_back(detail::op_type::remove,npath,Json::null());
-                    }
-                }
+                ec = jsonpatch_errc::invalid_patch;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
             }
-            else if (op ==jsoncons::jsonpatch::detail::remove_literal<char_type>())
+            if (val != it_value->value())
             {
-                std::error_code ec;
-                Json val = jsonpointer::get(target,path,ec);
-                if (ec)
-                {
-                    patch_ec = jsonpatch_errc::remove_failed;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else
-                {
-                    jsonpointer::remove(target,path,ec);
-                    if (ec)
-                    {
-                        patch_ec = jsonpatch_errc::remove_failed;
-                        unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                    }
-                    else
-                    {
-                        unwinder.stack.emplace_back(detail::op_type::add,string_type(path),val);
-                    }
-                }
-            }
-            else if (op ==jsoncons::jsonpatch::detail::replace_literal<char_type>())
-            {
-                std::error_code ec;
-                Json val = jsonpointer::get(target,path,ec);
-                if (ec)
-                {
-                    patch_ec = jsonpatch_errc::replace_failed;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else if (operation.count(detail::value_literal<char_type>()) != 1)
-                {
-                    patch_ec = jsonpatch_errc::invalid_patch;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else
-                {
-                    jsonpointer::replace(target,path,operation.at(detail::value_literal<char_type>()),ec);
-                    if (ec)
-                    {
-                        patch_ec = jsonpatch_errc::replace_failed;
-                        unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                    }
-                    else
-                    {
-                        unwinder.stack.emplace_back(detail::op_type::replace,string_type(path),val);
-                    }
-                }
-            }
-            else if (op ==jsoncons::jsonpatch::detail::move_literal<char_type>())
-            {
-                if (operation.count(detail::from_literal<char_type>()) != 1)
-                {
-                    patch_ec = jsonpatch_errc::invalid_patch;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else
-                {
-                    string_view_type from = operation.at(detail::from_literal<char_type>()).as_string_view();
-                    std::error_code ec;
-                    Json val = jsonpointer::get(target,from,ec);
-                    if (ec)
-                    {
-                        patch_ec = jsonpatch_errc::move_failed;
-                        unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                    }
-                    else 
-                    {
-                        jsonpointer::remove(target,from,ec);
-                        if (ec)
-                        {
-                            patch_ec = jsonpatch_errc::move_failed;
-                            unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                        }
-                        else
-                        {
-                            unwinder.stack.emplace_back(detail::op_type::add,string_type(from),val);
-                            // add
-                            std::error_code insert_ec;
-                            auto npath = jsonpatch::detail::normalized_path(target,path);
-                            jsonpointer::add_if_absent(target,npath,val,insert_ec); // try insert without replace
-                            if (insert_ec) // try a replace
-                            {
-                                std::error_code select_ec;
-                                Json orig_val = jsonpointer::get(target,npath,select_ec);
-                                if (select_ec) // shouldn't happen
-                                {
-                                    patch_ec = jsonpatch_errc::copy_failed;
-                                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                                }
-                                else
-                                {
-                                    std::error_code replace_ec;
-                                    jsonpointer::replace(target, npath, val, replace_ec);
-                                    if (replace_ec)
-                                    {
-                                        patch_ec = jsonpatch_errc::copy_failed;
-                                        unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-
-                                    }
-                                    else
-                                    {
-                                        unwinder.stack.emplace_back(jsoncons::jsonpatch::detail::op_type::replace,npath,orig_val);
-                                    }
-                                    
-                                }
-                            }
-                            else
-                            {
-                                unwinder.stack.emplace_back(detail::op_type::remove,npath,Json::null());
-                            }
-                        }           
-                    }
-                }
-            }
-            else if (op ==jsoncons::jsonpatch::detail::copy_literal<char_type>())
-            {
-                if (operation.count(detail::from_literal<char_type>()) != 1)
-                {
-                    patch_ec = jsonpatch_errc::invalid_patch;
-                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                }
-                else
-                {
-                    std::error_code ec;
-                    string_view_type from = operation.at(detail::from_literal<char_type>()).as_string_view();
-                    Json val = jsonpointer::get(target,from,ec);
-                    if (ec)
-                    {
-                        patch_ec = jsonpatch_errc::copy_failed;
-                        unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                    }
-                    else
-                    {
-                        // add
-                        auto npath = jsonpatch::detail::normalized_path(target,path);
-                        std::error_code insert_ec;
-                        jsonpointer::add_if_absent(target,npath,val,insert_ec); // try insert without replace
-                        if (insert_ec) // Failed, try a replace
-                        {
-                            std::error_code select_ec;
-                            Json orig_val = jsonpointer::get(target,npath, select_ec);
-                            if (select_ec) // shouldn't happen
-                            {
-                                patch_ec = jsonpatch_errc::copy_failed;
-                                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                            }
-                            else 
-                            {
-                                std::error_code replace_ec;
-                                jsonpointer::replace(target, npath, val,replace_ec);
-                                if (replace_ec)
-                                {
-                                    patch_ec = jsonpatch_errc::copy_failed;
-                                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
-                                }
-                                else
-                                {
-                                    unwinder.stack.emplace_back(jsoncons::jsonpatch::detail::op_type::replace,npath,orig_val);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            unwinder.stack.emplace_back(detail::op_type::remove,npath,Json::null());
-                        }
-                    }
-                }
-            }
-            if (unwinder.state !=jsoncons::jsonpatch::detail::state_type::begin)
-            {
-                bad_path = string_type(path);
+                ec = jsonpatch_errc::test_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
             }
         }
-        if (unwinder.state !=jsoncons::jsonpatch::detail::state_type::begin)
+        else if (op ==jsoncons::jsonpatch::detail::jsonpatch_names<char_type>::add_name())
         {
-            break;
+            auto it_value = operation.find(detail::jsonpatch_names<char_type>::value_name());
+            if (it_value == operation.object_range().end())
+            {
+                ec = jsonpatch_errc::invalid_patch;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            Json val = it_value->value();
+            auto npath = jsonpatch::detail::definite_path(target,location);
+
+            std::error_code insert_ec;
+            jsonpointer::add_if_absent(target,npath,val,insert_ec); // try insert without replace
+            if (insert_ec) // try a replace
+            {
+                std::error_code select_ec;
+                Json orig_val = jsonpointer::get(target,npath,select_ec);
+                if (select_ec) // shouldn't happen
+                {
+                    ec = jsonpatch_errc::add_failed;
+                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                    return;
+                }
+                std::error_code replace_ec;
+                jsonpointer::replace(target,npath,val,replace_ec);
+                if (replace_ec)
+                {
+                    ec = jsonpatch_errc::add_failed;
+                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                    return;
+                }
+                unwinder.stack.emplace_back(detail::op_type::replace,npath,orig_val);
+            }
+            else // insert without replace succeeded
+            {
+                unwinder.stack.emplace_back(detail::op_type::remove,npath,Json::null());
+            }
+        }
+        else if (op ==jsoncons::jsonpatch::detail::jsonpatch_names<char_type>::remove_name())
+        {
+            Json val = jsonpointer::get(target,location,local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::remove_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            jsonpointer::remove(target,location,local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::remove_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            unwinder.stack.emplace_back(detail::op_type::add, location, val);
+        }
+        else if (op ==jsoncons::jsonpatch::detail::jsonpatch_names<char_type>::replace_name())
+        {
+            Json val = jsonpointer::get(target,location,local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::replace_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            auto it_value = operation.find(detail::jsonpatch_names<char_type>::value_name());
+            if (it_value == operation.object_range().end())
+            {
+                ec = jsonpatch_errc::invalid_patch;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            jsonpointer::replace(target, location, it_value->value(), local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::replace_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            unwinder.stack.emplace_back(detail::op_type::replace,location,val);
+        }
+        else if (op ==jsoncons::jsonpatch::detail::jsonpatch_names<char_type>::move_name())
+        {
+            auto it_from = operation.find(detail::jsonpatch_names<char_type>::from_name());
+            if (it_from == operation.object_range().end())
+            {
+                ec = jsonpatch_errc::invalid_patch;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            string_type from = it_from->value().as_string();
+            auto from_pointer = json_pointer_type::parse(from, local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::move_failed;
+                unwinder.state = jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+
+            Json val = jsonpointer::get(target, from_pointer, local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::move_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            jsonpointer::remove(target, from_pointer, local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::move_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            unwinder.stack.emplace_back(detail::op_type::add, from_pointer, val);
+            // add
+            std::error_code insert_ec;
+            auto npath = jsonpatch::detail::definite_path(target,location);
+            jsonpointer::add_if_absent(target,npath,val,insert_ec); // try insert without replace
+            if (insert_ec) // try a replace
+            {
+                std::error_code select_ec;
+                Json orig_val = jsonpointer::get(target,npath,select_ec);
+                if (select_ec) // shouldn't happen
+                {
+                    ec = jsonpatch_errc::copy_failed;
+                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                    return;
+                }
+                std::error_code replace_ec;
+                jsonpointer::replace(target, npath, val, replace_ec);
+                if (replace_ec)
+                {
+                    ec = jsonpatch_errc::copy_failed;
+                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                    return;
+                }
+                unwinder.stack.emplace_back(jsoncons::jsonpatch::detail::op_type::replace,npath,orig_val);
+            }
+            else
+            {
+                unwinder.stack.emplace_back(detail::op_type::remove,npath,Json::null());
+            }
+        }
+        else if (op ==jsoncons::jsonpatch::detail::jsonpatch_names<char_type>::copy_name())
+        {
+            auto it_from = operation.find(detail::jsonpatch_names<char_type>::from_name());
+            if (it_from == operation.object_range().end())
+            {
+                ec = jsonpatch_errc::invalid_patch;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            string_type from = it_from->value().as_string();
+            Json val = jsonpointer::get(target,from,local_ec);
+            if (local_ec)
+            {
+                ec = jsonpatch_errc::copy_failed;
+                unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                return;
+            }
+            // add
+            auto npath = jsonpatch::detail::definite_path(target,location);
+            std::error_code insert_ec;
+            jsonpointer::add_if_absent(target,npath,val,insert_ec); // try insert without replace
+            if (insert_ec) // Failed, try a replace
+            {
+                std::error_code select_ec;
+                Json orig_val = jsonpointer::get(target,npath, select_ec);
+                if (select_ec) // shouldn't happen
+                {
+                    ec = jsonpatch_errc::copy_failed;
+                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                    return;
+                }
+                std::error_code replace_ec;
+                jsonpointer::replace(target, npath, val,replace_ec);
+                if (replace_ec)
+                {
+                    ec = jsonpatch_errc::copy_failed;
+                    unwinder.state =jsoncons::jsonpatch::detail::state_type::abort;
+                    return;
+                }
+                unwinder.stack.emplace_back(jsoncons::jsonpatch::detail::op_type::replace,npath,orig_val);
+            }
+            else
+            {
+                unwinder.stack.emplace_back(detail::op_type::remove,npath,Json::null());
+            }
         }
     }
     if (unwinder.state ==jsoncons::jsonpatch::detail::state_type::begin)

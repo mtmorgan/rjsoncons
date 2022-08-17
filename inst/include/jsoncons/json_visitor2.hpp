@@ -164,7 +164,7 @@ namespace jsoncons {
         bool byte_string_value(const Source& b, 
                                semantic_tag tag=semantic_tag::none, 
                                const ser_context& context=ser_context(),
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             std::error_code ec;
             bool more = visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), tag, context, ec);
@@ -179,7 +179,7 @@ namespace jsoncons {
         bool byte_string_value(const Source& b, 
                                uint64_t ext_tag, 
                                const ser_context& context=ser_context(),
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             std::error_code ec;
             bool more = visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), ext_tag, context, ec);
@@ -310,7 +310,7 @@ namespace jsoncons {
                                semantic_tag tag, 
                                const ser_context& context,
                                std::error_code& ec,
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             return visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), tag, context, ec);
         }
@@ -320,7 +320,7 @@ namespace jsoncons {
                                uint64_t ext_tag, 
                                const ser_context& context,
                                std::error_code& ec,
-                               typename std::enable_if<jsoncons::detail::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             return visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), ext_tag, context, ec);
         }
@@ -515,7 +515,7 @@ namespace jsoncons {
                              const ser_context& context,
                              std::error_code& ec)
         {
-            return visit_double(jsoncons::detail::decode_half(value),
+            return visit_double(binary::decode_half(value),
                              tag,
                              context,
                              ec);
@@ -810,9 +810,9 @@ namespace jsoncons {
         string_type key_buffer_;
         std::vector<level,level_allocator_type> level_stack_;
 
-        const std::basic_string<char> null_k = {'n','u','l','l'};
-        const std::basic_string<char> true_k = { 't','r','u','e' };
-        const std::basic_string<char> false_k = { 'f', 'a', 'l', 's', 'e' };
+        const std::basic_string<char> null_constant = {'n','u','l','l'};
+        const std::basic_string<char> true_constant = { 't','r','u','e' };
+        const std::basic_string<char> false_constant = { 'f', 'a', 'l', 's', 'e' };
 
         // noncopyable and nonmoveable
         basic_json_visitor2_to_visitor_adaptor(const basic_json_visitor2_to_visitor_adaptor&) = delete;
@@ -1315,7 +1315,7 @@ namespace jsoncons {
                 key_.clear();
                 jsoncons::string_sink<string_type> sink(key_);
                 jsoncons::detail::write_double f{float_chars_format::general,0};
-                double x = jsoncons::detail::decode_half(value);
+                double x = binary::decode_half(value);
                 f(x, sink);
             }
 
@@ -1417,7 +1417,7 @@ namespace jsoncons {
 
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
-                key_ = value ? true_k : false_k;
+                key_ = value ? true_constant : false_constant;
             }
 
             if (level_stack_.back().is_key())
@@ -1466,7 +1466,7 @@ namespace jsoncons {
 
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
-                key_ = null_k;
+                key_ = null_constant;
             }
 
             if (level_stack_.back().is_key())

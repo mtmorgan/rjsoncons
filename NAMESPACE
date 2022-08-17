@@ -3,4 +3,5 @@
 export(jmespath)
 export(jsonpath)
 export(version)
+importFrom(jsonlite,toJSON)
 useDynLib(rjsoncons, .registration = TRUE)
