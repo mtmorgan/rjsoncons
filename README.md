@@ -51,11 +51,21 @@ jsonpath(json, "$..name")
 jmespath(json, "locations[?state == 'WA'].name | sort(@)")
 ```
 
-For an R representation use, e.g., [jsonlite][]
+For an R representation of the results use, e.g., [jsonlite][]
 
 ``` r
 jmespath(json, "locations[?state == 'WA'].name | sort(@)") |>
     jsonlite::fromJSON()
+```
+
+It is also possible to provide list-of-list style _R_ objects that are
+converted using `jsonlite::toJSON()` before queries are made;
+`toJSON()` arguments like `auto_unbox = TRUE` can be added to the
+function call.
+
+``` r
+lst <- fromJSON(json, simplifyVector = FALSE)
+jmespath(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE)
 ```
 
 [jsonlite]: https://cran.r-project.org/package=jsonlite

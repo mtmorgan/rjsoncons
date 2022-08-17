@@ -3,6 +3,7 @@
 
 
 #include "cpp11/declarations.hpp"
+#include <R_ext/Visibility.h>
 
 // rjsoncons.cpp
 std::string cpp_version();
@@ -27,11 +28,6 @@ extern "C" SEXP _rjsoncons_cpp_jmespath(SEXP data, SEXP path) {
 }
 
 extern "C" {
-/* .Call calls */
-extern SEXP _rjsoncons_cpp_jmespath(SEXP, SEXP);
-extern SEXP _rjsoncons_cpp_jsonpath(SEXP, SEXP);
-extern SEXP _rjsoncons_cpp_version();
-
 static const R_CallMethodDef CallEntries[] = {
     {"_rjsoncons_cpp_jmespath", (DL_FUNC) &_rjsoncons_cpp_jmespath, 2},
     {"_rjsoncons_cpp_jsonpath", (DL_FUNC) &_rjsoncons_cpp_jsonpath, 2},
@@ -40,7 +36,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 }
 
-extern "C" void R_init_rjsoncons(DllInfo* dll){
+extern "C" attribute_visible void R_init_rjsoncons(DllInfo* dll){
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
   R_forceSymbols(dll, TRUE);

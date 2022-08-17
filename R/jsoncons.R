@@ -12,42 +12,56 @@ NULL
     )
 }
 
+#' @importFrom jsonlite toJSON
+.as_json_string <-
+    function(x, ...)
+{
+    if (.is_scalar_character(x) && !inherits(x, "AsIs")) {
+        x
+    } else {
+        as.character(toJSON(x, ...))
+    }
+}
+
 #' @rdname jsoncons
-#' @md
 #'
 #' @title Query the jsoncons C++ library
 #'
-#' @description
+#' @description `version()` reports the version of the C++ jsoncons
+#'     library in use.
 #'
-#'   `version()` reports the version of the C++ jsoncons library in
-#'   use.
-#'
-#'   `jsonpath()` executes a query against a json string using the
-#'   'jsonpath' specification
-#'
-#'   `jmespath()` executes a query against a json string sing the
-#'   'jmespath' specification.
-#'
-#' @param data character(1) or list() Either a single JSON string or an R list
-#'   structure as obtained from `jsonlite::fromJSON`
-#'
-#' @param path character(1) jsonpath or jmespath query string.
-#'
-#' @param ... arguments passed on to `jsonlite::toJSON`
-#'
-#' @inheritParams jsonlite::toJSON
-#'
-#' @return
-#'
-#'   `version()` returns a character(1) major.minor.patch version
-#'   string .
-#'
-#'   `jsonpath()` aand `jmespath()` return a character(1) json
-#'   string representing the result of the query.
+#' @return `version()` returns a character(1) major.minor.patch
+#'     version string .
 #'
 #' @examples
 #' version()
 #'
+#' @export
+version <- cpp_version
+
+#' @rdname jsoncons
+#'
+#' @description `jsonpath()` executes a query against a json string
+#'     using the 'jsonpath' specification
+#'
+#' @param data an _R_ object. If `data` is a scalar (length 1)
+#'     character vector, it is treated as a single JSON
+#'     string. Otherwise, it is parsed to a JSON string using
+#'     `jsonlite::toJSON()`. Use `I()` to treat a scalar character
+#'     vector as an _R_ object rather than JSON string, e.g., `I("A")`
+#'     will be parsed to `["A"]` before processing.
+#'
+#' @param path character(1) jsonpath or jmespath query string.
+#'
+#' @param ... arguments passed to `jsonlite::toJSON` when `data` is
+#'     not a scalar character vector. For example, use `auto_unbox =
+#'     TRUE` to automatically 'unbox' vectors of length 1 to JSON
+#'     scalar values.
+#'
+#' @return `jsonpath()` returns a character(1) json string
+#'     representing the result of the query.
+#'
+#' @examples
 #' json <- '{
 #'   "locations": [
 #'     {"name": "Seattle", "state": "WA"},
@@ -60,42 +74,60 @@ NULL
 #' jsonpath(json, "$..name") |>
 #'     cat("\n")
 #'
-#' jmespath(json, "locations[?state == 'WA'].name | sort(@)") |>
+#' ## create a list with state and name as scalar vectors
+#' lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+#'
+#' ## objects other than scalar character vectors are automatically
+#' ## coerced to JSON; use `auto_unbox = TRUE` to represent R scalar
+#' ## vectors in the object as JSON scalar vectors
+#' jsonpath(lst, "$..name", auto_unbox = TRUE) |>
+#'     cat("\n")
+#'
+#' ## a scalar character vector like "Seattle" is not valid JSON...
+#' try(jsonpath("Seattle", "$[0]"))
+#'
+#' ## use I("Seattle") to coerce to a JSON object ["Seattle"]
+#' jsonpath(I("Seattle"), "$[0]") |>
 #'     cat("\n")
 #'
 #' @export
-version <- cpp_version
-
-#' @rdname jsoncons
-#'
-#' @export
 jsonpath <-
-    function(data, path, auto_unbox = FALSE, ...)
+    function(data, path, ...)
 {
-    stopifnot(
-        .is_scalar_character(data) || is.list(data),
-        .is_scalar_character(path)
-    )
-    if (is.list(data))
-        data <- as.character(
-            jsonlite::toJSON(data, auto_unbox = auto_unbox, ...)
-        )
+    stopifnot(.is_scalar_character(path))
+    data <- .as_json_string(data, ...)
     cpp_jsonpath(data, path)
 }
 
 #' @rdname jsoncons
 #'
+#' @description `jmespath()` executes a query against a json string
+#'     using the 'jmespath' specification.
+#'
+#' @return `jmespath()` return a character(1) json string representing
+#'     the result of the query.
+#'
+#' @examples
+#' path <- "locations[?state == 'WA'].name | sort(@)"
+#' jmespath(json, path) |>
+#'     cat("\n")
+#'
+#' ## original filter always fails, e.g., '["WA"] != 'WA'
+#' jmespath(lst, path)  # empty result set, '[]'
+#'
+#' ## filter with unboxed state, and return unboxed name
+#' jmespath(lst, "locations[?state[0] == 'WA'].name[0] | sort(@)") |>
+#'     cat("\n")
+#'
+#' ## automatically unbox scalar values when creating the JSON string
+#' jmespath(lst, path, auto_unbox = TRUE) |>
+#'     cat("\n")
+#'
 #' @export
 jmespath <-
-    function(data, path, auto_unbox = FALSE, ...)
+    function(data, path, ...)
 {
-    stopifnot(
-        .is_scalar_character(data) || is.list(data),
-        .is_scalar_character(path)
-    )
-    if (is.list(data))
-        data <- as.character(
-            jsonlite::toJSON(data, auto_unbox = auto_unbox, ...)
-        )
+    stopifnot(.is_scalar_character(path))
+    data <- .as_json_string(data, ...)
     cpp_jmespath(data, path)
 }
