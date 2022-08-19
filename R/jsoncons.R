@@ -53,6 +53,9 @@ version <- cpp_version
 #'
 #' @param path character(1) jsonpath or jmespath query string.
 #'
+#' @param object_names character(1) order `data` object elements
+#'     `"asis"` (default) or `"sort"` before filtering on `path`.
+#'
 #' @param ... arguments passed to `jsonlite::toJSON` when `data` is
 #'     not a scalar character vector. For example, use `auto_unbox =
 #'     TRUE` to automatically 'unbox' vectors of length 1 to JSON
@@ -87,16 +90,25 @@ version <- cpp_version
 #' try(jsonpath("Seattle", "$[0]"))
 #'
 #' ## use I("Seattle") to coerce to a JSON object ["Seattle"]
-#' jsonpath(I("Seattle"), "$[0]") |>
-#'     cat("\n")
+#' jsonpath(I("Seattle"), "$[0]")      |> cat("\n")
+#'
+#' ## different ordering of object names -- 'asis' (default) or 'sort'
+#' json_obj <- '{"b": "1", "a": "2"}'
+#' jsonpath(json_obj, "$")             |> cat("\n")
+#' jsonpath(json_obj, "$.*")           |> cat("\n")
+#' jsonpath(json_obj, "$", "sort")   |> cat("\n")
+#' jsonpath(json_obj, "$.*", "sort") |> cat("\n")
 #'
 #' @export
 jsonpath <-
-    function(data, path, ...)
+    function(data, path, object_names = "asis", ...)
 {
-    stopifnot(.is_scalar_character(path))
+    stopifnot(
+        .is_scalar_character(path),
+        .is_scalar_character(object_names)
+    )
     data <- .as_json_string(data, ...)
-    cpp_jsonpath(data, path)
+    cpp_jsonpath(data, path, object_names)
 }
 
 #' @rdname jsoncons
@@ -125,9 +137,12 @@ jsonpath <-
 #'
 #' @export
 jmespath <-
-    function(data, path, ...)
+    function(data, path, object_names = "asis", ...)
 {
-    stopifnot(.is_scalar_character(path))
+    stopifnot(
+        .is_scalar_character(path),
+        .is_scalar_character(object_names)
+    )
     data <- .as_json_string(data, ...)
-    cpp_jmespath(data, path)
+    cpp_jmespath(data, path, object_names)
 }

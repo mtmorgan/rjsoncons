@@ -17,18 +17,49 @@ std::string cpp_version()
         std::to_string(v.patch);
 }
 
-[[cpp11::register]]
-std::string cpp_jsonpath(std::string data, std::string path)
+// use this to switch() on string values
+// https://stackoverflow.com/a/46711735/547331
+constexpr unsigned int hash(const char *s, int off = 0)
 {
-    json j = json::parse(data);
-    json result = jsonpath::json_query(j, path);
-    return result.as<std::string>();
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
+}
+
+// jsonpath
+
+template<class Json>
+std::string jsonpath_impl(const std::string data, const std::string path)
+{
+    Json j = Json::parse(data);
+    Json result = jsonpath::json_query<Json>(j, path);
+    return result.template as<std::string>();
 }
 
 [[cpp11::register]]
-std::string cpp_jmespath(std::string data, std::string path)
+std::string cpp_jsonpath(std::string data, std::string path, std::string jtype)
 {
-    json j = json::parse(data);
-    json result = jmespath::search(j, path);
-    return result.as<std::string>();
+    switch(hash(jtype.c_str())) {
+    case hash("asis"): return jsonpath_impl<ojson>(data, path);
+    case hash("sort"): return jsonpath_impl<json>(data, path);
+    default: cpp11::stop("unknown object_names '" + jtype + "'");
+    }
+}
+
+// jmespath
+
+template<class Json>
+std::string jmespath_impl(const std::string data, const std::string path)
+{
+    Json j = Json::parse(data);
+    Json result = jmespath::search<Json>(j, path);
+    return result.template as<std::string>();
+}
+
+[[cpp11::register]]
+std::string cpp_jmespath(std::string data, std::string path, std::string jtype)
+{
+    switch(hash(jtype.c_str())) {
+    case hash("asis"): return jmespath_impl<ojson>(data, path);
+    case hash("sort"): return jmespath_impl<json>(data, path);
+    default: cpp11::stop("unknown object_names '" + jtype + "'");
+    }
 }

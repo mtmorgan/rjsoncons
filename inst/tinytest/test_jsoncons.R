@@ -42,6 +42,23 @@ expect_identical(
     '["Seattle"]'
 )
 
+expect_identical(
+    jsonpath('{"b":"1","a":"2"}', "$", "asis"),
+    '[{"b":"1","a":"2"}]'
+)
+
+expect_identical(
+    jsonpath('{"b":"1","a":"2"}', "$"),
+    jsonpath('{"b":"1","a":"2"}', "$", "asis"),
+)
+
+expect_identical(
+    jsonpath('{"b":"1","a":"2"}', "$", "sort"),
+    '[{"a":"2","b":"1"}]'
+)
+
+expect_error(jsonpath('{"b":"1","a":"2"}', "$", "ASIS"))
+
 ## jmespath
 
 expect_identical(
@@ -80,3 +97,20 @@ expect_identical(
     ),
     '["Bellevue","Olympia","Seattle"]'
 )
+
+expect_identical(
+    jmespath('{"b":"1","a":"2"}', "@", "asis"),
+    '{"b":"1","a":"2"}'
+)
+
+expect_identical(
+    jmespath('{"b":"1","a":"2"}', "@"),
+    jmespath('{"b":"1","a":"2"}', "@", "asis"),
+)
+
+expect_identical(
+    jmespath('{"b":"1","a":"2"}', "@", "sort"),
+    '{"a":"2","b":"1"}'
+)
+
+expect_error(jmespath('{"b":"1","a":"2"}', "@", "ASIS"))

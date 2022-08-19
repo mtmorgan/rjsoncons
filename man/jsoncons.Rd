@@ -8,9 +8,9 @@
 \usage{
 version()
 
-jsonpath(data, path, ...)
+jsonpath(data, path, object_names = "asis", ...)
 
-jmespath(data, path, ...)
+jmespath(data, path, object_names = "asis", ...)
 }
 \arguments{
 \item{data}{an \emph{R} object. If \code{data} is a scalar (length 1)
@@ -21,6 +21,9 @@ vector as an \emph{R} object rather than JSON string, e.g., \code{I("A")}
 will be parsed to \verb{["A"]} before processing.}
 
 \item{path}{character(1) jsonpath or jmespath query string.}
+
+\item{object_names}{character(1) order \code{data} object elements
+\code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
 \item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
 not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
@@ -74,8 +77,14 @@ jsonpath(lst, "$..name", auto_unbox = TRUE) |>
 try(jsonpath("Seattle", "$[0]"))
 
 ## use I("Seattle") to coerce to a JSON object ["Seattle"]
-jsonpath(I("Seattle"), "$[0]") |>
-    cat("\n")
+jsonpath(I("Seattle"), "$[0]")      |> cat("\n")
+
+## different ordering of object names -- 'asis' (default) or 'sort'
+json_obj <- '{"b": "1", "a": "2"}'
+jsonpath(json_obj, "$")             |> cat("\n")
+jsonpath(json_obj, "$.*")           |> cat("\n")
+jsonpath(json_obj, "$", "sort")   |> cat("\n")
+jsonpath(json_obj, "$.*", "sort") |> cat("\n")
 
 path <- "locations[?state == 'WA'].name | sort(@)"
 jmespath(json, path) |>
