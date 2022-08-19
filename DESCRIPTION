@@ -23,7 +23,7 @@ Description: The jsoncons C++ library constructs representations from
     plus simple R wrappers to support jsonpath and jmespath queries
     into JSON string representations.
 Imports: jsonlite
-Suggests: tinytest
+Suggests: tinytest, BiocStyle, knitr, rmarkdown
 License: BSL-1.0
 LinkingTo: cpp11
 NeedsCompilation: yes
@@ -31,3 +31,4 @@ SystemRequirements: C++11
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
+VignetteBuilder: knitr

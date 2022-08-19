@@ -1,38 +1,49 @@
 ---
-title: "Using the jsoncons library in R"
+title: "Using the 'jsoncons' Library in R"
 author:
 - name: Martin Morgan
-  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY, US
+- name: Marcel Ramos
+  affiliation: CUNY School of Public Health at Hunter College, New York, NY, US
 output:
-  html_document:
-      toc: true
+  BiocStyle::html_document
 vignette: |
-  %\VignetteIndexEntry{Using the jsoncons library in R}
+  %\VignetteIndexEntry{Using the 'jsoncons' Library in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-# rjsoncons
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+)
+```
+
+# Introduction & Installation
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 This package provides the header-only '[jsoncons][]' library for
-manipulating json objects.
+manipulating JSON objects. Install the released version of this
+package from CRAN with
 
 [jsoncons]: https://github.com/danielaparker/jsoncons
 
-## Installation
 
-Install the in-development version of this package with
-
-```{r,eval=FALSE}
-if (!requireNamespace("BiocManager", quiety = TRUE))
-    install.packages("BiocManager", repos = "https://cran.r-project.org")
-BiocManager::install("mtmorgan/rjsoncons")
+```{r, eval = FALSE}
+install.packages("rjsoncons", repos = "https://cran.r-project.org")
 ```
 
-## Example
+Install the in-development version with
+
+```{r,eval=FALSE}
+if (!requireNamespace("remotes", quiety = TRUE))
+    install.packages("remotes", repos = "https://cran.r-project.org")
+remotes::install_github("mtmorgan/rjsoncons")
+```
+
+# Examples
 
 For interactive use, load the library
 
@@ -41,8 +52,9 @@ library(rjsoncons)
 ```
 
 The package implements basic functionality, including querying a JSON
-document represent as character(1) using [JSONpath][] or [JMESpath][]
-syntax.
+document represented as character(1) using [JSONpath][] or
+[JMESpath][] syntax. (In the following, `noquote()` is used to print
+the result with fewer escaped quotation marks, increasing readability.)
 
 [JSONpath]: https://goessner.net/articles/JsonPath/
 [JMESpath]: https://jmespath.org/
@@ -59,9 +71,11 @@ json <- '{
   ]
 }'
 
-jsonpath(json, "$..name")
+jsonpath(json, "$..name") |>
+    noquote()
 
-jmespath(json, "locations[?state == 'WA'].name | sort(@)")
+jmespath(json, "locations[?state == 'WA'].name | sort(@)") |>
+    noquote()
 ```
 
 For an R representation of the results use, e.g., [jsonlite][]
@@ -77,16 +91,20 @@ converted using `jsonlite::toJSON()` before queries are made;
 function call.
 
 ```{r}
-lst <- fromJSON(json, simplifyVector = FALSE)
-jmespath(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE)
+lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+jmespath(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
+    noquote()
 ```
+
+Additional examples illustrating features available are on the help
+pages, e.g., `?jmespath`.
 
 [jsonlite]: https://cran.r-project.org/package=jsonlite
 
 
-## Library use in other packages
+# C++ Library Use in Other Packages
 
-The package includes the complete jsoncons C++ header-only library,
+The package includes the complete 'jsoncons' C++ header-only library,
 available to other R packages by adding
 
 ```
@@ -96,8 +114,16 @@ SystemRequirements: C++11
 
 to the DESCRIPTION file. Typical use in an R package would also
 include `LinkingTo:` specifications for the [cpp11][] or [Rcpp][]
-(this package uses cpp11) packages to provide a C / C++ interface
-between R and the C++ jsoncons library.
+(this package uses [cpp11][]) packages to provide a C / C++ interface
+between R and the C++ 'jsoncons' library.
 
 [cpp11]: https://cran.r-project.org/package=cpp11
 [Rcpp]: https://cran.r-project.org/package=Rcpp
+
+# Session Information
+
+This vignette was compiled using the following software versions
+
+```{r}
+sessionInfo()
+```

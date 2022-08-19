@@ -5,3 +5,5 @@ src/*o
 *_cache
 *Rproj
 .Rproj.user
+vignettes/*R
+*html
