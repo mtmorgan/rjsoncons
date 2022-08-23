@@ -2,3 +2,8 @@ src/*o
 .Rhistory
 *Rcheck
 *tar.gz
+*_cache
+*Rproj
+.Rproj.user
+vignettes/*R
+*html
