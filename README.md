@@ -2,12 +2,17 @@
 # Introduction & Installation
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 This package provides the header-only
 ‘[jsoncons](https://github.com/danielaparker/jsoncons)’ library for
-manipulating JSON objects. Install the released version of this package
-from CRAN with
+manipulating JSON objects. Use
+[rjsoncons](https://github.com/mtmorgan/rjsoncons) for querying JSON or
+R objects using ‘JMESpath’ or ‘JSONpath’, or link to the package for
+direct access to the C++ library.
+
+Install the released version of this package from CRAN with
 
 ``` r
 install.packages("rjsoncons", repos = "https://cran.r-project.org")
@@ -102,27 +107,30 @@ This vignette was compiled using the following software versions
 
 ``` r
 sessionInfo()
-#> R version 4.2.1 Patched (2022-06-23 r82518)
-#> Platform: aarch64-apple-darwin21.5.0 (64-bit)
-#> Running under: macOS Monterey 12.5
+#> R version 4.2.1 (2022-06-23)
+#> Platform: x86_64-pc-linux-gnu (64-bit)
+#> Running under: Ubuntu 20.04.4 LTS
 #> 
 #> Matrix products: default
-#> BLAS:   /Users/ma38727/bin/R-4-2-branch/lib/libRblas.dylib
-#> LAPACK: /Users/ma38727/bin/R-4-2-branch/lib/libRlapack.dylib
+#> BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
+#> LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
 #> 
 #> locale:
-#> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
 #> 
 #> attached base packages:
-#> [1] stats     graphics  grDevices utils     datasets  methods   base     
+#> [1] stats     graphics  grDevices datasets  utils     methods   base     
 #> 
 #> other attached packages:
 #> [1] rjsoncons_0.0.2
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] codetools_0.2-18 digest_0.6.29    jsonlite_1.8.0   magrittr_2.0.3  
-#>  [5] evaluate_0.15    rlang_1.0.4      stringi_1.7.8    cli_3.3.0       
-#>  [9] rmarkdown_2.14   tools_4.2.1      stringr_1.4.0    xfun_0.31       
+#>  [5] evaluate_0.16    rlang_1.0.4      stringi_1.7.8    renv_0.15.5     
+#>  [9] rmarkdown_2.15   tools_4.2.1      stringr_1.4.1    xfun_0.32       
 #> [13] yaml_2.3.5       fastmap_1.1.0    compiler_4.2.1   htmltools_0.5.3 
 #> [17] knitr_1.39
 ```
