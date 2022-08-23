@@ -25,10 +25,14 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 This package provides the header-only '[jsoncons][]' library for
-manipulating JSON objects. Install the released version of this
-package from CRAN with
+manipulating JSON objects. Use [rjsoncons][] for querying JSON or R
+objects using 'JMESpath' or 'JSONpath', or link to the package for
+direct access to the C++ library.
+
+Install the released version of this package from CRAN with
 
 [jsoncons]: https://github.com/danielaparker/jsoncons
+[rjsoncons]: https://github.com/mtmorgan/rjsoncons
 
 
 ```{r, eval = FALSE}

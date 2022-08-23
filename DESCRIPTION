@@ -1,5 +1,5 @@
 Package: rjsoncons
-Title: C++ header-only jsoncons library for JSON construction
+Title: C++ Header-Only 'jsoncons' Library for JSON Queries
 Version: 0.0.2
 Authors@R: c(
     person(
@@ -16,12 +16,13 @@ Authors@R: c(
         email = "danielaparker@yahoo.com",
         comment = "jsoncons C++ library maintainer"
     ))
-Description: The jsoncons C++ library constructs representations from
-    a JSON character vector. It includes extensions such as 'jsonpath'
-    and 'jmespath' for flexible queries into JSON objects. This
-    packages contains the complete header-only source for the library,
-    plus simple R wrappers to support jsonpath and jmespath queries
-    into JSON string representations.
+Description: The 'jsoncons' C++ header-only library constructs
+    representations from a JSON character vector, and provides
+    extensions for flexible queries and other operations on JSON
+    objects. This package has simple R wrappers to support 'JSONpath'
+    and 'JMESpath' queries into JSON strings or R objects. The
+    'jsoncons' library can also be easily linked to other packages for
+    direct access to C++ functionality.
 Imports: jsonlite
 Suggests: tinytest, BiocStyle, knitr, rmarkdown
 License: BSL-1.0
