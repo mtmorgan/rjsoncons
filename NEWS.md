@@ -1,3 +1,7 @@
+# rjsoncons 0.99.0
+
+- pre-release version
+
 # rjsoncons 0.0.3
 
 - support object names ordering 'asis' or 'sort'
