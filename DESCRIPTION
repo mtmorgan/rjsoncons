@@ -1,6 +1,6 @@
 Package: rjsoncons
-Title: C++ Header-Only 'jsoncons' Library for JSON Queries
-Version: 0.99.0
+Title: 'C++' Header-Only 'jsoncons' Library for 'JSON' Queries
+Version: 1.0.0
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),
@@ -16,13 +16,14 @@ Authors@R: c(
         email = "danielaparker@yahoo.com",
         comment = "jsoncons C++ library maintainer"
     ))
-Description: The 'jsoncons' C++ header-only library constructs
-    representations from a JSON character vector, and provides
-    extensions for flexible queries and other operations on JSON
-    objects. This package has simple R wrappers to support 'JSONpath'
-    and 'JMESpath' queries into JSON strings or R objects. The
-    'jsoncons' library can also be easily linked to other packages for
-    direct access to C++ functionality.
+Description: The 'jsoncons'
+    <https://danielaparker.github.io/jsoncons/> 'C++' header-only
+    library constructs representations from a 'JSON' character vector,
+    and provides extensions for flexible queries and other operations
+    on 'JSON' objects. This package has simple 'R' wrappers to support
+    'JSONpath' and 'JMESpath' queries into 'JSON' strings or 'R'
+    objects. The 'jsoncons' library is also be easily linked to other
+    packages for direct access to 'C++' functionality.
 Imports: jsonlite
 Suggests: tinytest, BiocStyle, knitr, rmarkdown
 License: BSL-1.0
@@ -30,6 +31,7 @@ LinkingTo: cpp11
 NeedsCompilation: yes
 SystemRequirements: C++11
 Encoding: UTF-8
+BugReports: https://github.com/mtmorgan/rjsoncons/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
