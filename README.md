@@ -12,12 +12,6 @@ manipulating JSON objects. Use
 R objects using ‘JMESpath’ or ‘JSONpath’, or link to the package for
 direct access to the C++ library.
 
-Install the released version of this package from CRAN with
-
-``` r
-install.packages("rjsoncons", repos = "https://cran.r-project.org")
-```
-
 Install the in-development version with
 
 ``` r
@@ -125,12 +119,12 @@ sessionInfo()
 #> [1] stats     graphics  grDevices datasets  utils     methods   base     
 #> 
 #> other attached packages:
-#> [1] rjsoncons_0.0.2
+#> [1] rjsoncons_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] codetools_0.2-18 digest_0.6.29    jsonlite_1.8.0   magrittr_2.0.3  
-#>  [5] evaluate_0.16    rlang_1.0.4      stringi_1.7.8    renv_0.15.5     
-#>  [9] rmarkdown_2.15   tools_4.2.1      stringr_1.4.1    xfun_0.32       
+#>  [5] evaluate_0.16    rlang_1.0.5      stringi_1.7.8    renv_0.15.5     
+#>  [9] rmarkdown_2.16   tools_4.2.1      stringr_1.4.1    xfun_0.32       
 #> [13] yaml_2.3.5       fastmap_1.1.0    compiler_4.2.1   htmltools_0.5.3 
-#> [17] knitr_1.39
+#> [17] knitr_1.40
 ```
