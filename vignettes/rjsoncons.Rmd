@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 # Introduction & Installation
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/rjsoncons)](https://CRAN.R-project.org/package=rjsoncons)
 <!-- badges: end -->
 
 This package provides the header-only '[jsoncons][]' library for
