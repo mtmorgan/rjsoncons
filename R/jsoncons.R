@@ -1,28 +1,6 @@
 #' @useDynLib rjsoncons, .registration = TRUE
 NULL
 
-.is_scalar_character <-
-    function(x)
-{
-    all(
-        is.character(x),
-        length(x) == 1L,
-        !is.na(x),
-        nzchar(x)
-    )
-}
-
-#' @importFrom jsonlite toJSON
-.as_json_string <-
-    function(x, ...)
-{
-    if (.is_scalar_character(x) && !inherits(x, "AsIs")) {
-        x
-    } else {
-        as.character(toJSON(x, ...))
-    }
-}
-
 #' @rdname jsoncons
 #'
 #' @title Query the jsoncons C++ library

@@ -4,7 +4,7 @@ Version: 1.0.0.9000
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),
-        email = "mtmorgan.bioc@gmail.com",
+        email = "mtmorgan.xyz@gmail.com",
         comment = c(ORCID = "0000-0002-5874-8148")
     ),
     person(
@@ -29,9 +29,8 @@ Suggests: tinytest, BiocStyle, knitr, rmarkdown
 License: BSL-1.0
 LinkingTo: cpp11
 NeedsCompilation: yes
-SystemRequirements: C++11
 Encoding: UTF-8
 BugReports: https://github.com/mtmorgan/rjsoncons/issues
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
