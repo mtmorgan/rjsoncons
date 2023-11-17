@@ -8,9 +8,9 @@
 \usage{
 version()
 
-jsonpath(data, path, object_names = "asis", ...)
+jsonpath(data, path, object_names = "asis", as = "string", ...)
 
-jmespath(data, path, object_names = "asis", ...)
+jmespath(data, path, object_names = "asis", as = "string", ...)
 }
 \arguments{
 \item{data}{an \emph{R} object. If \code{data} is a scalar (length 1)
@@ -24,6 +24,10 @@ will be parsed to \verb{["A"]} before processing.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
+
+\item{as}{character(1) return type. \code{"string"} returns a single
+JSON string; \code{"R"} returns an R object following the rules
+outlined in \code{?to_R}.}
 
 \item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
 not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON

@@ -4,10 +4,14 @@ cpp_version <- function() {
   .Call(`_rjsoncons_cpp_version`)
 }
 
-cpp_jsonpath <- function(data, path, jtype) {
-  .Call(`_rjsoncons_cpp_jsonpath`, data, path, jtype)
+cpp_jsonpath <- function(data, path, jtype, as) {
+  .Call(`_rjsoncons_cpp_jsonpath`, data, path, jtype, as)
 }
 
-cpp_jmespath <- function(data, path, jtype) {
-  .Call(`_rjsoncons_cpp_jmespath`, data, path, jtype)
+cpp_jmespath <- function(data, path, jtype, as) {
+  .Call(`_rjsoncons_cpp_jmespath`, data, path, jtype, as)
+}
+
+cpp_as_r <- function(data, jtype) {
+  .Call(`_rjsoncons_cpp_as_r`, data, jtype)
 }
