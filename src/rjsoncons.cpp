@@ -5,7 +5,7 @@
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/jmespath/jmespath.hpp>
 
-#include "as_r.hpp"
+#include "as_r.h"
 
 using namespace jsoncons; // for convenience
 

@@ -19,7 +19,7 @@ version <- cpp_version
 
 #' @rdname jsoncons
 #'
-#' @description `jsonpath()` executes a query against a json string
+#' @description `jsonpath()` executes a query against a JSON string
 #'     using the 'jsonpath' specification
 #'
 #' @param data an _R_ object. If `data` is a scalar (length 1)
@@ -35,15 +35,16 @@ version <- cpp_version
 #'     `"asis"` (default) or `"sort"` before filtering on `path`.
 #'
 #' @param as character(1) return type. `"string"` returns a single
-#'     JSON string; `"R"` returns an R object following the rules
-#'     outlined in `?to_R`.
+#'     JSON string; `"R"` returns an *R* object following the rules
+#'     outlined below.
 #'
 #' @param ... arguments passed to `jsonlite::toJSON` when `data` is
 #'     not a scalar character vector. For example, use `auto_unbox =
 #'     TRUE` to automatically 'unbox' vectors of length 1 to JSON
 #'     scalar values.
 #'
-#' @return `jsonpath()` returns a character(1) json string
+#' @return `jsonpath()` and `jmespath()` return a character(1) JSON
+#'     string (`as = "string"`, default) or *R* object (`as = "R"`)
 #'     representing the result of the query.
 #'
 #' @examples
@@ -56,8 +57,12 @@ version <- cpp_version
 #'   ]
 #'  }'
 #'
+#' ## return a JSON string
 #' jsonpath(json, "$..name") |>
 #'     cat("\n")
+#'
+#' ## return an R object
+#' jsonpath(json, "$..name", as = "R")
 #'
 #' ## create a list with state and name as scalar vectors
 #' lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
@@ -69,7 +74,9 @@ version <- cpp_version
 #'     cat("\n")
 #'
 #' ## a scalar character vector like "Seattle" is not valid JSON...
-#' try(jsonpath("Seattle", "$[0]"))
+#' try(jsonpath("Seattle", "$"))
+#' ## ...but a double-quoted string is
+#' jsonpath('"Seattle"', "$")
 #'
 #' ## use I("Seattle") to coerce to a JSON object ["Seattle"]
 #' jsonpath(I("Seattle"), "$[0]")      |> cat("\n")
@@ -95,11 +102,8 @@ jsonpath <-
 
 #' @rdname jsoncons
 #'
-#' @description `jmespath()` executes a query against a json string
+#' @description `jmespath()` executes a query against a JSON string
 #'     using the 'jmespath' specification.
-#'
-#' @return `jmespath()` return a character(1) json string representing
-#'     the result of the query.
 #'
 #' @examples
 #' path <- "locations[?state == 'WA'].name | sort(@)"
@@ -130,6 +134,49 @@ jmespath <-
     cpp_jmespath(data, path, object_names, as)
 }
 
+#' @rdname jsoncons
+#'
+#' @description `as_r()` transforms a JSON string to an *R* object.
+#'
+#' @details
+#'
+#' The `as = "R"` argument to `jsonpath()` and `jmespath()` and
+#' `as_r()` transform a JSON string representation to an *R*
+#' object. Main rules are:
+#'
+#' - JSON arrays of a single type (boolean, integer, double, string)
+#'   are transformed to *R* vectors of the same length and
+#'   corresponding type. A JSON scalar and a JSON vector of length 1
+#'   are represented in the same way in *R*.
+#'
+#' - If a JSON 64-bit integer array contains a value larger than *R*'s
+#'   32-bit integer representation, the array is transformed to an *R*
+#'   numeric vector. NOTE that this results in loss of precision for
+#'   64-bit integer values greater than `2^53`.
+#'
+#' - JSON arrays mixing integer and double values are transformed to
+#'   *R* numeric vectors.
+#'
+#' - JSON objects are transformed to *R* named lists.
+#'
+#' The vignette reiterates this information and provides additional
+#' details.
+#'
+#' @examples
+#' ## as_r()
+#' as_r('[1, 2, 3]')       # JSON integer array -> R integer vector
+#' as_r('[1, 2.0, 3]')     # JSON intger and double array -> R numeric vector
+#' as_r('[1, 2.0, "3"]')   # JSON mixed array -> R list
+#' as_r('[1, 2147483648]') # JSON integer > R integer max -> R numeric vector
+#'
+#' json = '{"b": 1, "a": ["c", "d"], "e": true, "f": [true], "g": {}}'
+#' as_r(json) |> str()     # parsing complex objects
+#' identical(              # JSON scalar and length 1 array identical in R
+#'     as_r('{"a": 1}'), as_r('{"a": [1]}')
+#' )
+#'
+#' @return `as_r()` returns an *R* object.
+#'
 #' @export
 as_r <-
     function(data, object_names = "asis", ...)
