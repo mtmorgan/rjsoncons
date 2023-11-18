@@ -34,3 +34,4 @@ BugReports: https://github.com/mtmorgan/rjsoncons/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
+URL: https://mtmorgan.github.io/rjsoncons/
