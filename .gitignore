@@ -7,3 +7,5 @@ src/*o
 .Rproj.user
 vignettes/*R
 *html
+/doc/
+/Meta/

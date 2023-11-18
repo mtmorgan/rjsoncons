@@ -1,3 +1,7 @@
+# rjsoncons 1.0.0.9100
+
+- parse JSON to R with `as = "R"` argument and `as_r()`
+
 # rjsoncons 0.99.0
 
 - pre-release version

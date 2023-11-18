@@ -4,13 +4,16 @@
 \alias{version}
 \alias{jsonpath}
 \alias{jmespath}
+\alias{as_r}
 \title{Query the jsoncons C++ library}
 \usage{
 version()
 
-jsonpath(data, path, object_names = "asis", ...)
+jsonpath(data, path, object_names = "asis", as = "string", ...)
 
-jmespath(data, path, object_names = "asis", ...)
+jmespath(data, path, object_names = "asis", as = "string", ...)
+
+as_r(data, object_names = "asis", ...)
 }
 \arguments{
 \item{data}{an \emph{R} object. If \code{data} is a scalar (length 1)
@@ -25,6 +28,10 @@ will be parsed to \verb{["A"]} before processing.}
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
+\item{as}{character(1) return type. \code{"string"} returns a single
+JSON string; \code{"R"} returns an \emph{R} object following the rules
+outlined below.}
+
 \item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
 not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
 scalar values.}
@@ -33,21 +40,44 @@ scalar values.}
 \code{version()} returns a character(1) major.minor.patch
 version string .
 
-\code{jsonpath()} returns a character(1) json string
+\code{jsonpath()} and \code{jmespath()} return a character(1) JSON
+string (\code{as = "string"}, default) or \emph{R} object (\code{as = "R"})
 representing the result of the query.
 
-\code{jmespath()} return a character(1) json string representing
-the result of the query.
+\code{as_r()} returns an \emph{R} object.
 }
 \description{
 \code{version()} reports the version of the C++ jsoncons
 library in use.
 
-\code{jsonpath()} executes a query against a json string
+\code{jsonpath()} executes a query against a JSON string
 using the 'jsonpath' specification
 
-\code{jmespath()} executes a query against a json string
+\code{jmespath()} executes a query against a JSON string
 using the 'jmespath' specification.
+
+\code{as_r()} transforms a JSON string to an \emph{R} object.
+}
+\details{
+The \code{as = "R"} argument to \code{jsonpath()} and \code{jmespath()} and
+\code{as_r()} transform a JSON string representation to an \emph{R}
+object. Main rules are:
+\itemize{
+\item JSON arrays of a single type (boolean, integer, double, string)
+are transformed to \emph{R} vectors of the same length and
+corresponding type. A JSON scalar and a JSON vector of length 1
+are represented in the same way in \emph{R}.
+\item If a JSON 64-bit integer array contains a value larger than \emph{R}'s
+32-bit integer representation, the array is transformed to an \emph{R}
+numeric vector. NOTE that this results in loss of precision for
+64-bit integer values greater than \code{2^53}.
+\item JSON arrays mixing integer and double values are transformed to
+\emph{R} numeric vectors.
+\item JSON objects are transformed to \emph{R} named lists.
+}
+
+The vignette reiterates this information and provides additional
+details.
 }
 \examples{
 version()
@@ -61,8 +91,12 @@ json <- '{
   ]
  }'
 
+## return a JSON string
 jsonpath(json, "$..name") |>
     cat("\n")
+
+## return an R object
+jsonpath(json, "$..name", as = "R")
 
 ## create a list with state and name as scalar vectors
 lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
@@ -74,7 +108,9 @@ jsonpath(lst, "$..name", auto_unbox = TRUE) |>
     cat("\n")
 
 ## a scalar character vector like "Seattle" is not valid JSON...
-try(jsonpath("Seattle", "$[0]"))
+try(jsonpath("Seattle", "$"))
+## ...but a double-quoted string is
+jsonpath('"Seattle"', "$")
 
 ## use I("Seattle") to coerce to a JSON object ["Seattle"]
 jsonpath(I("Seattle"), "$[0]")      |> cat("\n")
@@ -100,5 +136,17 @@ jmespath(lst, "locations[?state[0] == 'WA'].name[0] | sort(@)") |>
 ## automatically unbox scalar values when creating the JSON string
 jmespath(lst, path, auto_unbox = TRUE) |>
     cat("\n")
+
+## as_r()
+as_r('[1, 2, 3]')       # JSON integer array -> R integer vector
+as_r('[1, 2.0, 3]')     # JSON intger and double array -> R numeric vector
+as_r('[1, 2.0, "3"]')   # JSON mixed array -> R list
+as_r('[1, 2147483648]') # JSON integer > R integer max -> R numeric vector
+
+json = '{"b": 1, "a": ["c", "d"], "e": true, "f": [true], "g": {}}'
+as_r(json) |> str()     # parsing complex objects
+identical(              # JSON scalar and length 1 array identical in R
+    as_r('{"a": 1}'), as_r('{"a": [1]}')
+)
 
 }
