@@ -1,6 +1,6 @@
 Package: rjsoncons
 Title: 'C++' Header-Only 'jsoncons' Library for 'JSON' Queries
-Version: 1.0.0.9100
+Version: 1.0.0.9200
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),
@@ -34,3 +34,4 @@ BugReports: https://github.com/mtmorgan/rjsoncons/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
+URL: https://mtmorgan.github.io/rjsoncons/
