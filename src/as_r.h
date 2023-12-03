@@ -31,7 +31,7 @@ bool is_integer(Int_t int64_value)
 }
 
 template<class Json>
-r_type r_atomic_type(Json j)
+r_type r_atomic_type(const Json j)
 {
     r_type rtype;
 
@@ -54,20 +54,12 @@ r_type r_atomic_type(Json j)
             r_type::integer_value : r_type::numeric_value;
         break;
     }
-    case json_type::half_value: {
-        cpp11::stop("unhandled JSON type 'half_value'");
-        break;
-    }
     case json_type::double_value: {
         rtype = r_type::numeric_value;
         break;
     }
     case json_type::string_value: {
         rtype = r_type::character_value;
-        break;
-    }
-    case json_type::byte_string_value: {
-        cpp11::stop("unhandled JSON type 'byte_string_value'");
         break;
     }
     case json_type::array_value: {
@@ -77,28 +69,31 @@ r_type r_atomic_type(Json j)
     case json_type::object_value: {
         rtype = r_type::list_value;
         break;
+    }
+    default: {
+        cpp11::stop("unhandled JSON type");
     }}
 
     return rtype;
 }
 
 template<class Json>
-r_type r_vector_type(Json j)
+r_type r_vector_type(const Json j)
 {
     r_type t;
 
-    auto array_type = [](r_type t, Json j) {
-        r_type jt = r_atomic_type(j);
+    auto array_type = [](r_type t, const Json j) {
+        r_type rt = r_atomic_type(j);
 
         // promotions
-        if (t != jt) {
-            if (t > jt)         // simplify comparisons by ordering low to high
-                std::swap(t, jt);
+        if (t != rt) {
+            if (t > rt)         // simplify comparisons by ordering low to high
+                std::swap(t, rt);
             if (t == r_type::integer_value) { // 'number'
                 bool is_number =
-                    jt == r_type::integer_value || jt == r_type::numeric_value;
+                    rt == r_type::integer_value || rt == r_type::numeric_value;
                 if (is_number) {
-                    t = jt;
+                    t = rt;
                 } else {
                     t = r_type::list_value;
                 }
@@ -115,23 +110,26 @@ r_type r_vector_type(Json j)
         t = r_type::null_value;
     } else {
         auto r = j.array_range();
-        t = std::accumulate(r.begin(), r.end(), r_atomic_type(j[0]), array_type);
+        t = std::accumulate(
+            r.cbegin(), r.cend(), r_atomic_type(j[0]),
+            array_type);
     }
 
     return t;
 }
 
 template<class cpp11_t, class json_t, class Json>
-sexp as_r_vector(Json j)
+sexp as_r_vector(const Json j)
 {
     cpp11_t value(j.size());
-    for (int i = 0; i < j.size(); ++i)
-        value[i] = j[i].template as<json_t>();
+    std::transform(
+        j.array_range().cbegin(), j.array_range().cend(), value.begin(),
+        [](const Json j_elt) { return j_elt.template as<json_t>(); });
     return value;
 }
 
 template<class Json>
-sexp as_r(Json j)
+sexp as_r(const Json j)
 {
     sexp result;
     r_type rtype = r_atomic_type(j);
@@ -183,8 +181,9 @@ sexp as_r(Json j)
         case r_type::vector_value:
         case r_type::list_value: {
             writable::list value(j.size());
-            for (int i = 0; i < j.size(); ++i)
-                value[i] = as_r(j[i]);
+            std::transform(
+                j.array_range().cbegin(), j.array_range().cend(), value.begin(),
+                [](const Json j_elt) { return as_r(j_elt); });
             result = value;
             break;
         }}
@@ -196,7 +195,7 @@ sexp as_r(Json j)
         auto range = j.object_range();
 
         int i = 0;
-        for (auto it = range.begin(); it != range.end(); ++it, ++i) {
+        for (auto it = range.cbegin(); it != range.cend(); ++it, ++i) {
             names[i] = it->key();
             value[i] = as_r(it->value());
         }

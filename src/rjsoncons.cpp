@@ -95,9 +95,6 @@ sexp as_r_impl(const std::string data)
 [[cpp11::register]]
 sexp cpp_as_r(std::string data, std::string jtype)
 {
-    ojson j = ojson::parse(data);
-    sexp result;
-
     switch(hash(jtype.c_str())) {
     case hash("asis"): return as_r_impl<ojson>(data);
     case hash("sort"): return as_r_impl<json>(data);
