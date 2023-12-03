@@ -37,8 +37,8 @@ Attach the installed package to your *R* session with
 library(rjsoncons)
 ```
 
-[jsoncons]: https://github.com/danielaparker/jsoncons
-[rjsoncons]: https://mtmorgan.github.io/rjsoncons
+[jsoncons]: https://github.com/danielaparker/jsoncons/
+[rjsoncons]: https://mtmorgan.github.io/rjsoncons/
 
 ## Use cases
 

@@ -26,8 +26,8 @@ manipulating JSON objects. Use [rjsoncons][] for querying JSON or R
 objects using [JMESpath][] or [JSONpath][], or link to the package for
 direct access to the C++ library.
 
-[jsoncons]: https://github.com/danielaparker/jsoncons
-[rjsoncons]: https://mtmorgan.github.io/rjsoncons
+[jsoncons]: https://github.com/danielaparker/jsoncons/
+[rjsoncons]: https://mtmorgan.github.io/rjsoncons/
 [JSONpath]: https://goessner.net/articles/JsonPath/
 [JMESpath]: https://jmespath.org/
 
@@ -112,7 +112,7 @@ jmespath(json, "locations[?state == 'WA']", as  = "string") |>
 
 The [rjsoncons][] package is particularly useful when accessing
 elements that might otherwise require complicated application of
-nested `lapply()`, [purr][] expressions, or [tidyr][] `unnest_*()`
+nested `lapply()`, [purrr][] expressions, or [tidyr][] `unnest_*()`
 (see [R for Data Science][r4ds] chapter '[Hierarchical data][]').
 
 Additional examples illustrating features available are on the help
@@ -218,8 +218,10 @@ as_r(json) |> str()
 as_r(json, object_names = "sort") |> str()
 ```
 
-Unit tests (using the [tinytest][] framework) providing additional
-details are available at
+The parser corresponds approximately to `jsonlite::fromJSON()` with
+arguments `simplifyVector = TRUE, simplifyDataFrame = FALSE,
+simplifyMatrix = FALSE)`. Unit tests (using the [tinytest][]
+framework) providing additional details are available at
 
 ```{r, eval = FALSE}
 system.file(package = "rjsoncons", "tinytest", "test_as_r.R")

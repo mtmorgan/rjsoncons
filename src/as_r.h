@@ -18,8 +18,8 @@ enum class r_type : uint8_t
     list_value
 };
 
-template<class Int_t>
-bool is_integer(Int_t int64_value)
+template<class Int64_t>
+bool is_integer(Int64_t int64_value)
 {
     // can a 64-bit signed or unsigned int be represented as (signed)
     // int32_t?  'volatile' writes data to avoid compiler
@@ -27,7 +27,7 @@ bool is_integer(Int_t int64_value)
     volatile int32_t int32_value = static_cast<int32_t>(int64_value);
     return
         int32_value != R_NaInt &&
-        static_cast<int64_t>(int32_value) == int64_value;
+        static_cast<Int64_t>(int32_value) == int64_value;
 }
 
 template<class Json>

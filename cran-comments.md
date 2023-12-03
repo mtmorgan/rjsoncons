@@ -1,5 +1,14 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+```
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: 'Martin Morgan <mtmorgan.xyz@gmail.com>'
 
-* This is a new release.
+New maintainer:
+  Martin Morgan <mtmorgan.xyz@gmail.com>
+Old maintainer(s):
+  Martin Morgan <mtmorgan.bioc@gmail.com>
+```
+
+* Release 1.0.1 changes the maintainer email address to better reflect
+  current affiliation; the maintainer is unchanged.
