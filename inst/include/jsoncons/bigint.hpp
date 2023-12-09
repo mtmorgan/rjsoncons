@@ -231,7 +231,7 @@ private:
             data_ = std::allocator_traits<real_allocator_type>::allocate(alloc, capacity_);
             JSONCONS_TRY
             {
-                std::allocator_traits<real_allocator_type>::construct(alloc, type_traits::to_plain_pointer(data_));
+                std::allocator_traits<real_allocator_type>::construct(alloc, extension_traits::to_plain_pointer(data_));
             }
             JSONCONS_CATCH(...)
             {
@@ -246,7 +246,7 @@ private:
             {
                 real_allocator_type alloc(a);
 
-                std::allocator_traits<real_allocator_type>::destroy(alloc, type_traits::to_plain_pointer(data_));
+                std::allocator_traits<real_allocator_type>::destroy(alloc, extension_traits::to_plain_pointer(data_));
                 std::allocator_traits<real_allocator_type>::deallocate(alloc, data_,capacity_);
             }
         }
@@ -509,9 +509,11 @@ public:
         size_type len_old = common_stor_.length_;
         reserve(n);
         common_stor_.length_ = n;
-        if ( common_stor_.length_ > len_old )
+
+        uint64_t* a = data();
+        for (size_type i = len_old; i < n; ++i)
         {
-            memset( data()+len_old, 0, (common_stor_.length_ - len_old)*sizeof(uint64_t) );
+            a[i] = 0;
         }
     }
 

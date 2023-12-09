@@ -1,11 +1,11 @@
-// Copyright 2013 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_MORE_TYPE_TRAITS_HPP
-#define JSONCONS_MORE_TYPE_TRAITS_HPP
+#ifndef JSONCONS_EXTENSION_TRAITS_HPP
+#define JSONCONS_EXTENSION_TRAITS_HPP
 
 #include <stdexcept>
 #include <string>
@@ -20,8 +20,12 @@
 #include <climits> // CHAR_BIT
 #include <jsoncons/config/compiler_support.hpp>
 
+#if defined(JSONCONS_HAS_POLYMORPHIC_ALLOCATOR)
+#include <memory_resource> 
+#endif
+
 namespace jsoncons {
-namespace type_traits {
+namespace extension_traits {
 
     // is_char8
     template <typename CharT, typename Enable=void>
@@ -266,6 +270,9 @@ namespace type_traits {
     template <class T>
     struct is_character<T, 
            typename std::enable_if<std::is_same<T,char>::value ||
+#ifdef __cpp_char8_t
+                                   std::is_same<T,char8_t>::value ||
+#endif
                                    std::is_same<T,wchar_t>::value
     >::type> : std::true_type {};
 
@@ -303,6 +310,11 @@ namespace type_traits {
 
     template<>
     struct is_cstring_impl<char*> : public std::true_type {};
+
+#ifdef __cpp_char8_t
+    template<>
+    struct is_cstring_impl<char8_t*> : public std::true_type {};
+#endif
 
     template<>
     struct is_cstring_impl<wchar_t*> : public std::true_type {};
@@ -464,6 +476,16 @@ namespace type_traits {
     using
     container_size_t = decltype(std::declval<Container>().size());
 
+    // has_allocator_type
+
+    template <class T, class Enable=void>
+    struct has_allocator_type : std::false_type {};
+
+    template <class T>
+    struct has_allocator_type<T, 
+        typename std::enable_if<is_detected<container_allocator_type_t,T>::value
+    >::type> : std::true_type {};
+
     // is_string_or_string_view
 
     template <class T, class Enable=void>
@@ -476,24 +498,24 @@ namespace type_traits {
                                              is_detected<container_npos_t,T>::value
     >::type> : std::true_type {};
 
-    // is_basic_string
+    // is_string
 
     template <class T, class Enable=void>
-    struct is_basic_string : std::false_type {};
+    struct is_string : std::false_type {};
 
     template <class T>
-    struct is_basic_string<T, 
+    struct is_string<T, 
                      typename std::enable_if<is_string_or_string_view<T>::value &&
-                                             is_detected<container_allocator_type_t,T>::value
+                                             has_allocator_type<T>::value
     >::type> : std::true_type {};
 
-    // is_basic_string_view
+    // is_string_view
 
     template <class T, class Enable=void>
-    struct is_basic_string_view : std::false_type {};
+    struct is_string_view : std::false_type {};
 
     template <class T>
-    struct is_basic_string_view<T, 
+    struct is_string_view<T, 
                           typename std::enable_if<is_string_or_string_view<T>::value &&
                                                   !is_detected<container_allocator_type_t,T>::value
     >::type> : std::true_type {};
@@ -769,7 +791,138 @@ namespace impl {
                                                                is_cstring<Source>::value
         >::type> : std::true_type {};
 
-} // type_traits
+    #if defined(JSONCONS_HAS_2017)
+        template <typename T>
+        using is_nothrow_swappable = std::is_nothrow_swappable<T>;
+    #else
+        template <typename T>
+        struct is_nothrow_swappable {
+            static const bool value = noexcept(swap(std::declval<T&>(), std::declval<T&>()));
+        };
+    #endif
+
+    #if defined(JSONCONS_HAS_2014)
+        template <class T>
+        using alignment_of = std::alignment_of<T>;
+
+        template< class T, T... Ints >
+        using integer_sequence = std::integer_sequence<T,Ints...>;
+
+        template <T ... Inds>
+        using index_sequence = std::index_sequence<Inds...>;
+
+        template <class T, T N>
+        using make_integer_sequence = std::make_integer_sequence<T,N>;
+
+        template <std::size_t N>
+        using make_index_sequence = std::make_index_sequence<N>;
+
+        template<class... T>
+        using index_sequence_for = std::index_sequence_for<T...>;
+
+    #else
+       template <class T>
+        struct alignment_of
+            : std::integral_constant<std::size_t, alignof(typename std::remove_all_extents<T>::type)> {};
+
+        template <class T, T... Ints>
+        class integer_sequence 
+        {
+        public:
+           using value_type = T;
+           static_assert(std::is_integral<value_type>::value, "not integral type");
+           static constexpr std::size_t size() noexcept 
+           {
+               return sizeof...(Ints);
+           }
+        };
+
+        template <std::size_t... Inds>
+        using index_sequence = integer_sequence<std::size_t, Inds...>;
+        namespace detail_ {
+        template <class T, T Begin, T End, bool>
+        struct IntSeqImpl {
+            using TValue = T;
+            static_assert(std::is_integral<TValue>::value, "not integral type");
+            static_assert(Begin >= 0 && Begin < End, "unexpected argument (Begin<0 || Begin<=End)");
+
+            template <class, class>
+            struct IntSeqCombiner;
+
+            template <TValue... Inds0, TValue... Inds1>
+            struct IntSeqCombiner<integer_sequence<TValue, Inds0...>, integer_sequence<TValue, Inds1...>> {
+                using TResult = integer_sequence<TValue, Inds0..., Inds1...>;
+            };
+
+            using TResult =
+                typename IntSeqCombiner<typename IntSeqImpl<TValue, Begin, Begin + (End - Begin) / 2,
+                                                            (End - Begin) / 2 == 1>::TResult,
+                                        typename IntSeqImpl<TValue, Begin + (End - Begin) / 2, End,
+                                                            (End - Begin + 1) / 2 == 1>::TResult>::TResult;
+        };
+
+        template <class T, T Begin>
+        struct IntSeqImpl<T, Begin, Begin, false> {
+            using TValue = T;
+            static_assert(std::is_integral<TValue>::value, "not integral type");
+            static_assert(Begin >= 0, "unexpected argument (Begin<0)");
+            using TResult = integer_sequence<TValue>;
+        };
+
+        template <class T, T Begin, T End>
+        struct IntSeqImpl<T, Begin, End, true> {
+            using TValue = T;
+            static_assert(std::is_integral<TValue>::value, "not integral type");
+            static_assert(Begin >= 0, "unexpected argument (Begin<0)");
+            using TResult = integer_sequence<TValue, Begin>;
+        };
+        } // namespace detail_
+
+        template <class T, T N>
+        using make_integer_sequence = typename detail_::IntSeqImpl<T, 0, N, (N - 0) == 1>::TResult;
+
+        template <std::size_t N>
+        using make_index_sequence = make_integer_sequence<std::size_t, N>;
+
+        template <class... T>
+        using index_sequence_for = make_index_sequence<sizeof...(T)>;
+    
+
+    #endif
+
+    // is_propagating_allocator
+
+    template <class Allocator>
+    using 
+    allocator_outer_allocator_type_t = typename Allocator::outer_allocator_type;
+
+    template <class Allocator>
+    using 
+    allocator_inner_allocator_type_t = typename Allocator::inner_allocator_type;
+
+    template <class T, class Enable=void>
+    struct is_propagating_allocator : std::false_type {};
+
+    template <class T, class Enable=void>
+    struct is_polymorphic_allocator : std::false_type {};
+
+#if defined(JSONCONS_HAS_POLYMORPHIC_ALLOCATOR)
+    template<class T>
+    struct is_polymorphic_allocator
+    <
+        T, 
+        typename std::enable_if<(std::is_same<T,std::pmr::polymorphic_allocator<char>>::value) >::type
+    > : std::true_type{};
+#endif
+    template<class T>
+    struct is_propagating_allocator
+    <
+        T, 
+        typename std::enable_if<(is_polymorphic_allocator<T>::value) || 
+            (is_detected<allocator_outer_allocator_type_t,T>::value && is_detected<allocator_inner_allocator_type_t,T>::value)>::type
+    > : std::true_type{};
+
+} // extension_traits
 } // jsoncons
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -81,9 +81,9 @@ private:
 
     };
 
-    typedef typename std::allocator_traits<allocator_type>:: template rebind_alloc<std::pair<const string_type,size_t>> string_size_allocator_type;
-    typedef typename std::allocator_traits<allocator_type>:: template rebind_alloc<std::pair<const byte_string_type,size_t>> byte_string_size_allocator_type;
-    typedef typename std::allocator_traits<allocator_type>:: template rebind_alloc<stack_item> stack_item_allocator_type;
+    using string_size_allocator_type = typename std::allocator_traits<allocator_type>:: template rebind_alloc<std::pair<const string_type,size_t>>;
+    using byte_string_size_allocator_type = typename std::allocator_traits<allocator_type>:: template rebind_alloc<std::pair<const byte_string_type,size_t>>;
+    using stack_item_allocator_type = typename std::allocator_traits<allocator_type>:: template rebind_alloc<stack_item>;
 
     Sink sink_;
     const cbor_encode_options options_;
@@ -111,7 +111,7 @@ public:
          options_(options), 
          alloc_(alloc),
          stack_(alloc),
-#if !defined(JSONCONS_NO_MAP_TAKING_ALLOCATOR) 
+#if !defined(JSONCONS_NO_MAP_CONS_TAKES_ALLOCATOR) 
          stringref_map_(alloc),
          bytestringref_map_(alloc),
 #endif 
@@ -132,6 +132,21 @@ public:
         JSONCONS_CATCH(...)
         {
         }
+    }
+
+    void reset()
+    {
+        stack_.clear();
+        stringref_map_.clear();
+        bytestringref_map_.clear();
+        next_stringref_ = 0;
+        nesting_depth_ = 0;
+    }
+
+    void reset(Sink&& sink)
+    {
+        sink_ = std::move(sink);
+        reset();
     }
 
 private:
@@ -490,9 +505,6 @@ private:
                     switch (c)
                     {
                         case '-':
-                            s.push_back(c);
-                            state = decimal_parse_state::integer;
-                            break;
                         case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9':
                             s.push_back(c);
                             state = decimal_parse_state::integer;
@@ -534,9 +546,6 @@ private:
                             state = decimal_parse_state::exp2;
                             break;
                         case '-':
-                            exponent.push_back(c);
-                            state = decimal_parse_state::exp2;
-                            break;
                         case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9':
                             exponent.push_back(c);
                             state = decimal_parse_state::exp2;
@@ -715,9 +724,6 @@ private:
                             state = hexfloat_parse_state::exp2;
                             break;
                         case '-':
-                            exponent.push_back(c);
-                            state = hexfloat_parse_state::exp2;
-                            break;
                         case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9':case 'a':case 'b':case 'c':case 'd':case 'e':case 'f':case 'A':case 'B':case 'C':case 'D':case 'E':case 'F':
                             exponent.push_back(c);
                             state = hexfloat_parse_state::exp2;

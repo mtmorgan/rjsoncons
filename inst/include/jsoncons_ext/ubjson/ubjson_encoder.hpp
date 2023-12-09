@@ -1,4 +1,4 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -94,6 +94,18 @@ public:
          alloc_(alloc),
          nesting_depth_(0)
     {
+    }
+
+    void reset()
+    {
+        stack_.clear();
+        nesting_depth_ = 0;
+    }
+
+    void reset(Sink&& sink)
+    {
+        sink_ = std::move(sink);
+        reset();
     }
 
     ~basic_ubjson_encoder() noexcept
@@ -322,8 +334,9 @@ private:
 
         const size_t length = b.size();
         sink_.push_back(jsoncons::ubjson::ubjson_type::start_array_marker);
-        binary::native_to_big(static_cast<uint8_t>(jsoncons::ubjson::ubjson_type::type_marker), std::back_inserter(sink_));
-        binary::native_to_big(static_cast<uint8_t>(jsoncons::ubjson::ubjson_type::uint8_type), std::back_inserter(sink_));
+        sink_.push_back(static_cast<uint8_t>(jsoncons::ubjson::ubjson_type::type_marker));
+        sink_.push_back(static_cast<uint8_t>(jsoncons::ubjson::ubjson_type::uint8_type));
+        sink_.push_back(jsoncons::ubjson::ubjson_type::count_marker);
         put_length(length);
 
         for (auto c : b)

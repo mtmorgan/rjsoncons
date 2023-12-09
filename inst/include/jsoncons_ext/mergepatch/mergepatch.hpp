@@ -1,4 +1,4 @@
-// Copyright 2017 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,7 +15,7 @@
 #include <jsoncons/json.hpp>
 
 namespace jsoncons { 
-namespace json_merge_patch {
+namespace mergepatch {
 
     template <class Json>
     Json from_diff(const Json& source, const Json& target)
@@ -97,7 +97,7 @@ namespace json_merge_patch {
         target = detail::apply_merge_patch_(target, patch);
     }
 
-} // namespace json_merge_patch
+} // namespace mergepatch
 } // namespace jsoncons
 
 #endif

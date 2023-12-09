@@ -1,4 +1,4 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -34,7 +34,7 @@ public:
     using allocator_type = Allocator;
     using string_view_type = jsoncons::basic_string_view<CharT>;
 private:
-    typedef typename std::allocator_traits<allocator_type>:: template rebind_alloc<CharT> char_allocator_type;
+    using char_allocator_type = typename std::allocator_traits<allocator_type>:: template rebind_alloc<CharT>;
     static constexpr size_t default_max_buffer_size = 16384;
 
     json_source_adaptor<Source> source_;
@@ -78,19 +78,7 @@ public:
          cursor_visitor_(accept_all),
          done_(false)
     {
-        jsoncons::basic_string_view<CharT> sv(std::forward<Sourceable>(source));
-
-        auto r = unicode_traits::detect_json_encoding(sv.data(), sv.size());
-        if (!(r.encoding == unicode_traits::encoding_kind::utf8 || r.encoding == unicode_traits::encoding_kind::undetected))
-        {
-            JSONCONS_THROW(ser_error(json_errc::illegal_unicode_character,parser_.line(),parser_.column()));
-        }
-        std::size_t offset = (r.ptr - sv.data());
-        parser_.update(sv.data()+offset,sv.size()-offset);
-        if (!done())
-        {
-            next();
-        }
+        initialize_with_string_view(std::forward<Sourceable>(source));
     }
 
 
@@ -161,19 +149,78 @@ public:
          cursor_visitor_(accept_all),
          done_(false)
     {
-        jsoncons::basic_string_view<CharT> sv(std::forward<Sourceable>(source));
-        auto r = unicode_traits::detect_json_encoding(sv.data(), sv.size());
-        if (!(r.encoding == unicode_traits::encoding_kind::utf8 || r.encoding == unicode_traits::encoding_kind::undetected))
+        initialize_with_string_view(std::forward<Sourceable>(source), ec);
+    }
+
+    void reset()
+    {
+        parser_.reset();
+        cursor_visitor_.reset();
+        done_ = false;
+        if (!done())
         {
-            ec = json_errc::illegal_unicode_character;
-            return;
+            next();
         }
-        std::size_t offset = (r.ptr - sv.data());
-        parser_.update(sv.data()+offset,sv.size()-offset);
+    }
+
+    template <class Sourceable>
+    typename std::enable_if<!std::is_constructible<jsoncons::basic_string_view<CharT>,Sourceable>::value>::type
+    reset(Sourceable&& source)
+    {
+        source_ = std::forward<Sourceable>(source);
+        parser_.reinitialize();
+        cursor_visitor_.reset();
+        done_ = false;
+        if (!done())
+        {
+            next();
+        }
+    }
+
+    template <class Sourceable>
+    typename std::enable_if<std::is_constructible<jsoncons::basic_string_view<CharT>,Sourceable>::value>::type
+    reset(Sourceable&& source)
+    {
+        source_ = {};
+        parser_.reinitialize();
+        cursor_visitor_.reset();
+        done_ = false;
+        initialize_with_string_view(std::forward<Sourceable>(source));
+    }
+
+    void reset(std::error_code& ec)
+    {
+        parser_.reset();
+        cursor_visitor_.reset();
+        done_ = false;
         if (!done())
         {
             next(ec);
         }
+    }
+
+    template <class Sourceable>
+    typename std::enable_if<!std::is_constructible<jsoncons::basic_string_view<CharT>,Sourceable>::value>::type
+    reset(Sourceable&& source, std::error_code& ec)
+    {
+        source_ = std::forward<Sourceable>(source);
+        parser_.reinitialize();
+        cursor_visitor_.reset();
+        done_ = false;
+        if (!done())
+        {
+            next(ec);
+        }
+    }
+
+    template <class Sourceable>
+    typename std::enable_if<std::is_constructible<jsoncons::basic_string_view<CharT>,Sourceable>::value>::type
+    reset(Sourceable&& source, std::error_code& ec)
+    {
+        source_ = {};
+        parser_.reinitialize();
+        done_ = false;
+        initialize_with_string_view(std::forward<Sourceable>(source), ec);
     }
 
     bool done() const override
@@ -199,7 +246,7 @@ public:
     void read_to(basic_json_visitor<CharT>& visitor,
                  std::error_code& ec) override
     {
-        if (staj_to_saj_event(cursor_visitor_.event(), visitor, *this, ec))
+        if (send_json_event(cursor_visitor_.event(), visitor, *this, ec))
         {
             read_next(visitor, ec);
         }
@@ -299,6 +346,50 @@ private:
         return true;
     }
 
+    void initialize_with_string_view(string_view_type sv)
+    {
+        auto r = unicode_traits::detect_json_encoding(sv.data(), sv.size());
+        if (!(r.encoding == unicode_traits::encoding_kind::utf8 || r.encoding == unicode_traits::encoding_kind::undetected))
+        {
+            JSONCONS_THROW(ser_error(json_errc::illegal_unicode_character,parser_.line(),parser_.column()));
+        }
+        std::size_t offset = (r.ptr - sv.data());
+        parser_.update(sv.data()+offset,sv.size()-offset);
+
+        bool is_done = parser_.done() || done_;
+        if (!is_done)
+        {
+            read_next();
+        }
+    }
+
+    void initialize_with_string_view(string_view_type sv, std::error_code& ec)
+    {
+        auto r = unicode_traits::detect_json_encoding(sv.data(), sv.size());
+        if (!(r.encoding == unicode_traits::encoding_kind::utf8 || r.encoding == unicode_traits::encoding_kind::undetected))
+        {
+            ec = json_errc::illegal_unicode_character;
+            return;
+        }
+        std::size_t offset = (r.ptr - sv.data());
+        parser_.update(sv.data()+offset,sv.size()-offset);
+        bool is_done = parser_.done() || done_;
+        if (!is_done)
+        {
+            read_next(ec);
+        }
+    }
+
+    void read_next()
+    {
+        std::error_code ec;
+        read_next(cursor_visitor_, ec);
+        if (ec)
+        {
+            JSONCONS_THROW(ser_error(ec,parser_.line(),parser_.column()));
+        }
+    }
+
     void read_next(std::error_code& ec)
     {
         read_next(cursor_visitor_, ec);
@@ -351,8 +442,8 @@ using wjson_cursor = basic_json_cursor<wchar_t>;
 template<class CharT,class Source,class Allocator=std::allocator<CharT>>
 using basic_json_pull_reader = basic_json_cursor<CharT,Source,Allocator>;
 
-JSONCONS_DEPRECATED_MSG("Instead, use json_cursor") typedef json_cursor json_pull_reader;
-JSONCONS_DEPRECATED_MSG("Instead, use wjson_cursor") typedef wjson_cursor wjson_pull_reader;
+JSONCONS_DEPRECATED_MSG("Instead, use json_stream_cursor") typedef json_cursor json_pull_reader;
+JSONCONS_DEPRECATED_MSG("Instead, use wjson_stream_cursor") typedef wjson_cursor wjson_pull_reader;
 
 template<class CharT,class Source,class Allocator=std::allocator<CharT>>
 using basic_json_stream_reader = basic_json_cursor<CharT,Source,Allocator>;

@@ -1,4 +1,4 @@
-// Copyright 2015 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -244,6 +244,17 @@ namespace detail {
               column_names_(alloc),
               cached_events_(alloc)
         {
+        }
+
+        void reset()
+        {
+            name_index_ = 0;
+            level_ = 0;
+            state_ = cached_state::begin_object;
+            column_index_ = 0;
+            row_index_ = 0;
+            column_names_.clear();
+            cached_events_.clear();
         }
 
         bool done() const
@@ -520,7 +531,7 @@ private:
     std::size_t column_index_;
     std::size_t level_;
     std::size_t offset_;
-    jsoncons::detail::to_double_t to_double_; 
+    jsoncons::detail::chars_to to_double_; 
     const CharT* begin_input_;
     const CharT* input_end_;
     const CharT* input_ptr_;
@@ -534,7 +545,7 @@ private:
     std::vector<string_type,string_allocator_type> column_defaults_;
     std::vector<csv_parse_state,csv_parse_state_allocator_type> state_stack_;
     string_type buffer_;
-    std::vector<std::pair<string_view_type,double>> string_double_map_;
+    std::vector<std::pair<std::basic_string<char_type>,double>> string_double_map_;
 
 public:
     basic_csv_parser(const TempAllocator& alloc = TempAllocator())
@@ -564,9 +575,14 @@ public:
                      std::function<bool(csv_errc,const ser_context&)> err_handler,
                      const TempAllocator& alloc = TempAllocator())
        : alloc_(alloc),
+         state_(csv_parse_state::start),
          visitor_(nullptr),
          err_handler_(err_handler),
+         column_(1),
+         line_(1),
+         depth_(default_depth),
          options_(options),
+         column_index_(0),
          level_(0),
          offset_(0),
          begin_input_(nullptr),
@@ -582,12 +598,6 @@ public:
          state_stack_(alloc),
          buffer_(alloc)
     {
-        depth_ = default_depth;
-        state_ = csv_parse_state::start;
-        line_ = 1;
-        column_ = 1;
-        column_index_ = 0;
-        stack_.reserve(default_depth);
         if (options_.enable_str_to_nan())
         {
             string_double_map_.emplace_back(options_.nan_to_str(),std::nan(""));
@@ -600,24 +610,8 @@ public:
         {
             string_double_map_.emplace_back(options_.neginf_to_str(),-std::numeric_limits<double>::infinity());
         }
-        stack_.push_back(csv_mode::initial);
 
-        jsoncons::csv::detail::parse_column_names(options.column_names(), column_names_);
-        jsoncons::csv::detail::parse_column_types(options.column_types(), column_types_);
-        jsoncons::csv::detail::parse_column_names(options.column_defaults(), column_defaults_);
-
-        if (options_.header_lines() > 0)
-        {
-            stack_.push_back(csv_mode::header);
-        }
-        else
-        {
-            stack_.push_back(csv_mode::data);
-        }
-        state_ = csv_parse_state::start;
-        column_index_ = 0;
-        column_ = 1;
-        level_ = 0;
+        initialize();
     }
 
     ~basic_csv_parser() noexcept
@@ -647,6 +641,32 @@ public:
     const std::vector<string_type,string_allocator_type>& column_labels() const
     {
         return column_names_;
+    }
+
+    void reinitialize()
+    {
+        state_ = csv_parse_state::start;
+        visitor_ = nullptr;
+        column_ = 1;
+        line_ = 1;
+        depth_ = default_depth;
+        column_index_ = 0;
+        level_ = 0;
+        offset_ = 0;
+        begin_input_ = nullptr;
+        input_end_ = nullptr;
+        input_ptr_ = nullptr;
+        more_ = true;
+        header_line_ = 1;
+        m_columns_filter_.reset();
+        stack_.clear();
+        column_names_.clear();
+        column_types_.clear();
+        column_defaults_.clear();
+        state_stack_.clear();
+        buffer_.clear();
+
+        initialize();
     }
 
     void restart()
@@ -1299,7 +1319,20 @@ public:
     {
         return column_;
     }
+
 private:
+    void initialize()
+    {
+        jsoncons::csv::detail::parse_column_names(options_.column_names(), column_names_);
+        jsoncons::csv::detail::parse_column_types(options_.column_types(), column_types_);
+        jsoncons::csv::detail::parse_column_names(options_.column_defaults(), column_defaults_);
+
+        stack_.reserve(default_depth);
+        stack_.push_back(csv_mode::initial);
+        stack_.push_back((options_.header_lines() > 0) ? csv_mode::header
+                                                       : csv_mode::data);
+    }
+
     // name
     void before_value(std::error_code& ec)
     {
@@ -1464,7 +1497,9 @@ private:
         }
         if (start != 0 || length != buffer_.size())
         {
-            buffer_ = buffer_.substr(start,length-start);
+            // Do not use buffer_.substr(...), as this won't preserve the allocator state.
+            buffer_.resize(length);
+            buffer_.erase(0, start);
         }
     }
 
@@ -1774,8 +1809,8 @@ private:
     {
         numeric_check_state state = numeric_check_state::initial;
         bool is_negative = false;
-        int precision = 0;
-        uint8_t decimal_places = 0;
+        //int precision = 0;
+        //uint8_t decimal_places = 0;
 
         auto last = buffer_.end();
 
@@ -1824,12 +1859,12 @@ private:
                         state = numeric_check_state::minus;
                         break;
                     case '0':
-                        ++precision;
+                        //++precision;
                         buffer.push_back(*p);
                         state = numeric_check_state::zero;
                         break;
                     case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-                        ++precision;
+                        //++precision;
                         buffer.push_back(*p);
                         state = numeric_check_state::integer;
                         break;
@@ -1862,7 +1897,7 @@ private:
                     switch (*p)
                     {
                     case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-                        ++precision;
+                        //++precision;
                         buffer.push_back(*p);
                         break;
                     case '.':
@@ -1884,12 +1919,12 @@ private:
                     switch (*p)
                     {
                     case '0':
-                        ++precision;
+                        //++precision;
                         buffer.push_back(*p);
                         state = numeric_check_state::zero;
                         break;
                     case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-                        ++precision;
+                        //++precision;
                         buffer.push_back(*p);
                         state = numeric_check_state::integer;
                         break;
@@ -1904,8 +1939,8 @@ private:
                     switch (*p)
                     {
                     case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-                        ++precision;
-                        ++decimal_places;
+                        //++precision;
+                        //++decimal_places;
                         buffer.push_back(*p);
                         state = numeric_check_state::fraction;
                         break;
@@ -1920,8 +1955,8 @@ private:
                     switch (*p)
                     {
                     case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-                        ++precision;
-                        ++decimal_places;
+                        //++precision;
+                        //++decimal_places;
                         buffer.push_back(*p);
                         break;
                     case 'e':case 'E':

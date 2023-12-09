@@ -1,4 +1,4 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -96,6 +96,52 @@ public:
         }
     }
 
+    void reset()
+    {
+        parser_.reset();
+        cursor_visitor_.reset();
+        eof_ = false;
+        if (!done())
+        {
+            next();
+        }
+    }
+
+    template <class Sourceable>
+    void reset(Sourceable&& source)
+    {
+        parser_.reset(std::forward<Sourceable>(source));
+        cursor_visitor_.reset();
+        eof_ = false;
+        if (!done())
+        {
+            next();
+        }
+    }
+
+    void reset(std::error_code& ec)
+    {
+        parser_.reset();
+        cursor_visitor_.reset();
+        eof_ = false;
+        if (!done())
+        {
+            next(ec);
+        }
+    }
+
+    template <class Sourceable>
+    void reset(Sourceable&& source, std::error_code& ec)
+    {
+        parser_.reset(std::forward<Sourceable>(source));
+        cursor_visitor_.reset();
+        eof_ = false;
+        if (!done())
+        {
+            next(ec);
+        }
+    }
+
     bool done() const override
     {
         return parser_.done();
@@ -119,7 +165,7 @@ public:
     void read_to(basic_json_visitor<char_type>& visitor,
                 std::error_code& ec) override
     {
-        if (staj_to_saj_event(cursor_visitor_.event(), visitor, *this, ec))
+        if (send_json_event(cursor_visitor_.event(), visitor, *this, ec))
         {
             read_next(visitor, ec);
         }
