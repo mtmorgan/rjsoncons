@@ -1,4 +1,4 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,7 +16,7 @@
 #include <memory> // std::addressof
 #include <cstring> // std::memcpy
 #include <jsoncons/config/jsoncons_config.hpp>
-#include <jsoncons/more_type_traits.hpp>
+#include <jsoncons/extension_traits.hpp>
 
 namespace jsoncons { 
 
@@ -210,17 +210,24 @@ namespace jsoncons {
         // Noncopyable
         string_sink(const string_sink&) = delete;
         string_sink& operator=(const string_sink&) = delete;
-        string_sink& operator=(string_sink&& val) = delete;
     public:
-        string_sink(string_sink&& val) noexcept
+        string_sink(string_sink&& other) noexcept
             : buf_ptr(nullptr)
         {
-            std::swap(buf_ptr,val.buf_ptr);
+            std::swap(buf_ptr,other.buf_ptr);
         }
 
         string_sink(container_type& buf)
             : buf_ptr(std::addressof(buf))
         {
+        }
+
+        string_sink& operator=(string_sink&& other) noexcept
+        {
+            // TODO: Shouldn't other.buf_ptr be nullified?
+            //       Also see move constructor above.
+            std::swap(buf_ptr,other.buf_ptr);
+            return *this;
         }
 
         void flush()
@@ -246,7 +253,7 @@ namespace jsoncons {
     };
 
     template <class Container>
-    class bytes_sink<Container,typename std::enable_if<type_traits::is_back_insertable_byte_container<Container>::value>::type> 
+    class bytes_sink<Container,typename std::enable_if<extension_traits::is_back_insertable_byte_container<Container>::value>::type> 
     {
     public:
         using container_type = Container;

@@ -15,7 +15,11 @@ NULL
 #' version()
 #'
 #' @export
-version <- cpp_version
+version <-
+    function()
+{
+    paste0(cpp_version(), " (update bbaf3b73b)")
+}
 
 #' @rdname jsoncons
 #'

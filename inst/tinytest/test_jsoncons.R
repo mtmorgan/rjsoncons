@@ -11,8 +11,9 @@ datalist <- jsonlite::fromJSON(json, simplifyVector = FALSE)
 
 ## version
 
-expect_true(
-    is.character(version())
+expect_identical(
+    version(),
+    "0.172.1 (update bbaf3b73b)"
 )
 
 ## jsonpath
@@ -114,3 +115,11 @@ expect_identical(
 )
 
 expect_error(jmespath('{"b":"1","a":"2"}', "@", "ASIS"))
+
+## segfault on fedora builder, rjsoncons/1.0.1; see
+## https://github.com/danielaparker/jsoncons/issues/471
+
+expect_identical(
+    jmespath(json, "{ name: locations[].name }"),
+    '{"name":["Seattle","New York","Bellevue","Olympia"]}'
+)

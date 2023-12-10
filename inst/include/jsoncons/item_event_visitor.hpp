@@ -1,11 +1,11 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_JSON_VISITOR2_HPP
-#define JSONCONS_JSON_VISITOR2_HPP
+#ifndef JSONCONS_ITEM_EVENT_VISITOR_HPP
+#define JSONCONS_ITEM_EVENT_VISITOR_HPP
 
 #include <jsoncons/json_visitor.hpp>
 #include <jsoncons/json_encoder.hpp>
@@ -13,26 +13,26 @@
 namespace jsoncons { 
 
     template <class CharT, class Allocator = std::allocator<char>>
-    class basic_json_visitor2_to_visitor_adaptor;
+    class basic_item_event_visitor_to_json_visitor;
 
     template <class CharT>
-    class basic_json_visitor2 
+    class basic_item_event_visitor 
     {
         template <class Ch, class Allocator>
-        friend class basic_json_visitor2_to_visitor_adaptor;
+        friend class basic_item_event_visitor_to_json_visitor;
     public:
         using char_type = CharT;
         using char_traits_type = std::char_traits<char_type>;
 
         using string_view_type = jsoncons::basic_string_view<char_type,char_traits_type>;
 
-        basic_json_visitor2(basic_json_visitor2&&) = default;
+        basic_item_event_visitor(basic_item_event_visitor&&) = default;
 
-        basic_json_visitor2& operator=(basic_json_visitor2&&) = default;
+        basic_item_event_visitor& operator=(basic_item_event_visitor&&) = default;
 
-        basic_json_visitor2() = default;
+        basic_item_event_visitor() = default;
 
-        virtual ~basic_json_visitor2() noexcept = default;
+        virtual ~basic_item_event_visitor() noexcept = default;
 
         void flush()
         {
@@ -164,7 +164,7 @@ namespace jsoncons {
         bool byte_string_value(const Source& b, 
                                semantic_tag tag=semantic_tag::none, 
                                const ser_context& context=ser_context(),
-                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<extension_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             std::error_code ec;
             bool more = visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), tag, context, ec);
@@ -179,7 +179,7 @@ namespace jsoncons {
         bool byte_string_value(const Source& b, 
                                uint64_t ext_tag, 
                                const ser_context& context=ser_context(),
-                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<extension_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             std::error_code ec;
             bool more = visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), ext_tag, context, ec);
@@ -310,7 +310,7 @@ namespace jsoncons {
                                semantic_tag tag, 
                                const ser_context& context,
                                std::error_code& ec,
-                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<extension_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             return visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), tag, context, ec);
         }
@@ -320,7 +320,7 @@ namespace jsoncons {
                                uint64_t ext_tag, 
                                const ser_context& context,
                                std::error_code& ec,
-                               typename std::enable_if<type_traits::is_byte_sequence<Source>::value,int>::type = 0)
+                               typename std::enable_if<extension_traits::is_byte_sequence<Source>::value,int>::type = 0)
         {
             return visit_byte_string(byte_string_view(reinterpret_cast<const uint8_t*>(b.data()),b.size()), ext_tag, context, ec);
         }
@@ -743,11 +743,11 @@ namespace jsoncons {
     };
 
  template <class CharT, class Allocator>
-    class basic_json_visitor2_to_visitor_adaptor : public basic_json_visitor2<CharT>
+    class basic_item_event_visitor_to_json_visitor : public basic_item_event_visitor<CharT>
     {
     public:
-        using typename basic_json_visitor2<CharT>::char_type;
-        using typename basic_json_visitor2<CharT>::string_view_type;
+        using typename basic_item_event_visitor<CharT>::char_type;
+        using typename basic_item_event_visitor<CharT>::string_view_type;
     private:
         using char_allocator_type = typename std::allocator_traits<Allocator>:: template rebind_alloc<char_type>;
 
@@ -815,21 +815,29 @@ namespace jsoncons {
         const std::basic_string<char> false_constant = { 'f', 'a', 'l', 's', 'e' };
 
         // noncopyable and nonmoveable
-        basic_json_visitor2_to_visitor_adaptor(const basic_json_visitor2_to_visitor_adaptor&) = delete;
-        basic_json_visitor2_to_visitor_adaptor& operator=(const basic_json_visitor2_to_visitor_adaptor&) = delete;
+        basic_item_event_visitor_to_json_visitor(const basic_item_event_visitor_to_json_visitor&) = delete;
+        basic_item_event_visitor_to_json_visitor& operator=(const basic_item_event_visitor_to_json_visitor&) = delete;
     public:
-        explicit basic_json_visitor2_to_visitor_adaptor(const Allocator& alloc = Allocator())
+        explicit basic_item_event_visitor_to_json_visitor(const Allocator& alloc = Allocator())
             : default_visitor_(), destination_(std::addressof(default_visitor_)),
               key_(alloc), key_buffer_(alloc), level_stack_(alloc)
         {
             level_stack_.emplace_back(target_t::destination,container_t::root); // root
         }
 
-        explicit basic_json_visitor2_to_visitor_adaptor(basic_json_visitor<char_type>& visitor, 
+        explicit basic_item_event_visitor_to_json_visitor(basic_json_visitor<char_type>& visitor, 
                                                      const Allocator& alloc = Allocator())
             : destination_(std::addressof(visitor)), 
               key_(alloc), key_buffer_(alloc), level_stack_(alloc)
         {
+            level_stack_.emplace_back(target_t::destination,container_t::root); // root
+        }
+
+        void reset()
+        {
+            key_.clear();
+            key_buffer_.clear();
+            level_stack_.clear();
             level_stack_.emplace_back(target_t::destination,container_t::root); // root
         }
 
@@ -1035,7 +1043,7 @@ namespace jsoncons {
                              const ser_context& context,
                              std::error_code& ec) override
         {
-            bool retval = true;
+            bool retval;
 
             if (level_stack_.back().is_key())
             {
@@ -1086,8 +1094,6 @@ namespace jsoncons {
                                   const ser_context& context,
                                   std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
                 key_.clear();
@@ -1105,6 +1111,7 @@ namespace jsoncons {
                 }
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1154,14 +1161,13 @@ namespace jsoncons {
                                const ser_context& context,
                                std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
                 key_.clear();
                 encode_base64url(value.begin(), value.end(),key_);
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1208,14 +1214,13 @@ namespace jsoncons {
 
         bool visit_uint64(uint64_t value, semantic_tag tag, const ser_context& context, std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
                 key_.clear();
                 jsoncons::detail::from_integer(value,key_);
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1258,14 +1263,13 @@ namespace jsoncons {
 
         bool visit_int64(int64_t value, semantic_tag tag, const ser_context& context, std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
                 key_.clear();
                 jsoncons::detail::from_integer(value,key_);
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1308,8 +1312,6 @@ namespace jsoncons {
 
         bool visit_half(uint16_t value, semantic_tag tag, const ser_context& context, std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
                 key_.clear();
@@ -1319,6 +1321,7 @@ namespace jsoncons {
                 f(x, sink);
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1361,8 +1364,6 @@ namespace jsoncons {
 
         bool visit_double(double value, semantic_tag tag, const ser_context& context, std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
                 key_.clear();
@@ -1371,6 +1372,7 @@ namespace jsoncons {
                 f(value, sink);
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1413,13 +1415,20 @@ namespace jsoncons {
 
         bool visit_bool(bool value, semantic_tag tag, const ser_context& context, std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
-                key_ = value ? true_constant : false_constant;
+                key_.clear(); 
+                if (value)
+                {
+                    key_.insert(key_.begin(), true_constant.begin(), true_constant.end());
+                }
+                else
+                {
+                    key_.insert(key_.begin(), false_constant.begin(), false_constant.end());
+                }
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1462,13 +1471,13 @@ namespace jsoncons {
 
         bool visit_null(semantic_tag tag, const ser_context& context, std::error_code& ec) override
         {
-            bool retval = true;
-
             if (level_stack_.back().is_key() || level_stack_.back().target() == target_t::buffer)
             {
-                key_ = null_constant;
+                key_.clear(); 
+                key_.insert(key_.begin(), null_constant.begin(), null_constant.end());
             }
 
+            bool retval;
             if (level_stack_.back().is_key())
             {
                 switch (level_stack_.back().target())
@@ -1519,7 +1528,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1537,7 +1546,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1555,7 +1564,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1573,7 +1582,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1591,7 +1600,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1609,7 +1618,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1627,7 +1636,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1645,7 +1654,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1664,7 +1673,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(half_arg,s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(half_arg,s,tag,context,ec);
             }
             else
             {
@@ -1682,7 +1691,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1700,7 +1709,7 @@ namespace jsoncons {
 
             if (is_key || level_stack_.back().target() == target_t::buffer)
             {
-                return basic_json_visitor2<CharT>::visit_typed_array(s,tag,context,ec);
+                return basic_item_event_visitor<CharT>::visit_typed_array(s,tag,context,ec);
             }
             else
             {
@@ -1710,14 +1719,14 @@ namespace jsoncons {
     };
 
     template <class CharT>
-    class basic_default_json_visitor2 : public basic_json_visitor2<CharT>
+    class basic_default_item_event_visitor : public basic_item_event_visitor<CharT>
     {
         bool parse_more_;
         std::error_code ec_;
     public:
-        using typename basic_json_visitor2<CharT>::string_view_type;
+        using typename basic_item_event_visitor<CharT>::string_view_type;
 
-        basic_default_json_visitor2(bool accept_more = true,
+        basic_default_item_event_visitor(bool accept_more = true,
                                     std::error_code ec = std::error_code())
             : parse_more_(accept_more), ec_(ec)
         {
@@ -1854,27 +1863,27 @@ namespace jsoncons {
         }
     };
 
-    // basic_json_visitor_to_visitor2_adaptor
+    // basic_json_visitor_to_item_event_visitor
 
     template <class CharT>
-    class basic_json_visitor_to_visitor2_adaptor : public basic_json_visitor<CharT>
+    class basic_json_visitor_to_item_event_visitor : public basic_json_visitor<CharT>
     {
     public:
         using typename basic_json_visitor<CharT>::char_type;
         using typename basic_json_visitor<CharT>::string_view_type;
     private:
-        basic_json_visitor2<char_type>& destination_;
+        basic_item_event_visitor<char_type>& destination_;
 
         // noncopyable and nonmoveable
-        basic_json_visitor_to_visitor2_adaptor(const basic_json_visitor_to_visitor2_adaptor&) = delete;
-        basic_json_visitor_to_visitor2_adaptor& operator=(const basic_json_visitor_to_visitor2_adaptor&) = delete;
+        basic_json_visitor_to_item_event_visitor(const basic_json_visitor_to_item_event_visitor&) = delete;
+        basic_json_visitor_to_item_event_visitor& operator=(const basic_json_visitor_to_item_event_visitor&) = delete;
     public:
-        basic_json_visitor_to_visitor2_adaptor(basic_json_visitor2<char_type>& visitor)
+        basic_json_visitor_to_item_event_visitor(basic_item_event_visitor<char_type>& visitor)
             : destination_(visitor)
         {
         }
 
-        basic_json_visitor2<char_type>& destination()
+        basic_item_event_visitor<char_type>& destination()
         {
             return destination_;
         }
@@ -1969,7 +1978,7 @@ namespace jsoncons {
         }
     };
 
-    class diagnostics_visitor2 : public basic_default_json_visitor2<char>
+    class diagnostics_visitor2 : public basic_default_item_event_visitor<char>
     {
         bool visit_begin_object(semantic_tag, const ser_context&, std::error_code&) override
         {
@@ -2062,9 +2071,9 @@ namespace jsoncons {
         }
     };
 
-    using json_visitor2 = basic_json_visitor2<char>;
-    using default_json_visitor2 = basic_default_json_visitor2<char>;
-    using json_visitor2_to_visitor_adaptor = basic_json_visitor2_to_visitor_adaptor<char>;
+    using item_event_visitor = basic_item_event_visitor<char>;
+    using default_item_event_visitor = basic_default_item_event_visitor<char>;
+    using item_event_visitor_to_visitor_adaptor = basic_item_event_visitor_to_json_visitor<char>;
 
 } // namespace jsoncons
 

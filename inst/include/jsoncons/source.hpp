@@ -1,4 +1,4 @@
-// Copyright 2018 Daniel Parker
+// Copyright 2013-2023 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -18,7 +18,7 @@
 #include <type_traits> // std::enable_if
 #include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/byte_string.hpp> // jsoncons::byte_traits
-#include <jsoncons/more_type_traits.hpp>
+#include <jsoncons/extension_traits.hpp>
 
 namespace jsoncons { 
 
@@ -37,7 +37,7 @@ namespace jsoncons {
             null_buffer(null_buffer&&) = default;
             null_buffer& operator=(null_buffer&&) = default;
 
-            int_type overflow( int_type ch = traits_type::eof() ) override
+            int_type overflow( int_type ch = typename std::basic_streambuf<CharT>::traits_type::eof() ) override
             {
                 return ch;
             }
@@ -169,7 +169,7 @@ namespace jsoncons {
                 buffer_data_ += len;
                 buffer_length_ -= len;
             }
-            while (length - len > 0)
+            while (len < length)
             {
                 fill_buffer();
                 if (buffer_length_ == 0)
@@ -323,7 +323,7 @@ namespace jsoncons {
 
         template <class Sourceable>
         string_source(const Sourceable& s,
-                      typename std::enable_if<type_traits::is_sequence_of<Sourceable,value_type>::value>::type* = 0)
+                      typename std::enable_if<extension_traits::is_sequence_of<Sourceable,value_type>::value>::type* = 0)
             : data_(s.data()), current_(s.data()), end_(s.data()+s.size())
         {
         }
@@ -333,9 +333,9 @@ namespace jsoncons {
         {
         }
 
-        string_source(string_source&& val) = default;
+        string_source(string_source&& other) = default;
 
-        string_source& operator=(string_source&& val) = default;
+        string_source& operator=(string_source&& other) = default;
 
         bool eof() const
         {
@@ -477,12 +477,16 @@ namespace jsoncons {
         {
             std::size_t count = (std::min)(length, static_cast<std::size_t>(std::distance(current_, end_)));
 
-#if defined(_MSC_VER) 
-        std::copy(current_, current_ + count, stdext::make_checked_array_iterator(data, count));
-#else 
-        std::copy(current_, current_ + count, data);
-#endif
-            current_ += count;
+            //JSONCONS_COPY(current_, current_ + count, data);
+
+            auto end = current_ + count;
+            value_type* p = data;
+            while (current_ != end)
+            {
+                *p++ = *current_++;
+            }
+
+            //current_ += count;
             position_ += count;
 
             return count;
@@ -532,7 +536,7 @@ namespace jsoncons {
 
         template <class Sourceable>
         bytes_source(const Sourceable& source,
-                     typename std::enable_if<type_traits::is_byte_sequence<Sourceable>::value,int>::type = 0)
+                     typename std::enable_if<extension_traits::is_byte_sequence<Sourceable>::value,int>::type = 0)
             : data_(reinterpret_cast<const value_type*>(source.data())), 
               current_(data_), 
               end_(data_+source.size())
@@ -681,12 +685,16 @@ namespace jsoncons {
         read(value_type* data, std::size_t length)
         {
             std::size_t count = (std::min)(length, static_cast<std::size_t>(std::distance(current_, end_)));
-#if defined(_MSC_VER)
-        std::copy(current_, current_ + count, stdext::make_checked_array_iterator(data, count));
-#else 
-        std::copy(current_, current_ + count, data);
-#endif
-            current_ += count;
+            //JSONCONS_COPY(current_, current_ + count, data);
+
+            auto end = current_ + count;
+            value_type* p = data;
+            while (current_ != end)
+            {
+                *p++ = *current_++;
+            }
+
+            //current_ += count;
             position_ += count;
 
             return count;
@@ -721,8 +729,8 @@ namespace jsoncons {
         template <class Container>
         static
         typename std::enable_if<std::is_convertible<value_type,typename Container::value_type>::value &&
-                                type_traits::has_reserve<Container>::value &&
-                                type_traits::has_data_exact<value_type*,Container>::value 
+                                extension_traits::has_reserve<Container>::value &&
+                                extension_traits::has_data_exact<value_type*,Container>::value 
             , std::size_t>::type
         read(Source& source, Container& v, std::size_t length)
         {
@@ -744,8 +752,8 @@ namespace jsoncons {
         template <class Container>
         static
         typename std::enable_if<std::is_convertible<value_type,typename Container::value_type>::value &&
-                                type_traits::has_reserve<Container>::value &&
-                                !type_traits::has_data_exact<value_type*, Container>::value 
+                                extension_traits::has_reserve<Container>::value &&
+                                !extension_traits::has_data_exact<value_type*, Container>::value 
             , std::size_t>::type
         read(Source& source, Container& v, std::size_t length)
         {
@@ -773,8 +781,12 @@ namespace jsoncons {
             return length - unread;
         }
     };
+#if __cplusplus >= 201703L
+// not needed for C++17
+#else
     template <class Source>
     constexpr std::size_t source_reader<Source>::max_buffer_length;
+#endif
 
     #if !defined(JSONCONS_NO_DEPRECATED)
     using bin_stream_source = binary_stream_source;
