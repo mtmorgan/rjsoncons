@@ -10,13 +10,12 @@
     .is_scalar(x) && is.character(x) && nzchar(x)
 }
 
-#' @importFrom jsonlite toJSON
 .as_json_string <-
     function(x, ...)
 {
     if (.is_scalar_character(x) && !inherits(x, "AsIs")) {
         x
     } else {
-        as.character(toJSON(x, ...))
+        as.character(jsonlite::toJSON(x, ...))
     }
 }
