@@ -1,14 +1,6 @@
-## R CMD check results
+# Release 1.1.0
 
-```
-* checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Martin Morgan <mtmorgan.xyz@gmail.com>'
-
-New maintainer:
-  Martin Morgan <mtmorgan.xyz@gmail.com>
-Old maintainer(s):
-  Martin Morgan <mtmorgan.bioc@gmail.com>
-```
-
-* Release 1.0.1 changes the maintainer email address to better reflect
-  current affiliation; the maintainer is unchanged.
+- updates 'jsoncons' third party library to 0.172.1 to address
+  segfault on 'fedora' CRAN builder
+- upstream bug report at
+  <https://github.com/danielaparker/jsoncons/issues/471>
