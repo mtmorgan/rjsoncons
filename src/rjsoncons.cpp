@@ -6,6 +6,7 @@
 #include <jsoncons_ext/jmespath/jmespath.hpp>
 
 #include "as_r.h"
+#include "jsonpivot.h"
 
 using namespace jsoncons; // for convenience
 
@@ -80,6 +81,26 @@ sexp cpp_jmespath(
     case hash("asis"): return jmespath_impl<ojson>(data, path, as);
     case hash("sort"): return jmespath_impl<json>(data, path, as);
     default: cpp11::stop("unknown `object_names = '" + jtype + "'`");
+    }
+}
+
+// pivot
+
+template<class Json>
+sexp jsonpivot_impl(const std::string data, const std::string as)
+{
+    Json j = Json::parse(data);
+    Json result = jsonpivot<Json>(j);
+    return json_as(result, as);
+}
+
+[[cpp11::register]]
+sexp cpp_jsonpivot(std::string data, std::string jtype, std::string as)
+{
+    switch(hash(jtype.c_str())) {
+    case hash("asis"): return jsonpivot_impl<ojson>(data, as);
+    case hash("sort"): return jsonpivot_impl<json>(data, as);
+    default: cpp11::stop("unknown `object_names` = '" + jtype + "'`");
     }
 }
 

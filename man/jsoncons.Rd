@@ -4,6 +4,7 @@
 \alias{version}
 \alias{jsonpath}
 \alias{jmespath}
+\alias{jsonpivot}
 \alias{as_r}
 \title{Query the jsoncons C++ library}
 \usage{
@@ -12,6 +13,8 @@ version()
 jsonpath(data, path, object_names = "asis", as = "string", ...)
 
 jmespath(data, path, object_names = "asis", as = "string", ...)
+
+jsonpivot(data, object_names = "asis", as = "string", ...)
 
 as_r(data, object_names = "asis", ...)
 }
@@ -40,9 +43,9 @@ scalar values.}
 \code{version()} returns a character(1) major.minor.patch
 version string .
 
-\code{jsonpath()} and \code{jmespath()} return a character(1) JSON
-string (\code{as = "string"}, default) or \emph{R} object (\code{as = "R"})
-representing the result of the query.
+\code{jsonpath()}, \code{jmespath()} and \code{jsonpivot()} return a
+character(1) JSON string (\code{as = "string"}, default) or \emph{R}
+object (\code{as = "R"}) representing the result of the query.
 
 \code{as_r()} returns an \emph{R} object.
 }
@@ -56,12 +59,24 @@ using the 'jsonpath' specification
 \code{jmespath()} executes a query against a JSON string
 using the 'jmespath' specification.
 
+\code{jsonpivot()} transforms a JSON array-of-objects to
+an object-of-arrays; this can be useful when forming a
+column-based tibble from row-oriented JSON.
+
 \code{as_r()} transforms a JSON string to an \emph{R} object.
 }
 \details{
-The \code{as = "R"} argument to \code{jsonpath()} and \code{jmespath()} and
-\code{as_r()} transform a JSON string representation to an \emph{R}
-object. Main rules are:
+\code{jsonpivot()} transforms an 'array-of-objects' (typical when the
+JSON is a row-oriented representation of a table) to an
+'object-of-arrays'. A simple example transforms an array of two
+objects each with three fields \code{'[{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5, "c": 6}]'} to an object with with three fields, each a
+vector of length 2 \code{'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'}. The
+object-of-arrays representation corresponds closely to an \emph{R}
+data.frame or tibble, as illustrated in the examples.
+
+The \code{as = "R"} argument to \code{jsonpath()}, \code{jmespath()} and
+\code{jsonpivot()}, and the \code{as_r()} function transform a JSON string
+representation to an \emph{R} object. Main rules are:
 \itemize{
 \item JSON arrays of a single type (boolean, integer, double, string)
 are transformed to \emph{R} vectors of the same length and
@@ -136,6 +151,14 @@ jmespath(lst, "locations[?state[0] == 'WA'].name[0] | sort(@)") |>
 ## automatically unbox scalar values when creating the JSON string
 jmespath(lst, path, auto_unbox = TRUE) |>
     cat("\n")
+
+json |>
+    ## 'locations' is a array of objects with 'name' and 'state' scalars...
+    jmespath("locations") |>
+    ## ...pivot to a single object with 'name' and 'state' vectors...
+    jsonpivot(as = "R") |>
+    ## ... easily coerced to a data.frame or dplyr::tibble
+    as.data.frame()
 
 ## as_r()
 as_r('[1, 2, 3]')       # JSON integer array -> R integer vector
