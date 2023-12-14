@@ -47,9 +47,9 @@ version <-
 #'     TRUE` to automatically 'unbox' vectors of length 1 to JSON
 #'     scalar values.
 #'
-#' @return `jsonpath()` and `jmespath()` return a character(1) JSON
-#'     string (`as = "string"`, default) or *R* object (`as = "R"`)
-#'     representing the result of the query.
+#' @return `jsonpath()`, `jmespath()` and `jsonpivot()` return a
+#'     character(1) JSON string (`as = "string"`, default) or *R*
+#'     object (`as = "R"`) representing the result of the query.
 #'
 #' @examples
 #' json <- '{
@@ -140,13 +140,52 @@ jmespath <-
 
 #' @rdname jsoncons
 #'
+#' @description `jsonpivot()` transforms a JSON array-of-objects to
+#'     an object-of-arrays; this can be useful when forming a
+#'     column-based tibble from row-oriented JSON.
+#'
+#' @details
+#'
+#' `jsonpivot()` transforms an 'array-of-objects' (typical when the
+#' JSON is a row-oriented representation of a table) to an
+#' 'object-of-arrays'. A simple example transforms an array of two
+#' objects each with three fields `'[{"a": 1, "b": 2, "c": 3}, {"a":
+#' 4, "b": 5, "c": 6}]'` to an object with with three fields, each a
+#' vector of length 2 `'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'`. The
+#' object-of-arrays representation corresponds closely to an _R_
+#' data.frame or tibble, as illustrated in the examples.
+#'
+#' @examples
+#' json |>
+#'     ## 'locations' is a array of objects with 'name' and 'state' scalars...
+#'     jmespath("locations") |>
+#'     ## ...pivot to a single object with 'name' and 'state' vectors...
+#'     jsonpivot(as = "R") |>
+#'     ## ... easily coerced to a data.frame or dplyr::tibble
+#'     as.data.frame()
+#'
+#' @export
+jsonpivot <-
+    function(data, object_names = "asis", as = "string", ...)
+{
+    stopifnot(
+        .is_scalar_character(object_names),
+        .is_scalar_character(as)
+    )
+
+    data <- .as_json_string(data, ...)
+    cpp_jsonpivot(data, object_names, as)
+}
+
+#' @rdname jsoncons
+#'
 #' @description `as_r()` transforms a JSON string to an *R* object.
 #'
 #' @details
 #'
-#' The `as = "R"` argument to `jsonpath()` and `jmespath()` and
-#' `as_r()` transform a JSON string representation to an *R*
-#' object. Main rules are:
+#' The `as = "R"` argument to `jsonpath()`, `jmespath()` and
+#' `jsonpivot()`, and the `as_r()` function transform a JSON string
+#' representation to an *R* object. Main rules are:
 #'
 #' - JSON arrays of a single type (boolean, integer, double, string)
 #'   are transformed to *R* vectors of the same length and

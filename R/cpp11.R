@@ -12,6 +12,10 @@ cpp_jmespath <- function(data, path, jtype, as) {
   .Call(`_rjsoncons_cpp_jmespath`, data, path, jtype, as)
 }
 
+cpp_jsonpivot <- function(data, jtype, as) {
+  .Call(`_rjsoncons_cpp_jsonpivot`, data, jtype, as)
+}
+
 cpp_as_r <- function(data, jtype) {
   .Call(`_rjsoncons_cpp_as_r`, data, jtype)
 }
