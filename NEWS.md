@@ -1,3 +1,9 @@
+# rjsoncons 1.2.0
+
+- (v.1.1.0.9000) implement `jsonpivot()` to transform JSON
+  array-of-objects to object-of-arrays, a common step before
+  representation as a data.frame.
+
 # rjsoncons 1.1.0
 
 - (1.1.0) CRAN release
