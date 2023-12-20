@@ -4,47 +4,75 @@
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_JSONSCHEMA_COMPILATION_CONTEXT_HPP
-#define JSONCONS_JSONSCHEMA_COMPILATION_CONTEXT_HPP
+#ifndef JSONCONS_JSONSCHEMA_COMMON_COMPILATION_CONTEXT_HPP
+#define JSONCONS_JSONSCHEMA_COMMON_COMPILATION_CONTEXT_HPP
 
 #include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/uri.hpp>
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 #include <jsoncons_ext/jsonschema/jsonschema_error.hpp>
-#include <jsoncons_ext/jsonschema/schema_location.hpp>
+#include <jsoncons_ext/jsonschema/common/schema_location.hpp>
 
 namespace jsoncons {
 namespace jsonschema {
 
     class compilation_context
     {
+        uri absolute_uri_;
         std::vector<schema_location> uris_;
     public:
         compilation_context(const schema_location& location)
-            : uris_(std::vector<schema_location>{{location}})
+            : absolute_uri_(location.uri().is_absolute() ? location.uri() : uri{}), 
+              uris_(std::vector<schema_location>{{location}})
         {
         }
 
         compilation_context(schema_location&& location)
-            : uris_(std::vector<schema_location>{{std::move(location)}})
+            : absolute_uri_(location.uri().is_absolute() ? location.uri() : uri{}), 
+              uris_(std::vector<schema_location>{{std::move(location)}})
         {
         }
 
         explicit compilation_context(const std::vector<schema_location>& uris)
             : uris_(uris)
         {
+            for (auto it = uris_.rbegin();
+                 it != uris_.rend();
+                 ++it)
+            {
+                if (it->uri().is_absolute())
+                {
+                    absolute_uri_ = it->uri();
+                    break;
+                }
+            }
         }
         explicit compilation_context(std::vector<schema_location>&& uris)
             : uris_(std::move(uris))
         {
+            for (auto it = uris_.rbegin();
+                 it != uris_.rend();
+                 ++it)
+            {
+                if (it->uri().is_absolute())
+                {
+                    absolute_uri_ = it->uri();
+                    break;
+                }
+            }
         }
 
         const std::vector<schema_location>& uris() const {return uris_;}
 
-        std::string get_schema_path() const
+        const uri& get_absolute_uri() const
         {
-            return (!uris_.empty() && uris_.back().is_absolute()) ? uris_.back().string() : "";
+            return absolute_uri_;
+        }
+
+        uri get_base_uri() const
+        {
+            return absolute_uri_.base();
         }
 
         template <class Json>
@@ -66,7 +94,7 @@ namespace jsonschema {
                     {
                         std::string id = it->value().template as<std::string>(); 
                         schema_location relative(id); 
-                        schema_location new_uri = relative.resolve(get_schema_path());
+                        schema_location new_uri = relative.resolve(get_base_uri());
                         return compilation_context(new_uri); 
                     }
                 }
@@ -78,12 +106,35 @@ namespace jsonschema {
         template <class Json>
         compilation_context update_uris(const Json& schema, const std::vector<std::string>& keys) const
         {
+            bool has_plain_name_fragment = false;
             // Exclude uri's that are not plain name identifiers
             std::vector<schema_location> new_uris;
             for (const auto& uri : uris_)
             {
-                if (!uri.has_identifier())
+                if (!uri.has_plain_name_fragment())
+                {
                     new_uris.push_back(uri);
+                }
+                else
+                {
+                    has_plain_name_fragment = true;
+                }
+            }
+
+            if (has_plain_name_fragment)
+            {
+                //std::cout << "update_uris\n";
+                for (const auto& uri : uris_)
+                {
+                    if (!uri.has_plain_name_fragment())
+                    {
+                        //std::cout << "    not has_plain_name_fragment " << uri.string() << std::endl;
+                    }
+                    else
+                    {
+                        //std::cout << "    has_plain_name_fragment " << uri.string() << std::endl;
+                    }
+                }
             }
 
             // Append the keys for this sub-schema to the uri's
@@ -127,7 +178,7 @@ namespace jsonschema {
         {
             for (auto it = uris_.rbegin(); it != uris_.rend(); ++it)
             {
-                if (!it->has_identifier() && it->is_absolute())
+                if (!it->has_plain_name_fragment() && it->is_absolute())
                 {
                     return it->append(keyword).string();
                 }

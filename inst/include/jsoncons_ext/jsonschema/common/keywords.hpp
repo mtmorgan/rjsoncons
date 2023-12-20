@@ -4,15 +4,15 @@
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_JSONSCHEMA_KEYWORDS_HPP
-#define JSONCONS_JSONSCHEMA_KEYWORDS_HPP
+#ifndef JSONCONS_JSONSCHEMA_COMMON_KEYWORDS_HPP
+#define JSONCONS_JSONSCHEMA_COMMON_KEYWORDS_HPP
 
 #include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/uri.hpp>
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <jsoncons_ext/jsonschema/format_validator.hpp>
-#include <jsoncons_ext/jsonschema/keyword_validator.hpp>
+#include <jsoncons_ext/jsonschema/common/format_validator.hpp>
+#include <jsoncons_ext/jsonschema/common/keyword_validator.hpp>
 #include <cassert>
 #include <set>
 #include <sstream>
@@ -805,7 +805,7 @@ namespace jsonschema {
                 reporter.error(validation_output("maximum", 
                     this->schema_path(), 
                     instance_location.to_uri_fragment(), 
-                    instance.template as<std::string>() + " exceeds maximum of " + std::to_string(value)));
+                    instance.template as<std::string>() + " exceeds maximum of " + std::to_string(value_)));
             }
         }
     };
