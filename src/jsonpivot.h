@@ -64,7 +64,7 @@ Json jsonpivot(const Json j)
         value = pivot_array_as_object(j);
         break;
     };
-    default: cpp11::stop("`jsonpivot()` 'data' must be a JSON object");
+    default: cpp11::stop("`jsonpivot()` 'data' must be a JSON array");
     };
 
     return value;
