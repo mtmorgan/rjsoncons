@@ -39,7 +39,7 @@ expect_identical(
 )
 
 ## errors
-expect_error(jsonpivot("1"), "'data' must be a JSON object")
+expect_error(jsonpivot("1"), "`jsonpivot()` 'data' must be a JSON object")
 
 ## as = "R"
 expect_identical(
