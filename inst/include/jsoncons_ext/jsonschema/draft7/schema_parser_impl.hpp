@@ -4,18 +4,18 @@
 
 // See https://github.com/danielaparker/jsoncons for latest version
 
-#ifndef JSONCONS_JSONSCHEMA_DRAFT7_KEYWORD_FACTORY_HPP
-#define JSONCONS_JSONSCHEMA_DRAFT7_KEYWORD_FACTORY_HPP
+#ifndef JSONCONS_JSONSCHEMA_DRAFT7_SCHEMA_PARSER_IMPL_HPP
+#define JSONCONS_JSONSCHEMA_DRAFT7_SCHEMA_PARSER_IMPL_HPP
 
-#include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/uri.hpp>
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <jsoncons_ext/jsonschema/compilation_context.hpp>
-#include <jsoncons_ext/jsonschema/schema.hpp>
-#include <jsoncons_ext/jsonschema/keywords.hpp>
-#include <jsoncons_ext/jsonschema/draft7/schema_draft7.hpp>
+#include <jsoncons_ext/jsonschema/common/compilation_context.hpp>
+#include <jsoncons_ext/jsonschema/json_schema.hpp>
+#include <jsoncons_ext/jsonschema/common/keywords.hpp>
 #include <jsoncons_ext/jsonschema/schema_version.hpp>
+#include <jsoncons_ext/jsonschema/common/schema_parser.hpp>
+#include <jsoncons_ext/jsonschema/draft7/schema_draft7.hpp>
 #include <cassert>
 #include <set>
 #include <sstream>
@@ -39,12 +39,12 @@ namespace draft7 {
                 return schema_draft7<Json>::get_schema();
             }
 
-            JSONCONS_THROW(jsonschema::schema_error("Don't know how to load JSON Schema " + std::string(uri.base())));
+            JSONCONS_THROW(jsonschema::schema_error("Don't know how to load JSON Schema " + uri.base().string()));
         }
     };
 
     template <class Json>
-    class schema_parser 
+    class schema_parser_impl : public schema_parser<Json> 
     {
     public:
         using reference_validator_type = reference_validator<Json>;
@@ -68,18 +68,24 @@ namespace draft7 {
         std::map<std::string, subschema_registry> subschema_registries_;
 
     public:
-        schema_parser(uri_resolver<Json>&& resolver) noexcept
+        schema_parser_impl(const uri_resolver<Json>& resolver = default_uri_resolver<Json>()) noexcept
+
+            : resolver_(resolver)
+        {
+        }
+
+        schema_parser_impl(uri_resolver<Json>&& resolver) noexcept
 
             : resolver_(std::move(resolver))
         {
         }
 
-        schema_parser(const schema_parser&) = delete;
-        schema_parser& operator=(const schema_parser&) = delete;
-        schema_parser(schema_parser&&) = default;
-        schema_parser& operator=(schema_parser&&) = default;
+        schema_parser_impl(const schema_parser_impl&) = delete;
+        schema_parser_impl& operator=(const schema_parser_impl&) = delete;
+        schema_parser_impl(schema_parser_impl&&) = default;
+        schema_parser_impl& operator=(schema_parser_impl&&) = default;
 
-        std::shared_ptr<json_schema<Json>> get_schema()
+        std::shared_ptr<json_schema<Json>> get_schema() override
         {
             return std::make_shared<json_schema<Json>>(std::move(subschemas_), std::move(root_));
         }
@@ -136,7 +142,7 @@ namespace draft7 {
                     break;
                 }
                 default:
-                    JSONCONS_THROW(schema_error("invalid JSON-type for a schema for " + new_context.get_schema_path() + ", expected: boolean or object"));
+                    JSONCONS_THROW(schema_error("invalid JSON-type for a schema for " + new_context.get_absolute_uri().string() + ", expected: boolean or object"));
                     break;
             }
 
@@ -220,7 +226,7 @@ namespace draft7 {
         std::unique_ptr<type_validator<Json>> make_type_validator(const Json& schema,
             const compilation_context& context)
         {
-            std::string schema_path = context.get_schema_path();
+            std::string schema_path = context.get_absolute_uri().string();
             Json default_value{jsoncons::null_type()};
             jsoncons::optional<enum_validator<Json>> enumvalidator{};
             jsoncons::optional<const_keyword<Json>> const_validator{};
@@ -272,13 +278,13 @@ namespace draft7 {
             it = schema.find("enum");
             if (it != schema.object_range().end()) 
             {
-                enumvalidator = enum_validator<Json>(context.get_schema_path(), it->value());
+                enumvalidator = enum_validator<Json>(context.get_absolute_uri().string(), it->value());
             }
 
             it = schema.find("const");
             if (it != schema.object_range().end()) 
             {
-                const_validator = const_keyword<Json>(context.get_schema_path(), it->value());
+                const_validator = const_keyword<Json>(context.get_absolute_uri().string(), it->value());
             }
 
             it = schema.find("not");
@@ -863,7 +869,7 @@ namespace draft7 {
         conditional_validator<Json> make_conditional_validator(const Json& sch_if, const Json& schema,
             const compilation_context& context)
         {
-            std::string schema_path = context.get_schema_path();
+            std::string schema_path = context.get_absolute_uri().string();
             validator_type if_validator(nullptr);
             validator_type then_validator(nullptr);
             validator_type else_validator(nullptr);
@@ -1041,7 +1047,12 @@ namespace draft7 {
             );
         }
 
-        void load_root(const Json& sch)
+        void parse(const Json& sch) override
+        {
+            parse(sch, "#");
+        }
+
+        void parse(const Json& sch, const std::string& retrieval_uri) override
         {
             if (sch.is_object())
             {
@@ -1057,15 +1068,13 @@ namespace draft7 {
                     }
                 }
             }
-            load(sch);
+            load(sch, compilation_context(schema_location(retrieval_uri)));
         }
 
-
-
-        void load(const Json& sch)
+        void load(const Json& sch, const compilation_context& context)
         {
             subschema_registries_.clear();
-            root_ = make_subschema_validator(sch, compilation_context(schema_location("#")), {});
+            root_ = make_subschema_validator(sch, context, {});
 
             // load all external schemas that have not already been loaded
 
@@ -1112,7 +1121,7 @@ namespace draft7 {
 
         void insert_schema(const schema_location& uri, validator_pointer s)
         {
-            auto& file = get_or_create_file(std::string(uri.base()));
+            auto& file = get_or_create_file(uri.base().string());
             auto schemas_it = file.schemas.find(std::string(uri.fragment()));
             if (schemas_it != file.schemas.end()) 
             {
@@ -1135,11 +1144,11 @@ namespace draft7 {
                                     const std::string& key, 
                                     const Json& value)
         {
-            auto &file = get_or_create_file(std::string(uri.base()));
+            auto &file = get_or_create_file(uri.base().string());
             auto new_u = uri.append(key);
             schema_location new_uri(new_u);
 
-            if (new_uri.has_fragment() && !new_uri.has_identifier()) 
+            if (new_uri.has_fragment() && !new_uri.has_plain_name_fragment()) 
             {
                 auto fragment = std::string(new_uri.fragment());
                 // is there a reference looking for this unknown-keyword, which is thus no longer a unknown keyword but a schema
@@ -1160,7 +1169,7 @@ namespace draft7 {
 
         validator_type get_or_create_reference(const schema_location& uri)
         {
-            auto &file = get_or_create_file(std::string(uri.base()));
+            auto &file = get_or_create_file(uri.base().string());
 
             // a schema already exists
             auto sch = file.schemas.find(std::string(uri.fragment()));
@@ -1171,7 +1180,7 @@ namespace draft7 {
             //
             // an unknown keyword can only be referenced by a JSONPointer,
             // not by a plain name identifier
-            if (uri.has_fragment() && !uri.has_identifier()) 
+            if (uri.has_fragment() && !uri.has_plain_name_fragment()) 
             {
                 std::string fragment = std::string(uri.fragment());
                 auto unprocessed_keywords_it = file.unprocessed_keywords.find(fragment);
@@ -1217,25 +1226,6 @@ namespace draft7 {
         }
 
     };
-
-    template <class Json>
-    std::shared_ptr<json_schema<Json>> make_schema(const Json& schema)
-    {
-        schema_parser<Json> kwFactory{default_uri_resolver<Json>()};
-        kwFactory.load_root(schema);
-
-        return kwFactory.get_schema();
-    }
-
-    template <class Json,class URIResolver>
-    typename std::enable_if<extension_traits::is_unary_function_object_exact<URIResolver,Json,std::string>::value,std::shared_ptr<json_schema<Json>>>::type
-    make_schema(const Json& schema, const URIResolver& resolver)
-    {
-        schema_parser<Json> kwFactory(resolver);
-        kwFactory.load_root(schema);
-
-        return kwFactory.get_schema();
-    }
 
 } // namespace draft7
 } // namespace jsonschema

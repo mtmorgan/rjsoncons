@@ -1,5 +1,7 @@
 # rjsoncons 1.2.0
 
+- (v.1.1.0.9100) update jsoncons library to 173.2, relaxing compiler
+  requirements to c++11.
 - (v.1.1.0.9000) implement `jsonpivot()` to transform JSON
   array-of-objects to object-of-arrays, a common step before
   representation as a data.frame.
