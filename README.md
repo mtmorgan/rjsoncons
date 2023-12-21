@@ -8,8 +8,8 @@
 The [jsoncons][] C++ header-only library constructs representations
 from a JSON character vector, and provides extensions for flexible
 queries and other operations on JSON objects. This package has simple
-'R' wrappers to support [JSONpath][] and [JMESpath][] queries into JSON
-strings or 'R' objects. The 'jsoncons' library is also be easily
+'R' wrappers to support [JSONpath][] and [JMESpath][] queries into
+JSON strings or 'R' objects. The 'jsoncons' library is also easily
 linked to other packages for direct access to 'C++' functionality.
 
 [JSONpath]: https://goessner.net/articles/JsonPath/
