@@ -5,6 +5,8 @@ jsonpath() executes a query against a JSON string
 using the 'jsonpath' specification
 jmespath() executes a query against a JSON string
 using the 'jmespath' specification.
+jsonpointer() extracts an element from a JSON string
+using the 'JSON pointer' specification.
 jsonpivot() transforms a JSON array-of-objects to
 an object-of-arrays; this can be useful when forming a
 column-based tibble from row-oriented JSON.
@@ -14,6 +16,8 @@ jsonpath() executes a query against a JSON string
 using the 'jsonpath' specification
 jmespath() executes a query against a JSON string
 using the 'jmespath' specification.
+jsonpointer() extracts an element from a JSON string
+using the 'JSON pointer' specification.
 jsonpivot() transforms a JSON array-of-objects to
 an object-of-arrays; this can be useful when forming a
 column-based tibble from row-oriented JSON.
@@ -28,7 +32,7 @@ as_r() transforms a JSON string to an R object."><!-- mathjax --><script src="ht
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9100</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9200</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,6 +77,8 @@ library in use.</p>
 using the 'jsonpath' specification</p>
 <p><code>jmespath()</code> executes a query against a JSON string
 using the 'jmespath' specification.</p>
+<p><code>jsonpointer()</code> extracts an element from a JSON string
+using the 'JSON pointer' specification.</p>
 <p><code>jsonpivot()</code> transforms a JSON array-of-objects to
 an object-of-arrays; this can be useful when forming a
 column-based tibble from row-oriented JSON.</p>
@@ -86,6 +92,8 @@ column-based tibble from row-oriented JSON.</p>
 <span><span class="fu">jsonpath</span><span class="op">(</span><span class="va">data</span>, <span class="va">path</span>, object_names <span class="op">=</span> <span class="st">"asis"</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">jmespath</span><span class="op">(</span><span class="va">data</span>, <span class="va">path</span>, object_names <span class="op">=</span> <span class="st">"asis"</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">jsonpointer</span><span class="op">(</span><span class="va">data</span>, <span class="va">path</span>, object_names <span class="op">=</span> <span class="st">"asis"</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">jsonpivot</span><span class="op">(</span><span class="va">data</span>, object_names <span class="op">=</span> <span class="st">"asis"</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -240,6 +248,21 @@ details.</p>
 <span class="r-in"><span><span class="fu">jmespath</span><span class="op">(</span><span class="va">lst</span>, <span class="va">path</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ["Bellevue","Olympia","Seattle"] </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## jsonpointer 0-based arrays</span></span></span>
+<span class="r-in"><span><span class="fu">jsonpointer</span><span class="op">(</span><span class="va">json</span>, <span class="st">"/locations/0/name"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Seattle"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## document root "", sort selected element keys</span></span></span>
+<span class="r-in"><span><span class="fu">jsonpointer</span><span class="op">(</span><span class="st">'{"b": 0, "a": 1}'</span>, <span class="st">""</span>, <span class="st">"sort"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ a: int 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ b: int 0</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## 'Key not found' -- path '/' is searches for a 0-length key</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">jsonpointer</span><span class="op">(</span><span class="st">'{"b": 0, "a": 1}'</span>, <span class="st">"/"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : Key not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">json</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="co">## 'locations' is a array of objects with 'name' and 'state' scalars...</span></span></span>
