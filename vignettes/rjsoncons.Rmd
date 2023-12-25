@@ -23,14 +23,14 @@ knitr::opts_chunk$set(
 
 This package provides the header-only '[jsoncons][]' library for
 manipulating JSON objects. Use [rjsoncons][] for querying JSON or R
-objects using [JMESpath][], [JSONpath][], or [JSONPointer][]. Link to
+objects using [JMESpath][], [JSONpath][], or [JSONpointer][]. Link to
 the package for direct access to the 'jsoncons' C++ library.
 
 [jsoncons]: https://github.com/danielaparker/jsoncons/
 [rjsoncons]: https://mtmorgan.github.io/rjsoncons/
 [JSONpath]: https://goessner.net/articles/JsonPath/
 [JMESpath]: https://jmespath.org/
-[JSONPointer]: https://datatracker.ietf.org/doc/html/rfc6901
+[JSONpointer]: https://datatracker.ietf.org/doc/html/rfc6901
 
 Install the released package version from CRAN
 
@@ -56,7 +56,7 @@ rjsoncons::version()
 
 # Use cases
 
-## JSON filtering and transformation
+## Select, filter and transform
 
 Here is a simple JSON example document
 
@@ -72,7 +72,7 @@ json <- '{
 ```
 
 There are several common use cases. Use [rjsoncons][] to query the
-JSON string using [JSONpath][], [JMESPath][] or [JSONPointer][]
+JSON string using [JSONpath][], [JMESPath][] or [JSONpointer][]
 syntax to filter larger documents to records of interest, e.g., only
 cities in New York state.
 
@@ -95,27 +95,10 @@ the document. JSON arrays are 0-based.
 jsonpointer(json, "/locations/0/state")
 ```
 
-The built-in parse can be replaced by alternative parsers by returning
-the query as a JSON string, e.g., using the `fromJSON()` in the
-[jsonlite][] package.
-
-```{r}
-jmespath(json, "locations[?state == 'WA']", as  = "string") |>
-    ## `fromJSON()` simplifies list-of-objects to data.frame
-    jsonlite::fromJSON()
-```
-
-[jsonlite]: https://CRAN.R-project.org/package=jsonlite
-
-The [rjsoncons][] package is particularly useful when accessing
-elements that might otherwise require complicated application of
-nested `lapply()`, [purrr][] expressions, or [tidyr][] `unnest_*()`
-(see [R for Data Science][r4ds] chapter '[Hierarchical data][]').
-
 Additional examples illustrating features available are on the help
 pages, e.g., `?jmespath`.
 
-## JSON array-of-objects to *R* data.frame
+## Array-of-objects to *R* data.frame
 
 The following transforms a nested JSON document into a format that can
 be incorporated directly in *R* as a `data.frame`.
@@ -178,7 +161,7 @@ as_r('{"a": 1.0, "b": [2, 3, 4]}') |>
 The main rules of this transformation are outlined here.  JSON arrays
 of a single type (boolean, integer, double, string) are transformed to
 *R* vectors of the same length and corresponding type.
-  
+
 ```{r}
 as_r('[true, false, true]') # boolean -> logical
 as_r('[1, 2, 3]')           # integer -> integer
@@ -188,7 +171,7 @@ as_r('["a", "b", "c"]')     # string  -> character
 
 JSON arrays mixing integer and double values are transformed to
 *R* numeric vectors.
-  
+
 ```{r}
 as_r('[1, 2.0]') |> class() # numeric
 ```
@@ -197,7 +180,7 @@ If a JSON integer array contains a value larger than *R*'s 32-bit
 integer representation, the array is transformed to an *R* numeric
 vector. NOTE that this results in loss of precision for JSON integer
 values greater than `2^53`.
-  
+
 ```{r}
 as_r('[1, 2147483648]') |> class()  # 64-bit integers -> numeric
 ```
@@ -211,32 +194,32 @@ as_r('{"a": 1.0, "b": [2, 3, 4]}') |> str()
 
 There are several additional details. A JSON scalar and a JSON vector
 of length 1 are represented in the same way in *R*.
-  
+
 ```{r}
 identical(as_r("3.14"), as_r("[3.14]"))
 ```
 
 JSON arrays mixing types other than integer and double are transformed to
 *R* lists
-  
+
 ```{r}
 as_r('[true, 1, "a"]') |> str()
 ```
 
 JSON `null` values are represented as *R* `NULL` values; arrays of
 `null` are transformed to lists
-  
+
 ```{r}
 as_r('null')                  # NULL
 as_r('[null]') |> str()       # list(NULL)
 as_r('[null, null]') |> str() # list(NULL, NULL)
 ```
-      
+
 Ordering of object members is controlled by the `object_names=`
 argument. The default preserves names as they appear in the JSON
 definition; use `"sort"` to sort names alphabetically. This argument
 is applied recursively.
-  
+
 ```{r}
 json <- '{"b": 1, "a": {"d": 2, "c": 3}}'
 as_r(json) |> str()
@@ -253,6 +236,25 @@ system.file(package = "rjsoncons", "tinytest", "test_as_r.R")
 ```
 
 [tinytest]: https://CRAN.R-project.org/package=tinytest
+
+## Using `jsonlite::fromJSON()`
+
+The built-in parser can be replaced by alternative parsers by returning
+the query as a JSON string, e.g., using the `fromJSON()` in the
+[jsonlite][] package.
+
+```{r}
+jmespath(json, "locations[?state == 'WA']", as  = "string") |>
+    ## `fromJSON()` simplifies list-of-objects to data.frame
+    jsonlite::fromJSON()
+```
+
+[jsonlite]: https://CRAN.R-project.org/package=jsonlite
+
+The [rjsoncons][] package is particularly useful when accessing
+elements that might otherwise require complicated application of
+nested `lapply()`, [purrr][] expressions, or [tidyr][] `unnest_*()`
+(see [R for Data Science][r4ds] chapter '[Hierarchical data][]').
 
 # C++ library use in other packages
 
