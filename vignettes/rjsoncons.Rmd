@@ -23,13 +23,14 @@ knitr::opts_chunk$set(
 
 This package provides the header-only '[jsoncons][]' library for
 manipulating JSON objects. Use [rjsoncons][] for querying JSON or R
-objects using [JMESpath][] or [JSONpath][], or link to the package for
-direct access to the C++ library.
+objects using [JMESpath][], [JSONpath][], or [JSONPointer][]. Link to
+the package for direct access to the 'jsoncons' C++ library.
 
 [jsoncons]: https://github.com/danielaparker/jsoncons/
 [rjsoncons]: https://mtmorgan.github.io/rjsoncons/
 [JSONpath]: https://goessner.net/articles/JsonPath/
 [JMESpath]: https://jmespath.org/
+[JSONPointer]: https://datatracker.ietf.org/doc/html/rfc6901
 
 Install the released package version from CRAN
 
@@ -71,9 +72,9 @@ json <- '{
 ```
 
 There are several common use cases. Use [rjsoncons][] to query the
-JSON string using [JSONpath][] or [JMESPath][] syntax to filter larger
-documents to records of interest, e.g., only cities in New York
-state.
+JSON string using [JSONpath][], [JMESPath][] or [JSONPointer][]
+syntax to filter larger documents to records of interest, e.g., only
+cities in New York state.
 
 ```{r}
 jmespath(json, "locations[?state == 'NY']") |>
@@ -87,15 +88,11 @@ objects, e.g., a character vector of city names in Washington state.
 jmespath(json, "locations[?state == 'WA'].name", as = "R")
 ```
 
-The following transforms a nested JSON document into a format that can be incorporated directly in *R* as a `data.frame`.
+The JSON Pointer specification is simpler, indexing a single object in
+the document. JSON arrays are 0-based.
 
-```{r}
-path <- '{
-    name: locations[].name,
-    state: locations[].state
-}'
-jmespath(json, path, as = "R") |>
-    data.frame()
+```{r jsonpointer}
+jsonpointer(json, "/locations/0/state")
 ```
 
 The built-in parse can be replaced by alternative parsers by returning
@@ -118,6 +115,34 @@ nested `lapply()`, [purrr][] expressions, or [tidyr][] `unnest_*()`
 Additional examples illustrating features available are on the help
 pages, e.g., `?jmespath`.
 
+## JSON array-of-objects to *R* data.frame
+
+The following transforms a nested JSON document into a format that can
+be incorporated directly in *R* as a `data.frame`.
+
+```{r}
+path <- '{
+    name: locations[].name,
+    state: locations[].state
+}'
+jmespath(json, path, as = "R") |>
+    data.frame()
+```
+
+The transformation from JSON 'array-of-objects' to 'object-of-arrays'
+suitable for direct representation as a `data.frame` is common, and is
+implemented directly as `jsonpivot()`
+
+```{r jsonpivot}
+json |>
+    ## select the 'array-of-objects' portion of the JSON document
+    jmespath("locations") |>
+    ## pivot and return represenation as R named list-of-vectors
+    jsonpivot(as = "R") |>
+    ## coerce to data.frame, tibble, etc.
+    data.frame()
+```
+
 [purrr]: https://CRAN.R-project.org/package=purrr
 [tidyr]: https://CRAN.R-project.org/package=tidyr
 [r4ds]: https://r4ds.hadley.nz/
@@ -125,10 +150,10 @@ pages, e.g., `?jmespath`.
 
 ## *R* objects as input
 
-It is also possible to use [rjsoncons][] to filter and transform _R_
-objects. These are converted to JSON using `jsonlite::toJSON()` before
-queries are made; `toJSON()` arguments like `auto_unbox = TRUE` can be
-added to the function call.
+[rjsoncons][] can filter and transform _R_ objects. These are
+converted to JSON using `jsonlite::toJSON()` before queries are made;
+`toJSON()` arguments like `auto_unbox = TRUE` can be added to the
+function call.
 
 ```{r}
 ## `lst` is an *R* list
