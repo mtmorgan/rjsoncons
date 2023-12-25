@@ -19,9 +19,15 @@
     <loc>https://mtmorgan.github.io/rjsoncons/news/index.html</loc>
   </url>
   <url>
+    <loc>https://mtmorgan.github.io/rjsoncons/reference/as_r.html</loc>
+  </url>
+  <url>
     <loc>https://mtmorgan.github.io/rjsoncons/reference/index.html</loc>
   </url>
   <url>
     <loc>https://mtmorgan.github.io/rjsoncons/reference/jsoncons.html</loc>
+  </url>
+  <url>
+    <loc>https://mtmorgan.github.io/rjsoncons/reference/version.html</loc>
   </url>
 </urlset>
