@@ -5,7 +5,7 @@
 \alias{jmespath}
 \alias{jsonpointer}
 \alias{jsonpivot}
-\title{Query the jsoncons C++ library}
+\title{Query JSON using the jsoncons C++ library}
 \usage{
 jsonpath(data, path, object_names = "asis", as = "string", ...)
 

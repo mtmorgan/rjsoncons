@@ -51,7 +51,7 @@ The [introductory vignette][] outlines common use cases, including:
 - Transforming data for more direct incorporation in *R* data structures.
 
 The [jsoncons][] C++ header-only library is a very useful starting
-point for advance JSON manipulation. The vignette outlines how
+point for advanced JSON manipulation. The vignette outlines how
 [rjsoncons][] can be used by other *R* packages wishing to access the
 C++ library.
 
