@@ -136,6 +136,35 @@ jmespath <-
 
 #' @rdname jsoncons
 #'
+#' @description `jsonpointer()` extracts an element from a JSON string
+#'     using the 'JSON pointer' specification.
+#'
+#' @examples
+#' ## jsonpointer 0-based arrays
+#' jsonpointer(json, "/locations/0/name")
+#'
+#' ## document root "", sort selected element keys
+#' jsonpointer('{"b": 0, "a": 1}', "", "sort", as = "R") |>
+#'     str()
+#'
+#' ## 'Key not found' -- path '/' is searches for a 0-length key
+#' try(jsonpointer('{"b": 0, "a": 1}', "/"))
+#'
+#' @export
+jsonpointer <-
+    function(data, path, object_names = "asis", as = "string", ...)
+{
+    stopifnot(
+        identical(nchar(path), 0L) || .is_scalar_character(path),
+        .is_scalar_character(object_names),
+        .is_scalar_character(as)
+    )
+    data <- .as_json_string(data, ...)
+    cpp_jsonpointer(data, path, object_names, as)
+}
+
+#' @rdname jsoncons
+#'
 #' @description `jsonpivot()` transforms a JSON array-of-objects to
 #'     an object-of-arrays; this can be useful when forming a
 #'     column-based tibble from row-oriented JSON.

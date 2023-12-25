@@ -4,6 +4,7 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/jmespath/jmespath.hpp>
+#include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 
 #include "as_r.h"
 #include "jsonpivot.h"
@@ -80,6 +81,29 @@ sexp cpp_jmespath(
     switch(hash(jtype.c_str())) {
     case hash("asis"): return jmespath_impl<ojson>(data, path, as);
     case hash("sort"): return jmespath_impl<json>(data, path, as);
+    default: cpp11::stop("unknown `object_names = '" + jtype + "'`");
+    }
+}
+
+// jsonpointer
+
+template<class Json>
+sexp jsonpointer_impl(
+    const std::string data, const std::string path, const std::string as)
+{
+    Json j = Json::parse(data);
+    Json result = jsonpointer::get<Json>(j, path);
+    return json_as(result, as);
+}
+
+
+[[cpp11::register]]
+sexp cpp_jsonpointer(
+    std::string data, std::string path, std::string jtype, std::string as)
+{
+    switch(hash(jtype.c_str())) {
+    case hash("asis"): return jsonpointer_impl<ojson>(data, path, as);
+    case hash("sort"): return jsonpointer_impl<json>(data, path, as);
     default: cpp11::stop("unknown `object_names = '" + jtype + "'`");
     }
 }
