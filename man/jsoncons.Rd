@@ -4,6 +4,7 @@
 \alias{version}
 \alias{jsonpath}
 \alias{jmespath}
+\alias{jsonpointer}
 \alias{jsonpivot}
 \alias{as_r}
 \title{Query the jsoncons C++ library}
@@ -13,6 +14,8 @@ version()
 jsonpath(data, path, object_names = "asis", as = "string", ...)
 
 jmespath(data, path, object_names = "asis", as = "string", ...)
+
+jsonpointer(data, path, object_names = "asis", as = "string", ...)
 
 jsonpivot(data, object_names = "asis", as = "string", ...)
 
@@ -58,6 +61,9 @@ using the 'jsonpath' specification
 
 \code{jmespath()} executes a query against a JSON string
 using the 'jmespath' specification.
+
+\code{jsonpointer()} extracts an element from a JSON string
+using the 'JSON pointer' specification.
 
 \code{jsonpivot()} transforms a JSON array-of-objects to
 an object-of-arrays; this can be useful when forming a
@@ -151,6 +157,16 @@ jmespath(lst, "locations[?state[0] == 'WA'].name[0] | sort(@)") |>
 ## automatically unbox scalar values when creating the JSON string
 jmespath(lst, path, auto_unbox = TRUE) |>
     cat("\n")
+
+## jsonpointer 0-based arrays
+jsonpointer(json, "/locations/0/name")
+
+## document root "", sort selected element keys
+jsonpointer('{"b": 0, "a": 1}', "", "sort", as = "R") |>
+    str()
+
+## 'Key not found' -- path '/' is searches for a 0-length key
+try(jsonpointer('{"b": 0, "a": 1}', "/"))
 
 json |>
     ## 'locations' is a array of objects with 'name' and 'state' scalars...
