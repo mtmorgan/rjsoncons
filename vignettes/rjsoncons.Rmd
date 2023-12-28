@@ -114,16 +114,10 @@ jmespath(json, path, as = "R") |>
 
 The transformation from JSON 'array-of-objects' to 'object-of-arrays'
 suitable for direct representation as a `data.frame` is common, and is
-implemented directly as `jsonpivot()`
+implemented directly as `j_pivot()`
 
-```{r jsonpivot}
-json |>
-    ## select the 'array-of-objects' portion of the JSON document
-    jmespath("locations") |>
-    ## pivot and return represenation as R named list-of-vectors
-    jsonpivot(as = "R") |>
-    ## coerce to data.frame, tibble, etc.
-    data.frame()
+```{r j_pivot}
+j_pivot(json, "locations", as = "data.frame")
 ```
 
 [purrr]: https://CRAN.R-project.org/package=purrr

@@ -24,7 +24,7 @@ Description: The 'jsoncons'
     'JSONpath' and 'JMESpath' queries into 'JSON' strings or 'R'
     objects. The 'jsoncons' library is also be easily linked to other
     packages for direct access to 'C++' functionality.
-Suggests: jsonlite, tinytest, BiocStyle, knitr, rmarkdown
+Suggests: jsonlite, tibble, tinytest, BiocStyle, knitr, rmarkdown
 License: BSL-1.0
 LinkingTo: cpp11
 NeedsCompilation: yes

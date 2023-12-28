@@ -79,7 +79,7 @@ jsonpath <-
     cpp_jsonpath(data, path, object_names, as)
 }
 
-#' @rdname paths_and_pointers
+#' @rdname paths_and_pointer
 #'
 #' @description `jmespath()` executes a query against a JSON string
 #'     using the 'jmespath' specification.
@@ -113,7 +113,7 @@ jmespath <-
     cpp_jmespath(data, path, object_names, as)
 }
 
-#' @rdname paths_and_pointers
+#' @rdname paths_and_pointer
 #'
 #' @description `jsonpointer()` extracts an element from a JSON string
 #'     using the 'JSON pointer' specification.

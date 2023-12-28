@@ -7,12 +7,8 @@
 as_r(data, object_names = "asis", ...)
 }
 \arguments{
-\item{data}{an \emph{R} object. If \code{data} is a scalar (length 1)
-character vector, it is treated as a single JSON
-string. Otherwise, it is parsed to a JSON string using
-\code{jsonlite::toJSON()}. Use \code{I()} to treat a scalar character
-vector as an \emph{R} object rather than JSON string, e.g., \code{I("A")}
-will be parsed to \verb{["A"]} before processing.}
+\item{data}{a character(1) JSON string, or an \emph{R} object parsed to
+a JSON string using \code{jsonlite::toJSON()}.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
@@ -28,9 +24,9 @@ scalar values.}
 \code{as_r()} transforms a JSON string to an \emph{R} object.
 }
 \details{
-The \code{as = "R"} argument to \code{jsonpath()}, \code{jmespath()} and
-\code{jsonpivot()}, and the \code{as_r()} function transform a JSON string
-representation to an \emph{R} object. Main rules are:
+The \code{as = "R"} argument to \code{j_query()}, \code{j_pivot()}, etc., and the
+\code{as_r()} function transform a JSON string representation to an \emph{R}
+object. Main rules are:
 \itemize{
 \item JSON arrays of a single type (boolean, integer, double, string)
 are transformed to \emph{R} vectors of the same length and

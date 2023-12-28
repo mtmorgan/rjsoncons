@@ -151,6 +151,6 @@ expect_identical(
 
 expect_identical(
     ## as = "R"
-    jsonpointer(json, "/locations/0", as = "R") |> dput(),
+    jsonpointer(json, "/locations/0", as = "R"),
     list(name = "Seattle", state = "WA")
 )
