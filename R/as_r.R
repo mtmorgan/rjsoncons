@@ -8,9 +8,9 @@
 #'
 #' @details
 #'
-#' The `as = "R"` argument to `jsonpath()`, `jmespath()` and
-#' `jsonpivot()`, and the `as_r()` function transform a JSON string
-#' representation to an *R* object. Main rules are:
+#' The `as = "R"` argument to `j_query()`, `j_pivot()`, etc., and the
+#' `as_r()` function transform a JSON string representation to an *R*
+#' object. Main rules are:
 #'
 #' - JSON arrays of a single type (boolean, integer, double, string)
 #'   are transformed to *R* vectors of the same length and

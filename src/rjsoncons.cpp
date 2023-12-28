@@ -111,19 +111,19 @@ sexp cpp_jsonpointer(
 // pivot
 
 template<class Json>
-sexp jsonpivot_impl(const std::string data, const std::string as)
+sexp j_pivot_impl(const std::string data, const std::string as)
 {
     Json j = Json::parse(data);
-    Json result = jsonpivot<Json>(j);
+    Json result = j_pivot<Json>(j);
     return json_as(result, as);
 }
 
 [[cpp11::register]]
-sexp cpp_jsonpivot(std::string data, std::string jtype, std::string as)
+sexp cpp_j_pivot(std::string data, std::string jtype, std::string as)
 {
     switch(hash(jtype.c_str())) {
-    case hash("asis"): return jsonpivot_impl<ojson>(data, as);
-    case hash("sort"): return jsonpivot_impl<json>(data, as);
+    case hash("asis"): return j_pivot_impl<ojson>(data, as);
+    case hash("sort"): return j_pivot_impl<json>(data, as);
     default: cpp11::stop("unknown `object_names` = '" + jtype + "'`");
     }
 }

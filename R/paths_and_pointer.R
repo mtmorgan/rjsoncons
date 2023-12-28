@@ -1,16 +1,12 @@
-#' @rdname jsoncons
+#' @rdname paths_and_pointer
 #'
-#' @title Query JSON using the jsoncons C++ library
+#' @title JSONpath, JMESpath, or JSONpointer query of JSON documents
 #'
 #' @description `jsonpath()` executes a query against a JSON string
 #'     using the 'jsonpath' specification
 #'
-#' @param data an _R_ object. If `data` is a scalar (length 1)
-#'     character vector, it is treated as a single JSON
-#'     string. Otherwise, it is parsed to a JSON string using
-#'     `jsonlite::toJSON()`. Use `I()` to treat a scalar character
-#'     vector as an _R_ object rather than JSON string, e.g., `I("A")`
-#'     will be parsed to `["A"]` before processing.
+#' @param data a character(1) JSON string, or an *R* object parsed to
+#'     a JSON string using `jsonlite::toJSON()`.
 #'
 #' @param path character(1) jsonpath or jmespath query string.
 #'
@@ -26,7 +22,7 @@
 #'     TRUE` to automatically 'unbox' vectors of length 1 to JSON
 #'     scalar values.
 #'
-#' @return `jsonpath()`, `jmespath()` and `jsonpivot()` return a
+#' @return `jsonpath()`, `jmespath()` and `jsonpointer()` return a
 #'     character(1) JSON string (`as = "string"`, default) or *R*
 #'     object (`as = "R"`) representing the result of the query.
 #'
@@ -66,8 +62,8 @@
 #'
 #' ## different ordering of object names -- 'asis' (default) or 'sort'
 #' json_obj <- '{"b": "1", "a": "2"}'
-#' jsonpath(json_obj, "$")             |> cat("\n")
-#' jsonpath(json_obj, "$.*")           |> cat("\n")
+#' jsonpath(json_obj, "$")           |> cat("\n")
+#' jsonpath(json_obj, "$.*")         |> cat("\n")
 #' jsonpath(json_obj, "$", "sort")   |> cat("\n")
 #' jsonpath(json_obj, "$.*", "sort") |> cat("\n")
 #'
@@ -83,7 +79,7 @@ jsonpath <-
     cpp_jsonpath(data, path, object_names, as)
 }
 
-#' @rdname jsoncons
+#' @rdname paths_and_pointers
 #'
 #' @description `jmespath()` executes a query against a JSON string
 #'     using the 'jmespath' specification.
@@ -117,7 +113,7 @@ jmespath <-
     cpp_jmespath(data, path, object_names, as)
 }
 
-#' @rdname jsoncons
+#' @rdname paths_and_pointers
 #'
 #' @description `jsonpointer()` extracts an element from a JSON string
 #'     using the 'JSON pointer' specification.
@@ -138,49 +134,10 @@ jsonpointer <-
     function(data, path, object_names = "asis", as = "string", ...)
 {
     stopifnot(
-        identical(nchar(path), 0L) || .is_scalar_character(path),
+        .is_scalar_nchar_0(path)|| .is_scalar_character(path),
         .is_scalar_character(object_names),
         .is_scalar_character(as)
     )
     data <- .as_json_string(data, ...)
     cpp_jsonpointer(data, path, object_names, as)
-}
-
-#' @rdname jsoncons
-#'
-#' @description `jsonpivot()` transforms a JSON array-of-objects to
-#'     an object-of-arrays; this can be useful when forming a
-#'     column-based tibble from row-oriented JSON.
-#'
-#' @details
-#'
-#' `jsonpivot()` transforms an 'array-of-objects' (typical when the
-#' JSON is a row-oriented representation of a table) to an
-#' 'object-of-arrays'. A simple example transforms an array of two
-#' objects each with three fields `'[{"a": 1, "b": 2, "c": 3}, {"a":
-#' 4, "b": 5, "c": 6}]'` to an object with with three fields, each a
-#' vector of length 2 `'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'`. The
-#' object-of-arrays representation corresponds closely to an _R_
-#' data.frame or tibble, as illustrated in the examples.
-#'
-#' @examples
-#' json |>
-#'     ## 'locations' is a array of objects with 'name' and 'state' scalars...
-#'     jmespath("locations") |>
-#'     ## ...pivot to a single object with 'name' and 'state' vectors...
-#'     jsonpivot(as = "R") |>
-#'     ## ... easily coerced to a data.frame or dplyr::tibble
-#'     as.data.frame()
-#'
-#' @export
-jsonpivot <-
-    function(data, object_names = "asis", as = "string", ...)
-{
-    stopifnot(
-        .is_scalar_character(object_names),
-        .is_scalar_character(as)
-    )
-
-    data <- .as_json_string(data, ...)
-    cpp_jsonpivot(data, object_names, as)
 }

@@ -51,7 +51,7 @@ Json pivot_array_as_object(const Json j)
 }
 
 template<class Json>
-Json jsonpivot(const Json j)
+Json j_pivot(const Json j)
 {
     Json value;
 
@@ -64,7 +64,7 @@ Json jsonpivot(const Json j)
         value = pivot_array_as_object(j);
         break;
     };
-    default: cpp11::stop("`jsonpivot()` 'data' must be a JSON array");
+    default: cpp11::stop("`j_pivot()` 'data' must be a JSON array");
     };
 
     return value;
