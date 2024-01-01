@@ -108,6 +108,51 @@ sexp cpp_jsonpointer(
     }
 }
 
+// query
+
+template<class Json>
+sexp j_query_impl(
+    const std::string data, const std::string path,
+    const std::string as, const std::string path_type)
+{
+    // parse data
+    Json j = Json::parse(data);
+
+    // evaluate path
+    Json result;
+    switch(hash(path_type.c_str())) {
+    case hash("JSONpointer"): {
+        result = jsonpointer::get<Json>(j, path);
+        break;
+    }
+    case hash("JSONpath"): {
+        result = jsonpath::json_query<Json>(j, path);
+        break;
+    }
+    case hash("JMESpath"): {
+        result = jmespath::search<Json>(j, path);
+        break;
+    }
+    default: cpp11::stop("unknown `path_type` = '" + path_type + "'");
+    }
+
+    // translate result
+    return json_as(result, as);
+}
+
+[[cpp11::register]]
+sexp cpp_j_query(
+    const std::string data, const std::string path,
+    const std::string object_names, const std::string as,
+    const std::string path_type)
+{
+    switch(hash(object_names.c_str())) {
+    case hash("asis"): return j_query_impl<ojson>(data, path, as, path_type);
+    case hash("sort"): return j_query_impl<json>(data, path, as, path_type);
+    default: cpp11::stop("unknown `object_names` = '" + object_names + "'");
+    }
+}
+
 // pivot
 
 template<class Json>

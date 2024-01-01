@@ -5,16 +5,11 @@
 }
 
 .is_scalar_character <-
-    function(x)
+    function(x, z.ok = FALSE)
 {
-    .is_scalar(x) && is.character(x) && nzchar(x)
+    .is_scalar(x) && is.character(x) && (z.ok || nzchar(x))
 }
 
-.is_scalar_nchar_0 <-
-    function(x)
-{
-    .is_scalar(x) && is.character(x) && identical(nchar(x), 0L)
-}
 .as_json_string <-
     function(x, ...)
 {

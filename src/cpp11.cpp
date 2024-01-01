@@ -34,6 +34,13 @@ extern "C" SEXP _rjsoncons_cpp_jsonpointer(SEXP data, SEXP path, SEXP jtype, SEX
   END_CPP11
 }
 // rjsoncons.cpp
+sexp cpp_j_query(const std::string data, const std::string path, const std::string object_names, const std::string as, const std::string path_type);
+extern "C" SEXP _rjsoncons_cpp_j_query(SEXP data, SEXP path, SEXP object_names, SEXP as, SEXP path_type) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_j_query(cpp11::as_cpp<cpp11::decay_t<const std::string>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path_type)));
+  END_CPP11
+}
+// rjsoncons.cpp
 sexp cpp_j_pivot(std::string data, std::string jtype, std::string as);
 extern "C" SEXP _rjsoncons_cpp_j_pivot(SEXP data, SEXP jtype, SEXP as) {
   BEGIN_CPP11
@@ -52,6 +59,7 @@ extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_rjsoncons_cpp_as_r",        (DL_FUNC) &_rjsoncons_cpp_as_r,        2},
     {"_rjsoncons_cpp_j_pivot",     (DL_FUNC) &_rjsoncons_cpp_j_pivot,     3},
+    {"_rjsoncons_cpp_j_query",     (DL_FUNC) &_rjsoncons_cpp_j_query,     5},
     {"_rjsoncons_cpp_jmespath",    (DL_FUNC) &_rjsoncons_cpp_jmespath,    4},
     {"_rjsoncons_cpp_jsonpath",    (DL_FUNC) &_rjsoncons_cpp_jsonpath,    4},
     {"_rjsoncons_cpp_jsonpointer", (DL_FUNC) &_rjsoncons_cpp_jsonpointer, 4},

@@ -28,27 +28,28 @@
 #'
 #' @export
 j_query <-
-    function(data, path, object_names = "asis", as = "string", ...)
+    function(
+        data, path = "", object_names = "asis", as = "string", ...,
+        path_type = j_path_type(path)
+    )
 {
     stopifnot(
-        as %in% c("string", "R")
+        .is_scalar_character(path, z.ok = TRUE),
+        object_names %in% c("asis", "sort"),
+        as %in% c("string", "R"),
+        path_type %in% c("JSONpointer", "JSONpath", "JMESpath")
     )
 
-    FUN <- switch(
-        j_path_type(path),
-        JSONpointer = jsonpointer,
-        JSONpath = jsonpath,
-        JMESpath = jmespath
-    )
-    FUN(data, path, object_names = object_names, as = as, ...)
+    data <- .as_json_string(data, ...)
+    cpp_j_query(data, path, object_names, as, path_type)
 }
 
 j_pivot_impl <-
     function(data, object_names = "asis", as = "string", ...)
 {
     stopifnot(
-        .is_scalar_character(object_names),
-        .is_scalar_character(as)
+        object_names %in% c("asis", "sort"),
+        as %in% c("string", "R")
     )
 
     data <- .as_json_string(data, ...)
@@ -81,14 +82,13 @@ j_pivot_impl <-
 #'
 #' @export
 j_pivot <-
-    function(data, path, object_names = "asis", as = "string", ...)
+    function(data, path = "", object_names = "asis", as = "string", ...)
 {
     stopifnot(
         as %in% c("string", "R", "data.frame", "tibble")
     )
 
-    if (!missing(path))
-        data <- j_query(data, path, object_names, as = "string", ...)
+    data <- j_query(data, path, object_names, as = "string", ...)
 
     switch(
         as,
@@ -136,19 +136,19 @@ j_path_type <-
     function(path)
 {
     stopifnot(
-        .is_scalar_nchar_0(path) || .is_scalar_character(path)
+        .is_scalar_character(path, z.ok = TRUE)
     )
 
     path <- trimws(path)
-    if (.is_scalar_nchar_0(path)) {
-        "JSONpointer"
-    } else {
+    if (nzchar(path)) {
         switch(
             substring(path, 1, 1),
             "/" = "JSONpointer",
             "$" = "JSONpath",
             "JMESpath"
         )
+    } else {
+        "JSONpointer"
     }
 }
 

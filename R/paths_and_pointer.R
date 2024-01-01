@@ -134,7 +134,7 @@ jsonpointer <-
     function(data, path, object_names = "asis", as = "string", ...)
 {
     stopifnot(
-        .is_scalar_nchar_0(path)|| .is_scalar_character(path),
+        .is_scalar_character(path, z.ok = TRUE),
         .is_scalar_character(object_names),
         .is_scalar_character(as)
     )

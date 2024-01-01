@@ -16,6 +16,10 @@ cpp_jsonpointer <- function(data, path, jtype, as) {
   .Call(`_rjsoncons_cpp_jsonpointer`, data, path, jtype, as)
 }
 
+cpp_j_query <- function(data, path, object_names, as, path_type) {
+  .Call(`_rjsoncons_cpp_j_query`, data, path, object_names, as, path_type)
+}
+
 cpp_j_pivot <- function(data, jtype, as) {
   .Call(`_rjsoncons_cpp_j_pivot`, data, jtype, as)
 }
