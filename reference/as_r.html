@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9202</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9300</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,12 +60,8 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>data</dt>
-<dd><p>an <em>R</em> object. If <code>data</code> is a scalar (length 1)
-character vector, it is treated as a single JSON
-string. Otherwise, it is parsed to a JSON string using
-<code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON()</a></code>. Use <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> to treat a scalar character
-vector as an <em>R</em> object rather than JSON string, e.g., <code>I("A")</code>
-will be parsed to <code>["A"]</code> before processing.</p></dd>
+<dd><p>a character(1) JSON string, or an <em>R</em> object parsed to
+a JSON string using <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON()</a></code>.</p></dd>
 
 
 <dt>object_names</dt>
@@ -87,9 +83,9 @@ scalar values.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The <code>as = "R"</code> argument to <code><a href="jsoncons.html">jsonpath()</a></code>, <code><a href="jsoncons.html">jmespath()</a></code> and
-<code><a href="jsoncons.html">jsonpivot()</a></code>, and the <code>as_r()</code> function transform a JSON string
-representation to an <em>R</em> object. Main rules are:</p><ul><li><p>JSON arrays of a single type (boolean, integer, double, string)
+    <p>The <code>as = "R"</code> argument to <code><a href="j_query.html">j_query()</a></code>, <code><a href="j_query.html">j_pivot()</a></code>, etc., and the
+<code>as_r()</code> function transform a JSON string representation to an <em>R</em>
+object. Main rules are:</p><ul><li><p>JSON arrays of a single type (boolean, integer, double, string)
 are transformed to <em>R</em> vectors of the same length and
 corresponding type. A JSON scalar and a JSON vector of length 1
 are represented in the same way in <em>R</em>.</p></li>

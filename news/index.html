@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9202</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9300</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,9 +49,10 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.0" id="rjsoncons-120">rjsoncons 1.2.0<a class="anchor" aria-label="anchor" href="#rjsoncons-120"></a></h2>
-<ul><li>(v.1.1.0.9200) implement <code><a href="../reference/jsoncons.html">jsonpointer()</a></code> for querying JSON documents.</li>
-<li>(v.1.1.0.9100) update jsoncons library to 173.2, relaxing compiler requirements to c++11.</li>
-<li>(v.1.1.0.9000) implement <code><a href="../reference/jsoncons.html">jsonpivot()</a></code> to transform JSON array-of-objects to object-of-arrays, a common step before representation as a data.frame.</li>
+<ul><li>(1.1.0.9300) implement <code><a href="../reference/j_query.html">j_query()</a></code> (query without requiring path specification), <code><a href="../reference/j_query.html">j_pivot()</a></code>, and <code><a href="../reference/j_query.html">j_path_type()</a></code>. Remove <code>jsonpivot()</code>.</li>
+<li>(1.1.0.9200) implement <code><a href="../reference/paths_and_pointer.html">jsonpointer()</a></code> for querying JSON documents.</li>
+<li>(1.1.0.9100) update jsoncons library to 173.2, relaxing compiler requirements to c++11.</li>
+<li>(1.1.0.9000) implement <code>jsonpivot()</code> to transform JSON array-of-objects to object-of-arrays, a common step before representation as a data.frame.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="rjsoncons-110">rjsoncons 1.1.0<a class="anchor" aria-label="anchor" href="#rjsoncons-110"></a></h2><p class="text-muted">CRAN release: 2023-12-11</p>
@@ -77,7 +78,7 @@
 <li>(0.0.2) support for R object query in addition to JSON string</li>
 <li>(0.0.2) add unit tests</li>
 <li>(0.0.2) R and minor C++ code refactoring</li>
-<li>(0.0.1) initial C++ / R implementation of <code><a href="../reference/jsoncons.html">jmespath()</a></code> / <code><a href="../reference/jsoncons.html">jsonpath()</a></code>
+<li>(0.0.1) initial C++ / R implementation of <code><a href="../reference/paths_and_pointer.html">jmespath()</a></code> / <code><a href="../reference/paths_and_pointer.html">jsonpath()</a></code>
 </li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

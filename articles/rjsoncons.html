@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9202</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9300</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,24 +126,30 @@ the version of the C++ library in use</p>
 <p>There are several common use cases. Use <a href="https://mtmorgan.github.io/rjsoncons/">rjsoncons</a> to query the
 JSON string using <a href="https://goessner.net/articles/JsonPath/" class="external-link">JSONpath</a>, <a href="https://jmespath.org/" class="external-link">JMESPath</a> or <a href="https://datatracker.ietf.org/doc/html/rfc6901" class="external-link">JSONpointer</a>
 syntax to filter larger documents to records of interest, e.g., only
-cities in New York state.</p>
+cities in New York state, using ‘JMESpath’ syntax.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jsoncons.html">jmespath</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'NY']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'NY']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">## [{"name":"New York","state":"NY"}]</span></span></code></pre></div>
 <p>Use the <code>as = "R"</code> argument to extract deeply nested
 elements as <em>R</em> objects, e.g., a character vector of city names
 in Washington state.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jsoncons.html">jmespath</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA'].name"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA'].name"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
 <span><span class="co">## [1] "Seattle"  "Bellevue" "Olympia"</span></span></code></pre></div>
 <p>The JSON Pointer specification is simpler, indexing a single object
 in the document. JSON arrays are 0-based.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jsoncons.html">jsonpointer</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"/locations/0/state"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"/locations/0/state"</span><span class="op">)</span></span>
 <span><span class="co">## [1] "WA"</span></span></code></pre></div>
-<p>Additional examples illustrating features available are on the help
-pages, e.g., <code><a href="../reference/jsoncons.html">?jmespath</a></code>.</p>
+<p>The examples above use <code><a href="../reference/j_query.html">j_query()</a></code>, which automatically
+infers query specification from the form of <code>path</code> using
+<code><a href="../reference/j_query.html">j_path_type()</a></code>. It may be useful to indicate query
+specification more explicitly using <code><a href="../reference/paths_and_pointer.html">jsonpointer()</a></code>,
+<code><a href="../reference/paths_and_pointer.html">jsonpath()</a></code>, or <code><a href="../reference/paths_and_pointer.html">jmespath()</a></code>; examples
+illustrating features available for each query specification are on the
+help pages <code><a href="../reference/paths_and_pointer.html">?jsonpointer</a></code>, <code><a href="../reference/paths_and_pointer.html">?jsonpath</a></code>, and
+<code><a href="../reference/paths_and_pointer.html">?jmespath</a></code>.</p>
 </div>
 <div class="section level3">
 <h3 id="array-of-objects-to-r-data-frame">Array-of-objects to <em>R</em> data.frame<a class="anchor" aria-label="anchor" href="#array-of-objects-to-r-data-frame"></a>
@@ -156,7 +162,7 @@ can be incorporated directly in <em>R</em> as a
 <span><span class="st">    name: locations[].name,</span></span>
 <span><span class="st">    state: locations[].state</span></span>
 <span><span class="st">}'</span></span>
-<span><span class="fu"><a href="../reference/jsoncons.html">jmespath</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">##       name state</span></span>
 <span><span class="co">## 1  Seattle    WA</span></span>
@@ -165,15 +171,9 @@ can be incorporated directly in <em>R</em> as a
 <span><span class="co">## 4  Olympia    WA</span></span></code></pre></div>
 <p>The transformation from JSON ‘array-of-objects’ to ‘object-of-arrays’
 suitable for direct representation as a <code>data.frame</code> is
-common, and is implemented directly as <code><a href="../reference/jsoncons.html">jsonpivot()</a></code></p>
+common, and is implemented directly as <code><a href="../reference/j_query.html">j_pivot()</a></code></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">json</span> <span class="op">|&gt;</span></span>
-<span>    <span class="co">## select the 'array-of-objects' portion of the JSON document</span></span>
-<span>    <span class="fu"><a href="../reference/jsoncons.html">jmespath</a></span><span class="op">(</span><span class="st">"locations"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="co">## pivot and return represenation as R named list-of-vectors</span></span>
-<span>    <span class="fu"><a href="../reference/jsoncons.html">jsonpivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="co">## coerce to data.frame, tibble, etc.</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">##       name state</span></span>
 <span><span class="co">## 1  Seattle    WA</span></span>
 <span><span class="co">## 2 New York    NY</span></span>
@@ -192,7 +192,7 @@ be added to the function call.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## `lst` is an *R* list</span></span>
 <span><span class="va">lst</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">json</span>, simplifyVector <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/jsoncons.html">jmespath</a></span><span class="op">(</span><span class="va">lst</span>, <span class="st">"locations[?state == 'WA'].name | sort(@)"</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">lst</span>, <span class="st">"locations[?state == 'WA'].name | sort(@)"</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">## ["Bellevue","Olympia","Seattle"]</span></span></code></pre></div>
 </div>
@@ -299,7 +299,7 @@ returning the query as a JSON string, e.g., using the
 <code>fromJSON()</code> in the <a href="https://CRAN.R-project.org/package=jsonlite" class="external-link">jsonlite</a>
 package.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jsoncons.html">jmespath</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA']"</span>, as  <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="co">## `fromJSON()` simplifies list-of-objects to data.frame</span></span>
 <span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## NULL</span></span></code></pre></div>
@@ -352,7 +352,7 @@ library.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] rjsoncons_1.1.0.9202 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] rjsoncons_1.1.0.9300 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.45         </span></span>
