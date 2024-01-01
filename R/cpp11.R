@@ -8,8 +8,8 @@ cpp_j_query <- function(data, path, object_names, as, path_type) {
   .Call(`_rjsoncons_cpp_j_query`, data, path, object_names, as, path_type)
 }
 
-cpp_j_pivot <- function(data, jtype, as) {
-  .Call(`_rjsoncons_cpp_j_pivot`, data, jtype, as)
+cpp_j_pivot <- function(data, path, object_names, as, path_type) {
+  .Call(`_rjsoncons_cpp_j_pivot`, data, path, object_names, as, path_type)
 }
 
 cpp_as_r <- function(data, jtype) {

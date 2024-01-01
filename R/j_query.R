@@ -44,19 +44,6 @@ j_query <-
     cpp_j_query(data, path, object_names, as, path_type)
 }
 
-j_pivot_impl <-
-    function(data, object_names = "asis", as = "string", ...)
-{
-    stopifnot(
-        object_names %in% c("asis", "sort"),
-        as %in% c("string", "R")
-    )
-
-    data <- .as_json_string(data, ...)
-    cpp_j_pivot(data, object_names, as)
-}
-
-
 #' @rdname j_query
 #'
 #' @description `j_pivot()` transforms a JSON array-of-objects to an
@@ -82,23 +69,28 @@ j_pivot_impl <-
 #'
 #' @export
 j_pivot <-
-    function(data, path = "", object_names = "asis", as = "string", ...)
+    function(
+        data, path = "", object_names = "asis", as = "string", ...,
+        path_type = j_path_type(path)
+    )
 {
     stopifnot(
-        as %in% c("string", "R", "data.frame", "tibble")
+        .is_scalar_character(path, z.ok = TRUE),
+        object_names %in% c("asis", "sort"),
+        as %in% c("string", "R", "data.frame", "tibble"),
+        path_type %in% c("JSONpointer", "JSONpath", "JMESpath")
     )
 
-    data <- j_query(data, path, object_names, as = "string", ...)
-
+    data <- .as_json_string(data, ...)
     switch(
         as,
-        string = j_pivot_impl(data, object_names, as = "string", ...),
-        R = j_pivot_impl(data, object_names, as = "R", ...),
+        string = cpp_j_pivot(data, path, object_names, as, path_type),
+        R = cpp_j_pivot(data, path, object_names, as = "R", path_type),
         data.frame =
-            j_pivot_impl(data, object_names, as = "R", ...) |>
+            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
             as.data.frame(),
         tibble =
-            j_pivot_impl(data, object_names, as = "R", ...) |>
+            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
             tibble::as_tibble()
     )
 }
@@ -151,4 +143,3 @@ j_path_type <-
         "JSONpointer"
     }
 }
-
