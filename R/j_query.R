@@ -12,6 +12,10 @@
 #'
 #' @inheritParams jsonpath
 #'
+#' @param path_type character(1) type of `path`; one of
+#'     `"JSONpointer"`, `"JSONpath"`, `"JMESpath"`. Inferred from
+#'     `path` using `j_path_type()`.
+#'
 #' @examples
 #' json <- '{
 #'   "locations": [

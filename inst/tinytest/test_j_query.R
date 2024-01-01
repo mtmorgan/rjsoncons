@@ -7,7 +7,16 @@ json <- '{
   ]
 }'
 
+json_pretty <- # remove whitespace
+    '{"locations":[{"name":"Seattle","state":"WA"},{"name":"New York","state":"NY"},{"name":"Bellevue","state":"WA"},{"name":"Olympia","state":"WA"}]}'
+
 ## j_query
+
+expect_identical(j_query(""), '[""]') # JSONpointer
+expect_identical(j_query('""'), '')
+expect_identical(j_query('[]'), '[]')
+expect_identical(j_query('{}'), '{}')
+expect_identical(j_query(json), json_pretty)
 
 expect_identical(
     j_query(json, "/locations/0/name"),   # JSONpointer

@@ -34,13 +34,13 @@ the package for direct access to the 'jsoncons' C++ library.
 
 Install the released package version from CRAN
 
-```{r, eval = FALSE}
+```{r install, eval = FALSE}
 install.pacakges("rjsoncons", repos = "https://CRAN.R-project.org")
 ```
 
 Install the development version with
 
-```{r, eval = FALSE}
+```{r install_github, eval = FALSE}
 if (!requireNamespace("remotes", quiety = TRUE))
     install.packages("remotes", repos = "https://CRAN.R-project.org")
 remotes::install_github("mtmorgan/rjsoncons")
@@ -49,7 +49,7 @@ remotes::install_github("mtmorgan/rjsoncons")
 Attach the installed package to your *R* session, and check the
 version of the C++ library in use
 
-```{r, messages = FALSE}
+```{r library, messages = FALSE}
 library(rjsoncons)
 rjsoncons::version()
 ```
@@ -60,7 +60,7 @@ rjsoncons::version()
 
 Here is a simple JSON example document
 
-```{r}
+```{r json_example}
 json <- '{
   "locations": [
     {"name": "Seattle", "state": "WA"},
@@ -74,41 +74,45 @@ json <- '{
 There are several common use cases. Use [rjsoncons][] to query the
 JSON string using [JSONpath][], [JMESPath][] or [JSONpointer][]
 syntax to filter larger documents to records of interest, e.g., only
-cities in New York state.
+cities in New York state, using 'JMESpath' syntax.
 
-```{r}
-jmespath(json, "locations[?state == 'NY']") |>
+```{r j_query}
+j_query(json, "locations[?state == 'NY']") |>
     cat("\n")
 ```
 
 Use the `as = "R"` argument to extract deeply nested elements as *R*
 objects, e.g., a character vector of city names in Washington state.
 
-```{r}
-jmespath(json, "locations[?state == 'WA'].name", as = "R")
+```{r as_arg}
+j_query(json, "locations[?state == 'WA'].name", as = "R")
 ```
 
 The JSON Pointer specification is simpler, indexing a single object in
 the document. JSON arrays are 0-based.
 
 ```{r jsonpointer}
-jsonpointer(json, "/locations/0/state")
+j_query(json, "/locations/0/state")
 ```
 
-Additional examples illustrating features available are on the help
-pages, e.g., `?jmespath`.
+The examples above use `j_query()`, which automatically infers query
+specification from the form of `path` using `j_path_type()`. It may be
+useful to indicate query specification more explicitly using
+`jsonpointer()`, `jsonpath()`, or `jmespath()`; examples illustrating
+features available for each query specification are on the help pages
+`?jsonpointer`, `?jsonpath`, and `?jmespath`.
 
 ## Array-of-objects to *R* data.frame
 
 The following transforms a nested JSON document into a format that can
 be incorporated directly in *R* as a `data.frame`.
 
-```{r}
+```{r array_of_objects}
 path <- '{
     name: locations[].name,
     state: locations[].state
 }'
-jmespath(json, path, as = "R") |>
+j_query(json, path, as = "R") |>
     data.frame()
 ```
 
@@ -132,10 +136,10 @@ converted to JSON using `jsonlite::toJSON()` before queries are made;
 `toJSON()` arguments like `auto_unbox = TRUE` can be added to the
 function call.
 
-```{r}
+```{r r_list}
 ## `lst` is an *R* list
 lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
-jmespath(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
+j_query(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
     cat("\n")
 ```
 
@@ -156,7 +160,7 @@ The main rules of this transformation are outlined here.  JSON arrays
 of a single type (boolean, integer, double, string) are transformed to
 *R* vectors of the same length and corresponding type.
 
-```{r}
+```{r as_r}
 as_r('[true, false, true]') # boolean -> logical
 as_r('[1, 2, 3]')           # integer -> integer
 as_r('[1.0, 2.0, 3.0]')     # double  -> numeric
@@ -166,7 +170,7 @@ as_r('["a", "b", "c"]')     # string  -> character
 JSON arrays mixing integer and double values are transformed to
 *R* numeric vectors.
 
-```{r}
+```{r as_r_integer_numeric}
 as_r('[1, 2.0]') |> class() # numeric
 ```
 
@@ -175,13 +179,13 @@ integer representation, the array is transformed to an *R* numeric
 vector. NOTE that this results in loss of precision for JSON integer
 values greater than `2^53`.
 
-```{r}
+```{r as_r_64_bit}
 as_r('[1, 2147483648]') |> class()  # 64-bit integers -> numeric
 ```
 
 JSON objects are transformed to *R* named lists.
 
-```{r}
+```{r as_r_objects}
 as_r('{}')
 as_r('{"a": 1.0, "b": [2, 3, 4]}') |> str()
 ```
@@ -189,21 +193,21 @@ as_r('{"a": 1.0, "b": [2, 3, 4]}') |> str()
 There are several additional details. A JSON scalar and a JSON vector
 of length 1 are represented in the same way in *R*.
 
-```{r}
+```{r as_r_scalars}
 identical(as_r("3.14"), as_r("[3.14]"))
 ```
 
 JSON arrays mixing types other than integer and double are transformed to
 *R* lists
 
-```{r}
+```{r as_r_mixed_arrays}
 as_r('[true, 1, "a"]') |> str()
 ```
 
 JSON `null` values are represented as *R* `NULL` values; arrays of
 `null` are transformed to lists
 
-```{r}
+```{r as_r_null}
 as_r('null')                  # NULL
 as_r('[null]') |> str()       # list(NULL)
 as_r('[null, null]') |> str() # list(NULL, NULL)
@@ -214,7 +218,7 @@ argument. The default preserves names as they appear in the JSON
 definition; use `"sort"` to sort names alphabetically. This argument
 is applied recursively.
 
-```{r}
+```{r as_r_field_order}
 json <- '{"b": 1, "a": {"d": 2, "c": 3}}'
 as_r(json) |> str()
 as_r(json, object_names = "sort") |> str()
@@ -225,7 +229,7 @@ arguments `simplifyVector = TRUE, simplifyDataFrame = FALSE,
 simplifyMatrix = FALSE)`. Unit tests (using the [tinytest][]
 framework) providing additional details are available at
 
-```{r, eval = FALSE}
+```{r as_r_tiny_test_source, eval = FALSE}
 system.file(package = "rjsoncons", "tinytest", "test_as_r.R")
 ```
 
@@ -237,8 +241,8 @@ The built-in parser can be replaced by alternative parsers by returning
 the query as a JSON string, e.g., using the `fromJSON()` in the
 [jsonlite][] package.
 
-```{r}
-jmespath(json, "locations[?state == 'WA']", as  = "string") |>
+```{r jsonlite_fromJSON}
+j_query(json, "locations[?state == 'WA']") |>
     ## `fromJSON()` simplifies list-of-objects to data.frame
     jsonlite::fromJSON()
 ```
@@ -272,6 +276,6 @@ between R and the C++ 'jsoncons' library.
 
 This vignette was compiled using the following software versions
 
-```{r}
+```{r session_info}
 sessionInfo()
 ```

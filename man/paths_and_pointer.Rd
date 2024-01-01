@@ -107,7 +107,7 @@ jsonpointer(json, "/locations/0/name")
 jsonpointer('{"b": 0, "a": 1}', "", "sort", as = "R") |>
     str()
 
-## 'Key not found' -- path '/' is searches for a 0-length key
+## 'Key not found' -- path '/' searches for a 0-length key
 try(jsonpointer('{"b": 0, "a": 1}', "/"))
 
 }

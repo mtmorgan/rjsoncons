@@ -6,9 +6,23 @@
 \alias{j_path_type}
 \title{Query and pivot for JSON documents}
 \usage{
-j_query(data, path, object_names = "asis", as = "string", ...)
+j_query(
+  data,
+  path = "",
+  object_names = "asis",
+  as = "string",
+  ...,
+  path_type = j_path_type(path)
+)
 
-j_pivot(data, path, object_names = "asis", as = "string", ...)
+j_pivot(
+  data,
+  path = "",
+  object_names = "asis",
+  as = "string",
+  ...,
+  path_type = j_path_type(path)
+)
 
 j_path_type(path)
 }
@@ -29,6 +43,10 @@ rules in \code{as_r()}. For \code{j_pivot()}, use \code{as = "data.frame"} or
 \item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
 not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
 scalar values.}
+
+\item{path_type}{character(1) type of \code{path}; one of
+\code{"JSONpointer"}, \code{"JSONpath"}, \code{"JMESpath"}. Inferred from
+\code{path} using \code{j_path_type()}.}
 }
 \description{
 \code{j_query()} executes a query against a JSON
