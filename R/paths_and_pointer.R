@@ -71,12 +71,7 @@
 jsonpath <-
     function(data, path, object_names = "asis", as = "string", ...)
 {
-    stopifnot(
-        .is_scalar_character(path),
-        .is_scalar_character(object_names)
-    )
-    data <- .as_json_string(data, ...)
-    cpp_jsonpath(data, path, object_names, as)
+    j_query(data, path, object_names, as, ..., path_type = "JSONpath")
 }
 
 #' @rdname paths_and_pointer
@@ -104,13 +99,7 @@ jsonpath <-
 jmespath <-
     function(data, path, object_names = "asis", as = "string", ...)
 {
-    stopifnot(
-        .is_scalar_character(path),
-        .is_scalar_character(object_names),
-        .is_scalar_character(as)
-    )
-    data <- .as_json_string(data, ...)
-    cpp_jmespath(data, path, object_names, as)
+    j_query(data, path, object_names, as, ..., path_type = "JMESpath")
 }
 
 #' @rdname paths_and_pointer
@@ -133,11 +122,5 @@ jmespath <-
 jsonpointer <-
     function(data, path, object_names = "asis", as = "string", ...)
 {
-    stopifnot(
-        .is_scalar_character(path, z.ok = TRUE),
-        .is_scalar_character(object_names),
-        .is_scalar_character(as)
-    )
-    data <- .as_json_string(data, ...)
-    cpp_jsonpointer(data, path, object_names, as)
+    j_query(data, path, object_names, as, ..., path_type = "JSONpointer")
 }

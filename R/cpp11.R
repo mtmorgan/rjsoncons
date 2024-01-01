@@ -4,18 +4,6 @@ cpp_version <- function() {
   .Call(`_rjsoncons_cpp_version`)
 }
 
-cpp_jsonpath <- function(data, path, jtype, as) {
-  .Call(`_rjsoncons_cpp_jsonpath`, data, path, jtype, as)
-}
-
-cpp_jmespath <- function(data, path, jtype, as) {
-  .Call(`_rjsoncons_cpp_jmespath`, data, path, jtype, as)
-}
-
-cpp_jsonpointer <- function(data, path, jtype, as) {
-  .Call(`_rjsoncons_cpp_jsonpointer`, data, path, jtype, as)
-}
-
 cpp_j_query <- function(data, path, object_names, as, path_type) {
   .Call(`_rjsoncons_cpp_j_query`, data, path, object_names, as, path_type)
 }
