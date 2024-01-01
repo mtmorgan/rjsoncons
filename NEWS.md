@@ -1,9 +1,12 @@
 # rjsoncons 1.2.0
 
-- (v.1.1.0.9200) implement `jsonpointer()` for querying JSON documents.
-- (v.1.1.0.9100) update jsoncons library to 173.2, relaxing compiler
+- (1.1.0.9300) implement `j_query()` (query without requiring path
+  specification), `j_pivot()`, and `j_path_type()`. Remove
+  `jsonpivot()`.
+- (1.1.0.9200) implement `jsonpointer()` for querying JSON documents.
+- (1.1.0.9100) update jsoncons library to 173.2, relaxing compiler
   requirements to c++11.
-- (v.1.1.0.9000) implement `jsonpivot()` to transform JSON
+- (1.1.0.9000) implement `jsonpivot()` to transform JSON
   array-of-objects to object-of-arrays, a common step before
   representation as a data.frame.
 
