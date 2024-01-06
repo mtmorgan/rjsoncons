@@ -7,7 +7,7 @@
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 
 #include "as_r.h"
-#include "jsonpivot.h"
+#include "j_pivot.h"
 
 using namespace jsoncons; // for convenience
 
