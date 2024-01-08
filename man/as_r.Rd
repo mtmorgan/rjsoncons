@@ -4,7 +4,7 @@
 \alias{as_r}
 \title{Parse JSON to R}
 \usage{
-as_r(data, object_names = "asis", ...)
+as_r(data, object_names = "asis", ..., data_type = j_data_type(data))
 }
 \arguments{
 \item{data}{a character(1) JSON string, or an \emph{R} object parsed to

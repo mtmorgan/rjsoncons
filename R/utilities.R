@@ -11,11 +11,12 @@
 }
 
 .as_json_string <-
-    function(x, ...)
+    function(x, ..., data_type)
 {
-    if (.is_scalar_character(x) && !inherits(x, "AsIs")) {
-        x
-    } else {
-        as.character(jsonlite::toJSON(x, ...))
-    }
+    switch(
+        data_type,
+        json = paste(x, collapse = "\n"),
+        ndjson = x,
+        R = as.character(jsonlite::toJSON(x, ...))
+    )
 }

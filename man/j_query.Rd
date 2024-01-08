@@ -12,6 +12,7 @@ j_query(
   object_names = "asis",
   as = "string",
   ...,
+  data_type = j_data_type(data),
   path_type = j_path_type(path)
 )
 
@@ -21,16 +22,15 @@ j_pivot(
   object_names = "asis",
   as = "string",
   ...,
+  data_type = j_data_type(data),
   path_type = j_path_type(path)
 )
-
-j_path_type(path)
 }
 \arguments{
 \item{data}{a character(1) JSON string, or an \emph{R} object parsed to
 a JSON string using \code{jsonlite::toJSON()}.}
 
-\item{path}{\code{character(1)} used to query the JSON document.}
+\item{path}{character(1) jsonpath or jmespath query string.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
@@ -55,10 +55,6 @@ document, automatically inferring the type of \code{path}.
 \code{j_pivot()} transforms a JSON array-of-objects to an
 object-of-arrays; this can be useful when forming a
 column-based tibble from row-oriented JSON.
-
-\code{j_path_type()} uses simple rules to identify
-whether \code{path} is a JSONpointer, JSONpath, or JMESpath
-expression.
 }
 \details{
 \code{j_pivot()} transforms an 'array-of-objects' (typical when the
@@ -68,19 +64,6 @@ objects each with three fields \code{'[{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5
 vector of length 2 \code{'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'}. The
 object-of-arrays representation corresponds closely to an \emph{R}
 data.frame or tibble, as illustrated in the examples.
-
-\code{j_path_type()} infers the type of \code{path} using a simple but
-incomplete calssification:
-\itemize{
-\item \code{"JSONpointer"} is infered if the the path is \code{""} or starts with \code{"/"}.
-\item \code{"JSONpath"} expressions start with \code{"$"}.
-\item \code{"JMESpath"} expressions satisfy niether the \code{JSONpointer} nor
-\code{JSONpath} criteria.
-}
-
-Because of these rules, the valid JSONpointer path \code{"@"} is
-interpretted as JMESpath; use \code{jsonpointer()} if JSONpointer
-behavior is required.
 }
 \examples{
 json <- '{
@@ -100,10 +83,5 @@ j_pivot(json, "$.locations[?@.state=='WA']", as = "string")
 j_pivot(json, "locations[?@.state=='WA']", as = "R")
 j_pivot(json, "locations[?@.state=='WA']", as = "data.frame")
 j_pivot(json, "locations[?@.state=='WA']", as = "tibble")
-
-j_path_type("")
-j_path_type("/locations/0/name")
-j_path_type("$.locations[0].name")
-j_path_type("locations[0].name")
 
 }

@@ -47,13 +47,13 @@
 #'
 #' @export
 as_r <-
-    function(data, object_names = "asis", ...)
+    function(data, object_names = "asis", ..., data_type = j_data_type(data))
 {
     stopifnot(
-        .is_scalar_character(data),
-        .is_scalar_character(object_names)
+        .is_scalar_character(object_names),
+        .is_j_data_type(data_type)
     )
 
-    data <- .as_json_string(data, ...)
+    data <- .as_json_string(data, ..., data_type = data_type)
     cpp_as_r(data, object_names)
 }
