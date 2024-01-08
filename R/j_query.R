@@ -1,14 +1,16 @@
 #' @rdname j_query
 #'
-#' @title Query and pivot for JSON documents
+#' @title Query and pivot for JSON / NDJSON documents
 #'
-#' @description `j_query()` executes a query against a JSON
-#'     document, automatically inferring the type of `path`.
+#' @description `j_query()` executes a query against a JSON or NDJSON
+#'     document, automatically inferring the type of `data` and
+#'     `path`.
 #'
 #' @param as character(1) return type. For `j_query()`, `"string"`
-#'     returns a single JSON string; `"R"` parses the JSON to R using
-#'     rules in `as_r()`. For `j_pivot()`, use `as = "data.frame"` or
-#'     `as = "tibble"` to coerce the result to a data.frame or tibble.
+#'     returns JSON / NDJSON strings; `"R"` parses JSON / NDJSON to R
+#'     using rules in `as_r()`. For `j_pivot()` (JSON only), use `as =
+#'     "data.frame"` or `as = "tibble"` to coerce the result to a
+#'     data.frame or tibble.
 #'
 #' @inheritParams jsonpath
 #'
@@ -29,6 +31,9 @@
 #' j_query(json, "/locations/0/name")             # JSONpointer
 #' j_query(json, "$.locations[*].name", as = "R") # JSONpath
 #' j_query(json, "locations[].state", as = "R")   # JMESpath
+#'
+#' ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
+#' j_query(ndjson_file, "{name: name, state: state}")
 #'
 #' @export
 j_query <-

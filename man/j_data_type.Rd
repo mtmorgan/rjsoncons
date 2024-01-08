@@ -3,7 +3,7 @@
 \name{j_data_type}
 \alias{j_data_type}
 \alias{j_path_type}
-\title{Detect JSON data and path types}
+\title{Detect JSON / NDJSON data and path types}
 \usage{
 j_data_type(data)
 
@@ -29,9 +29,9 @@ validate) the type of \code{data} based on the following rules:
 \item For a scalar (length 1) character \code{data}, either \code{"url"}
 (matching regular expression \code{"^https?://"}, \code{"file"}
 (\code{file.exists(data)} returns \code{TRUE}), or \code{"json"}. When \code{"file"}
-is infered, the return value is a length 2 vector, with the first
-element the infered type of data (\code{"json"} or \code{"ndjson"})
-obtained from the first 2 lines of the file.
+or \code{"url"} is inferred, the return value is a length 2 vector,
+with the first element the inferred type of data (\code{"json"} or
+\code{"ndjson"}) obtained from the first 2 lines of the file.
 \item For character data with \code{length(data) > 1}, \code{"ndjson"} if all
 elements start a square bracket or curly brace, consistently
 (i.e., agreeing with the start of the first record), otherwise
@@ -41,12 +41,12 @@ elements start a square bracket or curly brace, consistently
 
 \code{j_path_type()} without any argument reports possible values:
 \code{"JSONpointer"}, \code{"JSONpath"}, or \code{"JMESpath"}. When provided an
-arugment, \code{j_path_type()} infers the type of \code{path} using a simple
+argument, \code{j_path_type()} infers the type of \code{path} using a simple
 but incomplete classification:
 \itemize{
 \item \code{"JSONpointer"} is inferred if the the path is \code{""} or starts with \code{"/"}.
 \item \code{"JSONpath"} expressions start with \code{"$"}.
-\item \code{"JMESpath"} expressions satisfy niether the \code{JSONpointer} nor
+\item \code{"JMESpath"} expressions satisfy neither the \code{JSONpointer} nor
 \code{JSONpath} criteria.
 }
 

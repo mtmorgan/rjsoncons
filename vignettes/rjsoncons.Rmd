@@ -54,7 +54,7 @@ library(rjsoncons)
 rjsoncons::version()
 ```
 
-# Use cases
+# JSON Use cases
 
 ## Select, filter and transform
 
@@ -142,6 +142,36 @@ lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
 j_query(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
     cat("\n")
 ```
+
+# NDJSON support
+
+[rjsoncons][] supports '[NDJSON][]'(new-line delimited JSON). NDJSON
+consists of a file or character vector where each line / element
+represents a JSON record.
+
+`j_query()` provides a one-to-one mapping of NDJSON lines / elements
+to the return value, e.g., `j_query(ndjson_file, "@", as = "string")`
+on an NDJSON file with 1000 lines will return a character vector of
+1000 elements, or with `j_query(ndjson, "@", as = "R")` an *R* list
+with length 1000.
+
+```{r}
+ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
+j_query(ndjson_file, "{state: state, name: name}")
+```
+
+NDJSON files can be large, and are easy to iterate through. The
+queries are therefore processed in 'chunks', and a finite number of
+records can be processed
+
+```{r ndjson_n_records}
+j_query(ndjson_file, "{state: state, name: name}", n_records = 2)
+```
+
+Note that `n_records` refers to the number of lines input, rather than
+the number of lines satisfying `path=`.
+
+[NDJSON]: https://ndjson.org/
 
 # The JSON parser
 

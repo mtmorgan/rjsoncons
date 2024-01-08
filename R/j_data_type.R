@@ -15,7 +15,7 @@
 
 #' @rdname j_data_type
 #'
-#' @title Detect JSON data and path types
+#' @title Detect JSON / NDJSON data and path types
 #'
 #' @description `j_data_type()` uses simple rules to determine whether
 #'     'data' is json, ndjson, file, url, or R.
@@ -30,9 +30,9 @@
 #' - For a scalar (length 1) character `data`, either `"url"`
 #'   (matching regular expression `"^https?://"`, `"file"`
 #'   (`file.exists(data)` returns `TRUE`), or `"json"`. When `"file"`
-#'   is infered, the return value is a length 2 vector, with the first
-#'   element the infered type of data (`"json"` or `"ndjson"`)
-#'   obtained from the first 2 lines of the file.
+#'   or `"url"` is inferred, the return value is a length 2 vector,
+#'   with the first element the inferred type of data (`"json"` or
+#'   `"ndjson"`) obtained from the first 2 lines of the file.
 #' - For character data with `length(data) > 1`, `"ndjson"` if all
 #'   elements start a square bracket or curly brace, consistently
 #'   (i.e., agreeing with the start of the first record), otherwise
@@ -56,7 +56,12 @@ j_data_type <-
 {
     if (missing(data)) {
         ## possible values
-        return(c("json", "ndjson", "file", "url", "R"))
+        return(list(
+            "json", "ndjson",
+            c("json", "file"), c("ndjson", "file"),
+            c("json", "url"), c("ndjson", "url"),
+            "R"
+        ))
     }
 
     if (is.character(data)) {
@@ -100,12 +105,12 @@ j_data_type <-
 #'
 #' `j_path_type()` without any argument reports possible values:
 #' `"JSONpointer"`, `"JSONpath"`, or `"JMESpath"`. When provided an
-#' arugment, `j_path_type()` infers the type of `path` using a simple
+#' argument, `j_path_type()` infers the type of `path` using a simple
 #' but incomplete classification:
 #'
 #' - `"JSONpointer"` is inferred if the the path is `""` or starts with `"/"`.
 #' - `"JSONpath"` expressions start with `"$"`.
-#' - `"JMESpath"` expressions satisfy niether the `JSONpointer` nor
+#' - `"JMESpath"` expressions satisfy neither the `JSONpointer` nor
 #'   `JSONpath` criteria.
 #'
 #' Because of these rules, the valid JSONpointer path `"@"` is

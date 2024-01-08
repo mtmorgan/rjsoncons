@@ -15,3 +15,9 @@
 {
     .is_scalar(x) && is.numeric(x)
 }
+
+.is_scalar_logical <-
+    function(x)
+{
+    .is_scalar(x) && is.logical(x)
+}

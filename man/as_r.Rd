@@ -7,15 +7,26 @@
 as_r(data, object_names = "asis", ..., data_type = j_data_type(data))
 }
 \arguments{
-\item{data}{a character(1) JSON string, or an \emph{R} object parsed to
-a JSON string using \code{jsonlite::toJSON()}.}
+\item{data}{a character() JSON string or NDJSON records, or an \emph{R}
+object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
-\item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
-not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
-scalar values.}
+\item{...}{arguments for parsing NDJSON, or passed to \code{jsonlite::toJSON} when
+\code{data} is not character-valued. For NDJSON,
+\itemize{
+\item Use \code{n_records = 2} to parse just the first two records of the
+NDJSON document.
+\item Use \code{verbose = TRUE} to obtain a progress bar when reading from a
+connection (file or URL). Requires the cli package.
+}
+
+As an example for use with \code{jsonlite::toJSON()}
+\itemize{
+\item use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of
+length 1 to JSON scalar values.
+}}
 }
 \value{
 \code{as_r()} returns an \emph{R} object.

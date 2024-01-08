@@ -130,10 +130,11 @@ cpp11::list ndjson_query_impl(
     const std::string as, const std::string path_type)
 {
     cpp11::writable::list parsed(data.size());
-    for (auto datum : data) {
-        sexp result = j_query_impl<Json>(datum, path, as, path_type);
-        parsed.push_back(result);
-    }
+    std::transform(
+        data.cbegin(), data.cend(), parsed.begin(),
+        [&](std::string datum) {
+            return j_query_impl<Json>(datum, path, as, path_type);
+        });
 
     return parsed;
 }
