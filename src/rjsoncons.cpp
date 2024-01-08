@@ -121,3 +121,35 @@ sexp cpp_as_r(std::string data, std::string jtype)
     default: cpp11::stop("unknown `object_names = '" + jtype + "'`");
     }
 }
+
+// ndjson_query
+
+template<class Json>
+cpp11::list ndjson_query_impl(
+    const std::vector<std::string> data, const std::string path,
+    const std::string as, const std::string path_type)
+{
+    cpp11::writable::list parsed(data.size());
+    for (auto datum : data) {
+        sexp result = j_query_impl<Json>(datum, path, as, path_type);
+        parsed.push_back(result);
+    }
+
+    return parsed;
+}
+
+[[cpp11::register]]
+cpp11::list cpp_ndjson_query(
+    const std::vector<std::string> data, const std::string path,
+    const std::string object_names, const std::string as,
+    const std::string path_type)
+{
+    switch(hash(object_names.c_str())) {
+    case hash("asis"):
+        return ndjson_query_impl<ojson>(data, path, as, path_type);
+    case hash("sort"):
+        return ndjson_query_impl<json>(data, path, as, path_type);
+    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }
+}
+

@@ -15,3 +15,7 @@ cpp_j_pivot <- function(data, path, object_names, as, path_type) {
 cpp_as_r <- function(data, jtype) {
   .Call(`_rjsoncons_cpp_as_r`, data, jtype)
 }
+
+cpp_ndjson_query <- function(data, path, object_names, as, path_type) {
+  .Call(`_rjsoncons_cpp_ndjson_query`, data, path, object_names, as, path_type)
+}

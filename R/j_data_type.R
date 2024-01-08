@@ -68,7 +68,7 @@ j_data_type <-
         if (length(data) == 1L) {
             ## url or file path or json
             if (length(grep("^https?://", data))) {
-                "url"
+                c(j_data_type(readLines(data, 2L)), "url")
             } else if (file.exists(data)) {
                 c(j_data_type(readLines(data, 2L)), "file")
             } else if (.is_scalar_character(data) && !inherits(data, "AsIs")) {

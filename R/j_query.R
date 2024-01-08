@@ -45,15 +45,17 @@ j_query <-
         .is_scalar_character(path_type), path_type %in% j_path_type()
     )
 
-    if (any(c("file", "url") %in% data_type)) {
-        data_type <- head(data_type, 1L)
-        data <- readLines(data, warn = FALSE)
-    }
-    data <- .as_json_string(data, ..., data_type = data_type)
     switch(
         data_type[[1]],
         json =,
-        R = cpp_j_query(data, path, object_names, as, path_type)
+        R = json_query(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        ),
+        ndjson = ndjson_query(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        )
     )
 }
 
@@ -95,16 +97,16 @@ j_pivot <-
         .is_scalar_character(path_type), path_type %in% j_path_type()
     )
 
-    data <- .as_json_string(data, ..., data_type = data_type)
     switch(
-        as,
-        string = cpp_j_pivot(data, path, object_names, as, path_type),
-        R = cpp_j_pivot(data, path, object_names, as = "R", path_type),
-        data.frame =
-            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
-            as.data.frame(),
-        tibble =
-            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
-            tibble::as_tibble()
+        data_type[[1]],
+        json =,
+        R = json_pivot(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        ),
+        ndjson = ndjson_pivot(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        )
     )
 }

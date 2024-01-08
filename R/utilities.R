@@ -10,13 +10,8 @@
     .is_scalar(x) && is.character(x) && (z.ok || nzchar(x))
 }
 
-.as_json_string <-
-    function(x, ..., data_type)
+.is_scalar_numeric <-
+    function(x)
 {
-    switch(
-        data_type,
-        json = paste(x, collapse = "\n"),
-        ndjson = x,
-        R = as.character(jsonlite::toJSON(x, ...))
-    )
+    .is_scalar(x) && is.numeric(x)
 }
