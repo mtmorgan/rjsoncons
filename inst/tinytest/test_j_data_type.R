@@ -1,8 +1,9 @@
 ## j_data_type
 
+.is_j_data_type <- rjsoncons:::.is_j_data_type
+
 expect_identical(
     j_data_type(),
-
     list(
         "json", "ndjson",
         c("json", "file"), c("ndjson", "file"), 

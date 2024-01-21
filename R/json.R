@@ -15,7 +15,10 @@ json_query <-
         data <- readLines(data, warn = FALSE)
     data <- .as_json_string(data, ..., data_type = data_type[[1]])
 
-    cpp_j_query(data, path, object_names, as, path_type)
+    data_type <- head(data_type, 1L)
+    ex <- cpp_r_json_init(object_names, path, as, data_type, path_type)
+    cpp_r_json_query(ex, data, object_names)
+    cpp_r_json_finish(ex, object_names)[[1]]
 }
 
 json_pivot <-
@@ -25,15 +28,16 @@ json_pivot <-
         data <- readLines(data, warn = FALSE)
     data <- .as_json_string(data, ..., data_type = data_type[[1]])
 
+    as0 <- ifelse(identical(as, "string"), as, "R")
+    ex <- cpp_r_json_init(object_names, path, as0, data_type, path_type)
+    cpp_r_json_pivot(ex, data, object_names)
+    result <- cpp_r_json_finish(ex, object_names)[[1]]
+
     switch(
         as,
-        string = cpp_j_pivot(data, path, object_names, as, path_type),
-        R = cpp_j_pivot(data, path, object_names, as = "R", path_type),
-        data.frame =
-            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
-            as.data.frame(),
-        tibble =
-            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
-            tibble::as_tibble()
+        string = ,
+        R = result,
+        data.frame = as.data.frame(result),
+        tibble = tibble::as_tibble(result)
     )
 }

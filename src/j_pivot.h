@@ -1,7 +1,7 @@
 #ifndef RJSONCONS_JSONPIVOT_H
 #define RJSONCONS_JSONPIVOT_H
 
-#include <cpp11/declarations.hpp>
+#include <cpp11.hpp>
 #include <jsoncons/json.hpp>
 
 template<class Json>
@@ -59,14 +59,20 @@ Json j_pivot(const Json j)
     case json_type::null_value: {
         value = j;
         break;
-    };
+    }
+    case json_type::object_value: {
+        // optimistically assuming that this is already an object-of-arrays
+        value = j;
+        break;
+    }
     case json_type::array_value: {
         value = pivot_array_as_object(j);
         break;
-    };
-    default: cpp11::stop("`j_pivot()` 'data' must be a JSON array");
+    }
+    default: cpp11::stop("`j_pivot()` 'path' must yield an object or array");
     };
 
+    // a Json object-of-arrays
     return value;
 }
 

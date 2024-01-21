@@ -55,6 +55,9 @@ As an example for use with \code{jsonlite::toJSON()}
 length 1 to JSON scalar values.
 }}
 
+\item{data_type}{character(1) type of \code{data}; one of \code{"json"},
+\code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
+
 \item{path_type}{character(1) type of \code{path}; one of
 \code{"JSONpointer"}, \code{"JSONpath"}, \code{"JMESpath"}. Inferred from
 \code{path} using \code{j_path_type()}.}
@@ -98,5 +101,13 @@ j_pivot(json, "$.locations[?@.state=='WA']", as = "string")
 j_pivot(json, "locations[?@.state=='WA']", as = "R")
 j_pivot(json, "locations[?@.state=='WA']", as = "data.frame")
 j_pivot(json, "locations[?@.state=='WA']", as = "tibble")
+
+## use 'path' to pivot ndjson one record at at time
+j_pivot(ndjson_file, "{name: name, state: state}", as = "data.frame")
+
+## j_pivot discards arrays of size 0 '[]'
+path <- "[{name: name, state: state}][?@.state=='WA']"
+j_query(ndjson_file, path)
+j_pivot(ndjson_file, path, as = "data.frame")
 
 }

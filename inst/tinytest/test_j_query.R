@@ -115,5 +115,9 @@ expect_identical(j_pivot(json, "$.locations[*]", as = "data.frame"), expected_df
 expect_identical(j_pivot(json, "locations[]", as = "R"), expected_r)
 expect_identical(j_pivot(json, "locations[]", as = "data.frame"), expected_df)
 
-expect_error(j_pivot(json, "/locations/0"))
-expect_error(j_pivot(json, "/locations[0].name"))
+expect_identical(
+    j_pivot(json, "/locations/0"),
+    '{"name":["Seattle"],"state":["WA"]}'
+)
+
+expect_error(j_pivot(json, "locations[0].name"))

@@ -13,12 +13,32 @@
     }
 }
 
+.is_j_data_type_file <-
+    function(x)
+{
+    .is_j_data_type_connection(x) && (x[[2]] %in% "file")
+}
+
+.is_j_data_type_url <-
+    function(x)
+{
+    .is_j_data_type_connection(x) && (x[[2]] %in% "url")
+}
+
+.is_j_data_type_connection <-
+    function(x)
+{
+    .is_j_data_type(x) && length(x) == 2L && (x[[2]] %in% c("file", "url"))
+}
+
 #' @rdname j_data_type
 #'
 #' @title Detect JSON / NDJSON data and path types
 #'
 #' @description `j_data_type()` uses simple rules to determine whether
 #'     'data' is json, ndjson, file, url, or R.
+#'
+#' @inheritParams j_query
 #'
 #' @details
 #'
@@ -116,8 +136,6 @@ j_data_type <-
 #' Because of these rules, the valid JSONpointer path `"@"` is
 #' interpreted as JMESpath; use `jsonpointer()` if JSONpointer
 #' behavior is required.
-#'
-#' @param path `character(1)` used to query the JSON document.
 #'
 #' @examples
 #' j_path_type()                            # available types

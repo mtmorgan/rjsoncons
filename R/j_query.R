@@ -14,6 +14,9 @@
 #'
 #' @inheritParams jsonpath
 #'
+#' @param data_type character(1) type of `data`; one of `"json"`,
+#'     `"ndjson"`. Inferred from `data` using `j_data_type()`.
+#' 
 #' @param path_type character(1) type of `path`; one of
 #'     `"JSONpointer"`, `"JSONpath"`, `"JMESpath"`. Inferred from
 #'     `path` using `j_path_type()`.
@@ -86,6 +89,14 @@ j_query <-
 #' j_pivot(json, "locations[?@.state=='WA']", as = "R")
 #' j_pivot(json, "locations[?@.state=='WA']", as = "data.frame")
 #' j_pivot(json, "locations[?@.state=='WA']", as = "tibble")
+#'
+#' ## use 'path' to pivot ndjson one record at at time
+#' j_pivot(ndjson_file, "{name: name, state: state}", as = "data.frame")
+#'
+#' ## j_pivot discards arrays of size 0 '[]'
+#' path <- "[{name: name, state: state}][?@.state=='WA']"
+#' j_query(ndjson_file, path)
+#' j_pivot(ndjson_file, path, as = "data.frame")
 #'
 #' @export
 j_pivot <-

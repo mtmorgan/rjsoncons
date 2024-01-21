@@ -10,7 +10,11 @@ j_data_type(data)
 j_path_type(path)
 }
 \arguments{
-\item{path}{\code{character(1)} used to query the JSON document.}
+\item{data}{a character() JSON string or NDJSON records, or an \emph{R}
+object parsed to a JSON string using \code{jsonlite::toJSON()}.}
+
+\item{path}{character(1) JSONpointer, JSONpath or JMESpath query
+string.}
 }
 \description{
 \code{j_data_type()} uses simple rules to determine whether
