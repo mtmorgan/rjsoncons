@@ -4,7 +4,12 @@
 #'
 #' @description `as_r()` transforms a JSON string to an *R* object.
 #'
-#' @inheritParams jsonpath
+#' @inheritParams j_query
+#'
+#' @param data a character(1) JSON string or (unusually) an `R` object.
+#'
+#' @param ... passed to `jsonlite::toJSON()` in the unusual
+#'     circumstance that `data` is an `R` object.
 #'
 #' @details
 #'
@@ -50,10 +55,9 @@ as_r <-
     function(data, object_names = "asis", ...)
 {
     stopifnot(
-        .is_scalar_character(data),
         .is_scalar_character(object_names)
     )
 
-    data <- .as_json_string(data, ...)
+    data <- .as_json_string(data, ..., data_type = "json")
     cpp_as_r(data, object_names)
 }

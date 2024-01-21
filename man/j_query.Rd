@@ -3,8 +3,7 @@
 \name{j_query}
 \alias{j_query}
 \alias{j_pivot}
-\alias{j_path_type}
-\title{Query and pivot for JSON documents}
+\title{Query and pivot for JSON / NDJSON documents}
 \usage{
 j_query(
   data,
@@ -12,6 +11,7 @@ j_query(
   object_names = "asis",
   as = "string",
   ...,
+  data_type = j_data_type(data),
   path_type = j_path_type(path)
 )
 
@@ -21,44 +21,55 @@ j_pivot(
   object_names = "asis",
   as = "string",
   ...,
+  data_type = j_data_type(data),
   path_type = j_path_type(path)
 )
-
-j_path_type(path)
 }
 \arguments{
-\item{data}{a character(1) JSON string, or an \emph{R} object parsed to
-a JSON string using \code{jsonlite::toJSON()}.}
+\item{data}{a character() JSON string or NDJSON records, or an \emph{R}
+object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
-\item{path}{\code{character(1)} used to query the JSON document.}
+\item{path}{character(1) JSONpointer, JSONpath or JMESpath query
+string.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
 \item{as}{character(1) return type. For \code{j_query()}, \code{"string"}
-returns a single JSON string; \code{"R"} parses the JSON to R using
-rules in \code{as_r()}. For \code{j_pivot()}, use \code{as = "data.frame"} or
-\code{as = "tibble"} to coerce the result to a data.frame or tibble.}
+returns JSON / NDJSON strings; \code{"R"} parses JSON / NDJSON to R
+using rules in \code{as_r()}. For \code{j_pivot()} (JSON only), use \code{as = "data.frame"} or \code{as = "tibble"} to coerce the result to a
+data.frame or tibble.}
 
-\item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
-not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
-scalar values.}
+\item{...}{arguments for parsing NDJSON, or passed to \code{jsonlite::toJSON} when
+\code{data} is not character-valued. For NDJSON,
+\itemize{
+\item Use \code{n_records = 2} to parse just the first two records of the
+NDJSON document.
+\item Use \code{verbose = TRUE} to obtain a progress bar when reading from a
+connection (file or URL). Requires the cli package.
+}
+
+As an example for use with \code{jsonlite::toJSON()}
+\itemize{
+\item use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of
+length 1 to JSON scalar values.
+}}
+
+\item{data_type}{character(1) type of \code{data}; one of \code{"json"},
+\code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
 
 \item{path_type}{character(1) type of \code{path}; one of
 \code{"JSONpointer"}, \code{"JSONpath"}, \code{"JMESpath"}. Inferred from
 \code{path} using \code{j_path_type()}.}
 }
 \description{
-\code{j_query()} executes a query against a JSON
-document, automatically inferring the type of \code{path}.
+\code{j_query()} executes a query against a JSON or NDJSON
+document, automatically inferring the type of \code{data} and
+\code{path}.
 
 \code{j_pivot()} transforms a JSON array-of-objects to an
 object-of-arrays; this can be useful when forming a
 column-based tibble from row-oriented JSON.
-
-\code{j_path_type()} uses simple rules to identify
-whether \code{path} is a JSONpointer, JSONpath, or JMESpath
-expression.
 }
 \details{
 \code{j_pivot()} transforms an 'array-of-objects' (typical when the
@@ -68,19 +79,6 @@ objects each with three fields \code{'[{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5
 vector of length 2 \code{'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'}. The
 object-of-arrays representation corresponds closely to an \emph{R}
 data.frame or tibble, as illustrated in the examples.
-
-\code{j_path_type()} infers the type of \code{path} using a simple but
-incomplete calssification:
-\itemize{
-\item \code{"JSONpointer"} is infered if the the path is \code{""} or starts with \code{"/"}.
-\item \code{"JSONpath"} expressions start with \code{"$"}.
-\item \code{"JMESpath"} expressions satisfy niether the \code{JSONpointer} nor
-\code{JSONpath} criteria.
-}
-
-Because of these rules, the valid JSONpointer path \code{"@"} is
-interpretted as JMESpath; use \code{jsonpointer()} if JSONpointer
-behavior is required.
 }
 \examples{
 json <- '{
@@ -96,14 +94,20 @@ j_query(json, "/locations/0/name")             # JSONpointer
 j_query(json, "$.locations[*].name", as = "R") # JSONpath
 j_query(json, "locations[].state", as = "R")   # JMESpath
 
+ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
+j_query(ndjson_file, "{name: name, state: state}")
+
 j_pivot(json, "$.locations[?@.state=='WA']", as = "string")
 j_pivot(json, "locations[?@.state=='WA']", as = "R")
 j_pivot(json, "locations[?@.state=='WA']", as = "data.frame")
 j_pivot(json, "locations[?@.state=='WA']", as = "tibble")
 
-j_path_type("")
-j_path_type("/locations/0/name")
-j_path_type("$.locations[0].name")
-j_path_type("locations[0].name")
+## use 'path' to pivot ndjson one record at at time
+j_pivot(ndjson_file, "{name: name, state: state}", as = "data.frame")
+
+## j_pivot discards arrays of size 0 '[]'
+path <- "[{name: name, state: state}][?@.state=='WA']"
+j_query(ndjson_file, path)
+j_pivot(ndjson_file, path, as = "data.frame")
 
 }

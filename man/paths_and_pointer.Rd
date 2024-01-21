@@ -4,7 +4,7 @@
 \alias{jsonpath}
 \alias{jmespath}
 \alias{jsonpointer}
-\title{JSONpath, JMESpath, or JSONpointer query of JSON documents}
+\title{JSONpath, JMESpath, or JSONpointer query of JSON / NDJSON documents}
 \usage{
 jsonpath(data, path, object_names = "asis", as = "string", ...)
 
@@ -13,21 +13,33 @@ jmespath(data, path, object_names = "asis", as = "string", ...)
 jsonpointer(data, path, object_names = "asis", as = "string", ...)
 }
 \arguments{
-\item{data}{a character(1) JSON string, or an \emph{R} object parsed to
-a JSON string using \code{jsonlite::toJSON()}.}
+\item{data}{a character() JSON string or NDJSON records, or an \emph{R}
+object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
-\item{path}{character(1) jsonpath or jmespath query string.}
+\item{path}{character(1) JSONpointer, JSONpath or JMESpath query
+string.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
 \item{as}{character(1) return type. \code{"string"} returns a single
 JSON string; \code{"R"} returns an \emph{R} object following the rules
-outlined below.}
+outlined for \code{as_r()}.}
 
-\item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
-not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
-scalar values.}
+\item{...}{arguments for parsing NDJSON, or passed to \code{jsonlite::toJSON} when
+\code{data} is not character-valued. For NDJSON,
+\itemize{
+\item Use \code{n_records = 2} to parse just the first two records of the
+NDJSON document.
+\item Use \code{verbose = TRUE} to obtain a progress bar when reading from a
+connection (file or URL). Requires the cli package.
+}
+
+As an example for use with \code{jsonlite::toJSON()}
+\itemize{
+\item use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of
+length 1 to JSON scalar values.
+}}
 }
 \value{
 \code{jsonpath()}, \code{jmespath()} and \code{jsonpointer()} return a
@@ -35,8 +47,8 @@ character(1) JSON string (\code{as = "string"}, default) or \emph{R}
 object (\code{as = "R"}) representing the result of the query.
 }
 \description{
-\code{jsonpath()} executes a query against a JSON string
-using the 'jsonpath' specification
+\code{jsonpath()} executes a query against a JSON string or
+vector NDJSON entries using the 'jsonpath' specification.
 
 \code{jmespath()} executes a query against a JSON string
 using the 'jmespath' specification.

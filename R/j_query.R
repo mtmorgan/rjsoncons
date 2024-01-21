@@ -1,17 +1,22 @@
 #' @rdname j_query
 #'
-#' @title Query and pivot for JSON documents
+#' @title Query and pivot for JSON / NDJSON documents
 #'
-#' @description `j_query()` executes a query against a JSON
-#'     document, automatically inferring the type of `path`.
+#' @description `j_query()` executes a query against a JSON or NDJSON
+#'     document, automatically inferring the type of `data` and
+#'     `path`.
 #'
 #' @param as character(1) return type. For `j_query()`, `"string"`
-#'     returns a single JSON string; `"R"` parses the JSON to R using
-#'     rules in `as_r()`. For `j_pivot()`, use `as = "data.frame"` or
-#'     `as = "tibble"` to coerce the result to a data.frame or tibble.
+#'     returns JSON / NDJSON strings; `"R"` parses JSON / NDJSON to R
+#'     using rules in `as_r()`. For `j_pivot()` (JSON only), use `as =
+#'     "data.frame"` or `as = "tibble"` to coerce the result to a
+#'     data.frame or tibble.
 #'
 #' @inheritParams jsonpath
 #'
+#' @param data_type character(1) type of `data`; one of `"json"`,
+#'     `"ndjson"`. Inferred from `data` using `j_data_type()`.
+#' 
 #' @param path_type character(1) type of `path`; one of
 #'     `"JSONpointer"`, `"JSONpath"`, `"JMESpath"`. Inferred from
 #'     `path` using `j_path_type()`.
@@ -30,22 +35,36 @@
 #' j_query(json, "$.locations[*].name", as = "R") # JSONpath
 #' j_query(json, "locations[].state", as = "R")   # JMESpath
 #'
+#' ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
+#' j_query(ndjson_file, "{name: name, state: state}")
+#'
 #' @export
 j_query <-
     function(
         data, path = "", object_names = "asis", as = "string", ...,
-        path_type = j_path_type(path)
+        data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
     stopifnot(
         .is_scalar_character(path, z.ok = TRUE),
         object_names %in% c("asis", "sort"),
         as %in% c("string", "R"),
-        path_type %in% c("JSONpointer", "JSONpath", "JMESpath")
+        .is_j_data_type(data_type),
+        .is_scalar_character(path_type), path_type %in% j_path_type()
     )
 
-    data <- .as_json_string(data, ...)
-    cpp_j_query(data, path, object_names, as, path_type)
+    switch(
+        data_type[[1]],
+        json =,
+        R = json_query(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        ),
+        ndjson = ndjson_query(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        )
+    )
 }
 
 #' @rdname j_query
@@ -71,79 +90,39 @@ j_query <-
 #' j_pivot(json, "locations[?@.state=='WA']", as = "data.frame")
 #' j_pivot(json, "locations[?@.state=='WA']", as = "tibble")
 #'
+#' ## use 'path' to pivot ndjson one record at at time
+#' j_pivot(ndjson_file, "{name: name, state: state}", as = "data.frame")
+#'
+#' ## j_pivot discards arrays of size 0 '[]'
+#' path <- "[{name: name, state: state}][?@.state=='WA']"
+#' j_query(ndjson_file, path)
+#' j_pivot(ndjson_file, path, as = "data.frame")
+#'
 #' @export
 j_pivot <-
     function(
         data, path = "", object_names = "asis", as = "string", ...,
-        path_type = j_path_type(path)
+        data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
     stopifnot(
         .is_scalar_character(path, z.ok = TRUE),
         object_names %in% c("asis", "sort"),
         as %in% c("string", "R", "data.frame", "tibble"),
-        path_type %in% c("JSONpointer", "JSONpath", "JMESpath")
+        .is_j_data_type(data_type),
+        .is_scalar_character(path_type), path_type %in% j_path_type()
     )
 
-    data <- .as_json_string(data, ...)
     switch(
-        as,
-        string = cpp_j_pivot(data, path, object_names, as, path_type),
-        R = cpp_j_pivot(data, path, object_names, as = "R", path_type),
-        data.frame =
-            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
-            as.data.frame(),
-        tibble =
-            cpp_j_pivot(data, path, object_names, as = "R", path_type) |>
-            tibble::as_tibble()
-    )
-}
-
-#' @rdname j_query
-#'
-#' @description `j_path_type()` uses simple rules to identify
-#'     whether `path` is a JSONpointer, JSONpath, or JMESpath
-#'     expression.
-#'
-#' @details
-#'
-#' `j_path_type()` infers the type of `path` using a simple but
-#' incomplete calssification:
-#'
-#' - `"JSONpointer"` is infered if the the path is `""` or starts with `"/"`.
-#' - `"JSONpath"` expressions start with `"$"`.
-#' - `"JMESpath"` expressions satisfy niether the `JSONpointer` nor
-#'   `JSONpath` criteria.
-#'
-#' Because of these rules, the valid JSONpointer path `"@"` is
-#' interpretted as JMESpath; use `jsonpointer()` if JSONpointer
-#' behavior is required.
-#'
-#' @param path `character(1)` used to query the JSON document.
-#'
-#' @examples
-#' j_path_type("")
-#' j_path_type("/locations/0/name")
-#' j_path_type("$.locations[0].name")
-#' j_path_type("locations[0].name")
-#'
-#' @export
-j_path_type <-
-    function(path)
-{
-    stopifnot(
-        .is_scalar_character(path, z.ok = TRUE)
-    )
-
-    path <- trimws(path)
-    if (nzchar(path)) {
-        switch(
-            substring(path, 1, 1),
-            "/" = "JSONpointer",
-            "$" = "JSONpath",
-            "JMESpath"
+        data_type[[1]],
+        json =,
+        R = json_pivot(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
+        ),
+        ndjson = ndjson_pivot(
+            data, path, object_names, as, ...,
+            path_type = path_type, data_type = data_type
         )
-    } else {
-        "JSONpointer"
-    }
+    )
 }

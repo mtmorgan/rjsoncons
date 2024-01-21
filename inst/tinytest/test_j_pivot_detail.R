@@ -1,4 +1,4 @@
-expect_identical(j_pivot("null"), "null")
+expect_identical(j_pivot("null"), "{}")
 expect_identical(j_pivot('[]'), "{}")
 expect_identical(j_pivot('[1]'), "{}") # no object names, so no fields...
 expect_identical(j_pivot('[1, 2]'), "{}")
@@ -39,7 +39,7 @@ expect_identical(
 )
 
 ## errors
-expect_error(j_pivot("1"), "`j_pivot\\(\\)` 'data' must be a JSON array")
+expect_error(j_pivot("1"), "`j_pivot\\(\\)` 'path' must yield an object or array")
 
 ## as = "R"
 expect_identical(

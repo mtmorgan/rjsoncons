@@ -7,15 +7,13 @@
 as_r(data, object_names = "asis", ...)
 }
 \arguments{
-\item{data}{a character(1) JSON string, or an \emph{R} object parsed to
-a JSON string using \code{jsonlite::toJSON()}.}
+\item{data}{a character(1) JSON string or (unusually) an \code{R} object.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
-\item{...}{arguments passed to \code{jsonlite::toJSON} when \code{data} is
-not a scalar character vector. For example, use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of length 1 to JSON
-scalar values.}
+\item{...}{passed to \code{jsonlite::toJSON()} in the unusual
+circumstance that \code{data} is an \code{R} object.}
 }
 \value{
 \code{as_r()} returns an \emph{R} object.
