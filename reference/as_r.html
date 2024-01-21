@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9300</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9400</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,8 +60,7 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>data</dt>
-<dd><p>a character(1) JSON string, or an <em>R</em> object parsed to
-a JSON string using <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON()</a></code>.</p></dd>
+<dd><p>a character(1) JSON string or (unusually) an <code>R</code> object.</p></dd>
 
 
 <dt>object_names</dt>
@@ -70,9 +69,8 @@ a JSON string using <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.htm
 
 
 <dt>...</dt>
-<dd><p>arguments passed to <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON</a></code> when <code>data</code> is
-not a scalar character vector. For example, use <code>auto_unbox = TRUE</code> to automatically 'unbox' vectors of length 1 to JSON
-scalar values.</p></dd>
+<dd><p>passed to <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON()</a></code> in the unusual
+circumstance that <code>data</code> is an <code>R</code> object.</p></dd>
 
 </dl></div>
     <div class="section level2">
