@@ -1,5 +1,6 @@
 # rjsoncons 1.2.0
 
+- (1.1.0.9400) support NDJSON and file / url connections
 - (1.1.0.9300) implement `j_query()` (query without requiring path
   specification), `j_pivot()`, and `j_path_type()`. Remove
   `jsonpivot()`.
