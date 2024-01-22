@@ -7,9 +7,14 @@
 
 namespace rjsoncons {           // enums
 
+    enum data_type { json_data_type, ndjson_data_type };
     enum object_names { asis, sort };
     enum as { string, R };
     enum path_type { JSONpointer, JSONpath, JMESpath };
+
+    static std::map<std::string, data_type> data_type_map {
+        {"json", json_data_type}, {"ndjson", ndjson_data_type}
+    };
 
     static std::map<std::string, object_names> object_names_map {
         {"asis", asis}, {"sort", sort}

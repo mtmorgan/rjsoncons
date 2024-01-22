@@ -5,8 +5,6 @@
 
 #include "utilities.h"
 #include "j_as.h"
-#include "j_query.h"
-#include "j_pivot.h"
 #include "r_json.h"
 
 using namespace jsoncons; // for convenience
