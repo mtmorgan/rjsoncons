@@ -4,8 +4,8 @@ cpp_version <- function() {
   .Call(`_rjsoncons_cpp_version`)
 }
 
-cpp_as_r <- function(data, jtype) {
-  .Call(`_rjsoncons_cpp_as_r`, data, jtype)
+cpp_as_r <- function(data, object_names) {
+  .Call(`_rjsoncons_cpp_as_r`, data, object_names)
 }
 
 cpp_r_json_init <- function(object_names, path, as, data_type, path_type) {

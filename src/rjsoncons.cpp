@@ -24,12 +24,12 @@ std::string cpp_version()
 // as_r
 
 [[cpp11::register]]
-sexp cpp_as_r(std::string data, std::string jtype)
+sexp cpp_as_r(std::string data, const std::string object_names)
 {
-    switch(hash(jtype.c_str())) {
-    case hash("asis"): return as_r_impl<ojson>(data);
-    case hash("sort"): return as_r_impl<json>(data);
-    default: cpp11::stop("unknown `object_names = '" + jtype + "'`");
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: return as_r_impl<ojson>(data);
+    case object_names::sort: return as_r_impl<json>(data);
+    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
 }
 
@@ -44,9 +44,11 @@ sexp cpp_r_json_init(
     const std::string path_type
     )
 {
-    switch(hash(object_names.c_str())) {
-    case hash("asis"): return r_json_init<ojson>(path, as, data_type, path_type);
-    case hash("sort"): return r_json_init<json>(path, as, data_type, path_type);
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis:
+        return r_json_init<ojson>(path, as, data_type, path_type);
+    case object_names::sort:
+        return r_json_init<json>(path, as, data_type, path_type);
     default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
 }
@@ -57,9 +59,9 @@ void cpp_r_json_query(
     const std::vector<std::string> data,
     const std::string object_names)
 {
-    switch(hash(object_names.c_str())) {
-    case hash("asis"): { r_json_query<ojson>(ext, data); break; }
-    case hash("sort"): { r_json_query<json>(ext, data); break; }
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: { r_json_query<ojson>(ext, data); break; }
+    case object_names::sort: { r_json_query<json>(ext, data); break; }
     default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
 }
@@ -70,9 +72,9 @@ void cpp_r_json_pivot(
     const std::vector<std::string> data,
     const std::string object_names)
 {
-    switch(hash(object_names.c_str())) {
-    case hash("asis"): { r_json_pivot<ojson>(ext, data); break; }
-    case hash("sort"): { r_json_pivot<json>(ext, data); break; }
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: { r_json_pivot<ojson>(ext, data); break; }
+    case object_names::sort: { r_json_pivot<json>(ext, data); break; }
     default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
 }
@@ -80,9 +82,9 @@ void cpp_r_json_pivot(
 [[cpp11::register]]
 cpp11::sexp cpp_r_json_finish(sexp ext, const std::string object_names)
 {
-    switch(hash(object_names.c_str())) {
-    case hash("asis"): return r_json_finish<ojson>(ext);
-    case hash("sort"): return r_json_finish<json>(ext);
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: return r_json_finish<ojson>(ext);
+    case object_names::sort: return r_json_finish<json>(ext);
     default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
 }

@@ -10,10 +10,10 @@ template<class Json>
 Json j_query(Json j, const std::string path, const std::string path_type)
 {
     // evaluate path
-    switch(hash(path_type.c_str())) {
-    case hash("JSONpointer"): return jsonpointer::get<Json>(j, path);
-    case hash("JSONpath"): return jsonpath::json_query<Json>(j, path);
-    case hash("JMESpath"): return jmespath::search<Json>(j, path);
+    switch(enum_index(path_type_map, path_type)) {
+    case path_type::JSONpointer: return jsonpointer::get<Json>(j, path);
+    case path_type::JSONpath: return jsonpath::json_query<Json>(j, path);
+    case path_type::JMESpath: return jmespath::search<Json>(j, path);
     default: cpp11::stop("unknown `path_type` = '" + path_type + "'");
     }
 }

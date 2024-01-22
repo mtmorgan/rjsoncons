@@ -13,10 +13,10 @@ extern "C" SEXP _rjsoncons_cpp_version() {
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_as_r(std::string data, std::string jtype);
-extern "C" SEXP _rjsoncons_cpp_as_r(SEXP data, SEXP jtype) {
+sexp cpp_as_r(std::string data, const std::string object_names);
+extern "C" SEXP _rjsoncons_cpp_as_r(SEXP data, SEXP object_names) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_as_r(cpp11::as_cpp<cpp11::decay_t<std::string>>(data), cpp11::as_cpp<cpp11::decay_t<std::string>>(jtype)));
+    return cpp11::as_sexp(cpp_as_r(cpp11::as_cpp<cpp11::decay_t<std::string>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names)));
   END_CPP11
 }
 // rjsoncons.cpp
