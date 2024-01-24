@@ -122,8 +122,6 @@ ndjson_pivot <-
         string = result,
         R = result,
         data.frame = as.data.frame(result),
-        tibble = 
-            as.data.frame(result) |>
-            tibble::as_tibble()
+        tibble = tibble::as_tibble(result)
     )
 }
