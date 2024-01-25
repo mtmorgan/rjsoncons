@@ -43,6 +43,20 @@ extern "C" SEXP _rjsoncons_cpp_r_json_pivot(SEXP ext, SEXP data, SEXP object_nam
   END_CPP11
 }
 // rjsoncons.cpp
+cpp11::list cpp_r_json_query_raw(sexp ext, raws prefix, raws bin, int n_records, const std::string object_names);
+extern "C" SEXP _rjsoncons_cpp_r_json_query_raw(SEXP ext, SEXP prefix, SEXP bin, SEXP n_records, SEXP object_names) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_r_json_query_raw(cpp11::as_cpp<cpp11::decay_t<sexp>>(ext), cpp11::as_cpp<cpp11::decay_t<raws>>(prefix), cpp11::as_cpp<cpp11::decay_t<raws>>(bin), cpp11::as_cpp<cpp11::decay_t<int>>(n_records), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names)));
+  END_CPP11
+}
+// rjsoncons.cpp
+cpp11::list cpp_r_json_pivot_raw(sexp ext, const raws prefix, const raws bin, int n_records, const std::string object_names);
+extern "C" SEXP _rjsoncons_cpp_r_json_pivot_raw(SEXP ext, SEXP prefix, SEXP bin, SEXP n_records, SEXP object_names) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_r_json_pivot_raw(cpp11::as_cpp<cpp11::decay_t<sexp>>(ext), cpp11::as_cpp<cpp11::decay_t<const raws>>(prefix), cpp11::as_cpp<cpp11::decay_t<const raws>>(bin), cpp11::as_cpp<cpp11::decay_t<int>>(n_records), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names)));
+  END_CPP11
+}
+// rjsoncons.cpp
 cpp11::sexp cpp_r_json_finish(sexp ext, const std::string object_names);
 extern "C" SEXP _rjsoncons_cpp_r_json_finish(SEXP ext, SEXP object_names) {
   BEGIN_CPP11
@@ -52,12 +66,14 @@ extern "C" SEXP _rjsoncons_cpp_r_json_finish(SEXP ext, SEXP object_names) {
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_rjsoncons_cpp_as_r",          (DL_FUNC) &_rjsoncons_cpp_as_r,          2},
-    {"_rjsoncons_cpp_r_json_finish", (DL_FUNC) &_rjsoncons_cpp_r_json_finish, 2},
-    {"_rjsoncons_cpp_r_json_init",   (DL_FUNC) &_rjsoncons_cpp_r_json_init,   5},
-    {"_rjsoncons_cpp_r_json_pivot",  (DL_FUNC) &_rjsoncons_cpp_r_json_pivot,  3},
-    {"_rjsoncons_cpp_r_json_query",  (DL_FUNC) &_rjsoncons_cpp_r_json_query,  3},
-    {"_rjsoncons_cpp_version",       (DL_FUNC) &_rjsoncons_cpp_version,       0},
+    {"_rjsoncons_cpp_as_r",             (DL_FUNC) &_rjsoncons_cpp_as_r,             2},
+    {"_rjsoncons_cpp_r_json_finish",    (DL_FUNC) &_rjsoncons_cpp_r_json_finish,    2},
+    {"_rjsoncons_cpp_r_json_init",      (DL_FUNC) &_rjsoncons_cpp_r_json_init,      5},
+    {"_rjsoncons_cpp_r_json_pivot",     (DL_FUNC) &_rjsoncons_cpp_r_json_pivot,     3},
+    {"_rjsoncons_cpp_r_json_pivot_raw", (DL_FUNC) &_rjsoncons_cpp_r_json_pivot_raw, 5},
+    {"_rjsoncons_cpp_r_json_query",     (DL_FUNC) &_rjsoncons_cpp_r_json_query,     3},
+    {"_rjsoncons_cpp_r_json_query_raw", (DL_FUNC) &_rjsoncons_cpp_r_json_query_raw, 5},
+    {"_rjsoncons_cpp_version",          (DL_FUNC) &_rjsoncons_cpp_version,          0},
     {NULL, NULL, 0}
 };
 }

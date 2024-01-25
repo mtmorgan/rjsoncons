@@ -27,23 +27,25 @@ ndjson_connection <-
         on.exit(close(fl))
     }
     data_type <- head(data_type, 1L)
-    chunk_size <- 1024L * 8L
-
+    chunk_size <- as.integer(2^20) # 1 Mb chunks
     ex <- cpp_r_json_init(object_names, path, as, data_type, path_type)
-    i <- lines <- 0L
+    n_lines <- 0L
+    prefix <- raw()
     if (verbose)
-        cli::cli_progress_message("{lines} ndjson records processed")
+        cli::cli_progress_message("{n_lines} records processed")
     repeat {
-        chunk_size <- min(chunk_size, n_records)
-        ndjson <- readLines(fl, chunk_size)
-        if (!length(ndjson))
+        if (n_records <= 0L)
             break
-        i <- i + 1L
-        lines <- lines + length(ndjson)
-        n_records <- max(n_records - chunk_size, 0L)
         if (verbose)
             cli::cli_progress_update()
-        cpp_function(ex, ndjson, object_names)
+
+        bin <- readBin(fl, raw(), chunk_size)
+        if (!length(bin))
+            break
+        result <- cpp_function(ex, prefix, bin, n_records, object_names)
+        prefix <- result$prefix
+        n_lines <- n_lines + result$n_lines
+        n_records <- n_records - result$n_lines
     }
     if (verbose)
         cli::cli_progress_done()
@@ -64,14 +66,17 @@ ndjson_query <-
         .is_scalar_logical(verbose)
     )
 
+    n_records <- as.integer(min(n_records, .Machine$integer.max))
     if (.is_j_data_type_connection(data_type)) {
         r_function <- ndjson_connection
+        cpp_function <- cpp_r_json_query_raw
     } else {
         r_function <- ndjson_character
+        cpp_function <- cpp_r_json_query
     }
 
     r_function(
-        cpp_r_json_query,
+        cpp_function,
         data, path, object_names, as, n_records, verbose,
         path_type, data_type
     )
@@ -90,15 +95,18 @@ ndjson_pivot <-
         .is_scalar_logical(verbose)
     )
 
+    n_records <- as.integer(min(n_records, .Machine$integer.max))
     if (.is_j_data_type_connection(data_type)) {
         r_function <- ndjson_connection
+        cpp_function <- cpp_r_json_pivot_raw
     } else {
         r_function <- ndjson_character
+        cpp_function <- cpp_r_json_pivot
     }
 
     as0 <- ifelse(identical(as, "string"), "string", "R")
     pivot <- r_function(
-        cpp_r_json_pivot,
+        cpp_function,
         data, path, object_names, as0, n_records, verbose,
         path_type, data_type
     )

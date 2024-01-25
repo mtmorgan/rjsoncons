@@ -20,6 +20,14 @@ cpp_r_json_pivot <- function(ext, data, object_names) {
   invisible(.Call(`_rjsoncons_cpp_r_json_pivot`, ext, data, object_names))
 }
 
+cpp_r_json_query_raw <- function(ext, prefix, bin, n_records, object_names) {
+  .Call(`_rjsoncons_cpp_r_json_query_raw`, ext, prefix, bin, n_records, object_names)
+}
+
+cpp_r_json_pivot_raw <- function(ext, prefix, bin, n_records, object_names) {
+  .Call(`_rjsoncons_cpp_r_json_pivot_raw`, ext, prefix, bin, n_records, object_names)
+}
+
 cpp_r_json_finish <- function(ext, object_names) {
   .Call(`_rjsoncons_cpp_r_json_finish`, ext, object_names)
 }

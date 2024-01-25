@@ -4,10 +4,12 @@
 #include <jsoncons/json.hpp>
 
 #include "utilities.h"
+#include "raw_buffer.h"
 #include "j_as.h"
 #include "r_json.h"
 
-using namespace jsoncons; // for convenience
+using namespace jsoncons;        // convenience
+using namespace cpp11::literals; // _nm
 
 [[cpp11::register]]
 std::string cpp_version()
@@ -75,6 +77,40 @@ void cpp_r_json_pivot(
     case object_names::sort: { r_json_pivot<json>(ext, data); break; }
     default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
+}
+
+// 'raw' versions of query and pivot
+
+[[cpp11::register]]
+cpp11::list cpp_r_json_query_raw(
+    sexp ext,
+    raws prefix, raws bin, int n_records,
+    const std::string object_names)
+{
+    rjsoncons::raw_buffer buffer(prefix, bin, n_records);
+    const std::vector<std::string> data = buffer.to_strings();
+    cpp_r_json_query(ext, data, object_names);
+
+    return cpp11::list({
+            "prefix"_nm = buffer.remainder(),
+            "n_lines"_nm = data.size()
+        });
+}
+
+[[cpp11::register]]
+cpp11::list cpp_r_json_pivot_raw(
+    sexp ext,
+    const raws prefix, const raws bin, int n_records,
+    const std::string object_names)
+{
+    rjsoncons::raw_buffer buffer(prefix, bin, n_records);
+    const std::vector<std::string> data = buffer.to_strings();
+    cpp_r_json_pivot(ext, data, object_names);
+
+    return cpp11::list({
+            "prefix"_nm = buffer.remainder(),
+            "n_lines"_nm = data.size()
+        });
 }
 
 [[cpp11::register]]
