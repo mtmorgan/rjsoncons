@@ -8,6 +8,7 @@
 #include "utilities.h"
 
 using namespace jsoncons;
+using namespace rjsoncons;
 
 enum class r_type : uint8_t
 {
@@ -213,13 +214,18 @@ sexp as_r(const Json j)
 // json to R
 
 template<class Json>
+cpp11::sexp j_as(Json j, rjsoncons::as as)
+{
+    switch(as) {
+    case as::string: return as_sexp( j.template as<std::string>() );
+    case as::R: return as_r<Json>(j);
+    }
+}
+
+template<class Json>
 cpp11::sexp j_as(Json j, std::string as)
 {
-    switch(hash(as.c_str())) {
-    case hash("string"): return as_sexp( j.template as<std::string>() );
-    case hash("R"): return as_r<Json>(j);
-    default: cpp11::stop("unknown `as = '" + as + "'`");
-    }
+    j_as(j, enum_index(as_map, as));
 }
 
 template<class Json>
