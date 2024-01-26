@@ -56,7 +56,7 @@ rjsoncons::version()
 
 # JSON Use cases
 
-## Select, filter and transform
+## Select, filter and transform with `j_query()`
 
 Here is a simple JSON example document
 
@@ -102,7 +102,7 @@ useful to indicate query specification more explicitly using
 features available for each query specification are on the help pages
 `?jsonpointer`, `?jsonpath`, and `?jmespath`.
 
-## Array-of-objects to *R* data.frame
+## Array-of-objects to *R* data.frame with `j_pivot()`
 
 The following transforms a nested JSON document into a format that can
 be incorporated directly in *R* as a `data.frame`.
@@ -124,7 +124,11 @@ implemented directly as `j_pivot()`
 j_pivot(json, "locations", as = "data.frame")
 ```
 
+`j_pivot()` also support `as = "tibble"` when the [dplyr][] package is
+installed.
+
 [purrr]: https://CRAN.R-project.org/package=purrr
+[dplyr]: https://CRAN.R-project.org/package=dplyr
 [tidyr]: https://CRAN.R-project.org/package=tidyr
 [r4ds]: https://r4ds.hadley.nz/
 [hierarchical data]: https://r4ds.hadley.nz/rectangling
@@ -145,9 +149,35 @@ j_query(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
 
 # NDJSON support
 
-[rjsoncons][] supports '[NDJSON][]'(new-line delimited JSON). NDJSON
+[rjsoncons][] supports [NDJSON][] (new-line delimited JSON). NDJSON
 consists of a file or character vector where each line / element
-represents a JSON record.
+represents a JSON record. This example uses data from the [GitHub
+Archive][] project recording all actions on public GitHub
+repositories. The data included in the package are the first 10 lines
+of <https://data.gharchive.org/2023-02-08-0.json.gz>. 
+
+```{r}
+ndjson_file <-
+    system.file(package = "rjsoncons", "extdata", "2023-02-08-0.json")
+```
+
+NDJSON can be read into R (`ndjson <- readLines(ndjson_file)`) and
+used in `j_query()` / `j_pivot()`, but it is often better to leave
+full NDJSON files on disk. Thus the first argument to `j_query()` or
+`j_pivot()` is usually a (text or gz-compressed) file path or URL.
+Two additional options are available when working with
+NDJSON. `n_records` limits the number of records processed. Using
+`n_records` can be very useful when exploring the data. For instance,
+the first record of a file can be viewed interactively with
+
+```{r ndjson_listviewer, eval = FALSE}
+j_query(ndjson_file, n_records = 1) |>
+    listviewer::jsonedit()
+```
+
+The option `verbose = TRUE` adds a progress indicator, which provides
+confidence that progress is being made while parsing large files. The
+progress bar requires the [cli][] package.
 
 `j_query()` provides a one-to-one mapping of NDJSON lines / elements
 to the return value, e.g., `j_query(ndjson_file, "@", as = "string")`
@@ -155,23 +185,41 @@ on an NDJSON file with 1000 lines will return a character vector of
 1000 elements, or with `j_query(ndjson, "@", as = "R")` an *R* list
 with length 1000.
 
-```{r}
-ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
-j_query(ndjson_file, "{state: state, name: name}")
+```{r ndjson_j_query}
+j_query(ndjson_file, "{id: id, type: type}", n_records = 5)
 ```
 
-NDJSON files can be large, and are easy to iterate through. The
-queries are therefore processed in 'chunks', and a finite number of
-records can be processed
+`j_pivot()` transforms an NDJSON file or character vector of objects
+into a format convenient for input in *R*. `j_pivot()` with NDJSON
+files and JMESpath paths work particularly well together, because
+JMESpath provides flexiblity in creating JSON objects to be pivotted.
 
-```{r ndjson_n_records}
-j_query(ndjson_file, "{state: state, name: name}", n_records = 2)
+```{r ndjson_j_pivot}
+j_pivot(ndjson_file, "{id: id, type: type}", as = "data.frame")
 ```
 
-Note that `n_records` refers to the number of lines input, rather than
-the number of lines satisfying `path=`.
+Filtering NDJSON files can require relatively more complicated paths,
+e.g., to filt 'PushEvent' types from organizations, construct a query
+that acts on each NDJSON record to return an array of a single object,
+then apply a filter to replace uninteresting elements with 0-length
+arrays (using `as = "tibble"` often transforms the *R* list-of-vectors
+to a tibble in a more pleasing and robust manner compared to `as =
+"data.frame"`).
+
+```{r ndjson_j_pivot_filter}
+path <-
+    "[{id: id, type: type, org: org}]
+         [?@.type == 'PushEvent' && @.org != null]"
+j_pivot(ndjson_file, path, as = "data.frame")
+```
+
+A more complete example is used in the [NDJSON extended
+vignette][ndjson-extended]
 
 [NDJSON]: https://ndjson.org/
+[GitHub Archive]: https://www.gharchive.org/
+[ndjson-extended]: https://mtmrogan.github.io/rjsoncons/articles/b_ndjson.html
+[cli]: https://CRAN.R-project.org/package=cli
 
 # The JSON parser
 
