@@ -10,3 +10,4 @@
 ^scratch$
 ^CRAN-SUBMISSION$
 ^data$
+^vignettes/articles$

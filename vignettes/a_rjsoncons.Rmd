@@ -1,5 +1,5 @@
 ---
-title: "Using the 'jsoncons' Library in R"
+title: "Using 'jsoncons' in R"
 author:
 - name: Martin Morgan
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY, US
