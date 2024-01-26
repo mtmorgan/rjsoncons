@@ -330,7 +330,7 @@ adopted to achieve reasonable performance.
 [duckdb-json]: https://duckdb.org/2023/03/03/json.html#github-archive-examples
 [blog post]: https://mtmorgan.github.io/software/update/2024/01/25/rjsoncons-ndjson-performance.html
 
-# Session inforation {.unnumbered}
+# Session information {.unnumbered}
 
 ```{r}
 sessionInfo()

@@ -34,7 +34,7 @@
 - (0.0.3) support object names ordering 'asis' or 'sort'
 - (0.0.3) DESCRIPTION file updates: correct 'Title:' capitalization;
   avoid warnings about most misspellings
-- (0.0.3) Add github action to rebuild README.md from
+- (0.0.3) Add GitHub action to rebuild README.md from
   vignettes/rjsoncons.Rmd
 - (0.0.2) jsoncons library update
 - (0.0.2) support for R object query in addition to JSON string

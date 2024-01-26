@@ -167,6 +167,7 @@ public:
                 return jsonpointer::get<Json>(j, jsonpointer_);
             case path_type::JSONpath: return jsonpath_.evaluate(j);
             case path_type::JMESpath: return jmespath_.evaluate(j);
+            default: cpp11::stop("`j_query()` unknown 'path_type'");
             }
         }
 

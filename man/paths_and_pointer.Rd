@@ -48,10 +48,10 @@ object (\code{as = "R"}) representing the result of the query.
 }
 \description{
 \code{jsonpath()} executes a query against a JSON string or
-vector NDJSON entries using the 'jsonpath' specification.
+vector NDJSON entries using the 'JSONpath' specification.
 
 \code{jmespath()} executes a query against a JSON string
-using the 'jmespath' specification.
+using the 'JMESpath' specification.
 
 \code{jsonpointer()} extracts an element from a JSON string
 using the 'JSON pointer' specification.

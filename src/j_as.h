@@ -219,13 +219,8 @@ cpp11::sexp j_as(Json j, rjsoncons::as as)
     switch(as) {
     case as::string: return as_sexp( j.template as<std::string>() );
     case as::R: return as_r<Json>(j);
+    default: cpp11::stop("`as_r()` unknown `as = `");
     }
-}
-
-template<class Json>
-cpp11::sexp j_as(Json j, std::string as)
-{
-    j_as(j, enum_index(as_map, as));
 }
 
 template<class Json>

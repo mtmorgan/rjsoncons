@@ -35,7 +35,7 @@ the package for direct access to the 'jsoncons' C++ library.
 Install the released package version from CRAN
 
 ```{r install, eval = FALSE}
-install.pacakges("rjsoncons", repos = "https://CRAN.R-project.org")
+install.packages("rjsoncons", repos = "https://CRAN.R-project.org")
 ```
 
 Install the development version with
@@ -72,7 +72,7 @@ json <- '{
 ```
 
 There are several common use cases. Use [rjsoncons][] to query the
-JSON string using [JSONpath][], [JMESPath][] or [JSONpointer][]
+JSON string using [JSONpath][], [JMESpath][] or [JSONpointer][]
 syntax to filter larger documents to records of interest, e.g., only
 cities in New York state, using 'JMESpath' syntax.
 
@@ -192,19 +192,19 @@ j_query(ndjson_file, "{id: id, type: type}", n_records = 5)
 `j_pivot()` transforms an NDJSON file or character vector of objects
 into a format convenient for input in *R*. `j_pivot()` with NDJSON
 files and JMESpath paths work particularly well together, because
-JMESpath provides flexiblity in creating JSON objects to be pivotted.
+JMESpath provides flexibility in creating JSON objects to be pivoted.
 
 ```{r ndjson_j_pivot}
 j_pivot(ndjson_file, "{id: id, type: type}", as = "data.frame")
 ```
 
 Filtering NDJSON files can require relatively more complicated paths,
-e.g., to filt 'PushEvent' types from organizations, construct a query
-that acts on each NDJSON record to return an array of a single object,
-then apply a filter to replace uninteresting elements with 0-length
-arrays (using `as = "tibble"` often transforms the *R* list-of-vectors
-to a tibble in a more pleasing and robust manner compared to `as =
-"data.frame"`).
+e.g., to filter 'PushEvent' types from organizations, construct a
+query that acts on each NDJSON record to return an array of a single
+object, then apply a filter to replace uninteresting elements with
+0-length arrays (using `as = "tibble"` often transforms the *R*
+list-of-vectors to a tibble in a more pleasing and robust manner
+compared to `as = "data.frame"`).
 
 ```{r ndjson_j_pivot_filter}
 path <-
@@ -218,7 +218,7 @@ vignette][ndjson-extended]
 
 [NDJSON]: https://ndjson.org/
 [GitHub Archive]: https://www.gharchive.org/
-[ndjson-extended]: https://mtmrogan.github.io/rjsoncons/articles/b_ndjson.html
+[ndjson-extended]: https://mtmorgan.github.io/rjsoncons/articles/b_ndjson_extended.html
 [cli]: https://CRAN.R-project.org/package=cli
 
 # The JSON parser

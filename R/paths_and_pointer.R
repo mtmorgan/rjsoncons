@@ -3,7 +3,7 @@
 #' @title JSONpath, JMESpath, or JSONpointer query of JSON / NDJSON documents
 #'
 #' @description `jsonpath()` executes a query against a JSON string or
-#'     vector NDJSON entries using the 'jsonpath' specification.
+#'     vector NDJSON entries using the 'JSONpath' specification.
 #'
 #' @param data a character() JSON string or NDJSON records, or an *R*
 #'     object parsed to a JSON string using `jsonlite::toJSON()`.
@@ -88,7 +88,7 @@ jsonpath <-
 #' @rdname paths_and_pointer
 #'
 #' @description `jmespath()` executes a query against a JSON string
-#'     using the 'jmespath' specification.
+#'     using the 'JMESpath' specification.
 #'
 #' @examples
 #' path <- "locations[?state == 'WA'].name | sort(@)"

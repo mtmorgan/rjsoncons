@@ -18,7 +18,7 @@ string.}
 }
 \description{
 \code{j_data_type()} uses simple rules to determine whether
-'data' is json, ndjson, file, url, or R.
+'data' is JSON, NDJSON, file, url, or R.
 
 \code{j_path_type()} uses simple rules to identify
 whether \code{path} is a JSONpointer, JSONpath, or JMESpath
