@@ -20,7 +20,7 @@ column-based tibble from row-oriented JSON."><!-- mathjax --><script src="https:
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9401</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9500</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,11 +28,15 @@ column-based tibble from row-oriented JSON."><!-- mathjax --><script src="https:
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item">
-  <a class="nav-link" href="../articles/rjsoncons.html">Get started</a>
-</li>
-<li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
+</li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/a_rjsoncons.html">Using 'jsoncons' in R</a>
+    <a class="dropdown-item" href="../articles/b_ndjson_extended.html">Processing NDJSON</a>
+  </div>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -138,13 +142,15 @@ length 1 to JSON scalar values.</p></li>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>j_pivot()</code> transforms an 'array-of-objects' (typical when the
-JSON is a row-oriented representation of a table) to an
+    <p><code>j_pivot()</code> transforms an 'array-of-objects' (typical when the JSON
+is a row-oriented representation of a table) to an
 'object-of-arrays'. A simple example transforms an array of two
-objects each with three fields <code>'[{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5, "c": 6}]'</code> to an object with with three fields, each a
-vector of length 2 <code>'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'</code>. The
+objects each with three fields <code>'[{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5, "c": 6}]'</code> to an object with three fields, each a vector
+of length 2 <code>'{"a": [1, 4], "b": [2, 5], "c": [3, 6]}'</code>. The
 object-of-arrays representation corresponds closely to an <em>R</em>
 data.frame or tibble, as illustrated in the examples.</p>
+<p><code>j_pivot()</code> with JMESpath paths are especially useful for
+transforming NDJSON to a <code>data.frame</code> or <code>tibble</code></p>
     </div>
 
     <div class="section level2">
@@ -165,12 +171,20 @@ data.frame or tibble, as illustrated in the examples.</p>
 <span class="r-in"><span><span class="fu">j_query</span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[].state"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span>   <span class="co"># JMESpath</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "WA" "NY" "WA" "WA"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">ndjson_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"extdata"</span>, <span class="st">"example.ndjson"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">j_query</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{name: name, state: state}"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "{\"name\":\"Seattle\",\"state\":\"WA\"}" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2] "{\"name\":\"New York\",\"state\":\"NY\"}"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "{\"name\":\"Bellevue\",\"state\":\"WA\"}"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "{\"name\":\"Olympia\",\"state\":\"WA\"}" </span>
+<span class="r-in"><span><span class="co">## a few NDJSON records from &lt;https://www.gharchive.org/&gt;</span></span></span>
+<span class="r-in"><span><span class="va">ndjson_file</span> <span class="op">&lt;-</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"extdata"</span>, <span class="st">"2023-02-08-0.json"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">j_query</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "{\"id\":\"26939254345\",\"type\":\"DeleteEvent\"}"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "{\"id\":\"26939254358\",\"type\":\"PushEvent\"}"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "{\"id\":\"26939254361\",\"type\":\"CreateEvent\"}"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "{\"id\":\"26939254365\",\"type\":\"CreateEvent\"}"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "{\"id\":\"26939254366\",\"type\":\"PushEvent\"}"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "{\"id\":\"26939254367\",\"type\":\"PushEvent\"}"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "{\"id\":\"26939254379\",\"type\":\"PushEvent\"}"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "{\"id\":\"26939254380\",\"type\":\"IssuesEvent\"}"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "{\"id\":\"26939254382\",\"type\":\"PushEvent\"}"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "{\"id\":\"26939254383\",\"type\":\"PushEvent\"}"  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">j_pivot</span><span class="op">(</span><span class="va">json</span>, <span class="st">"$.locations[?@.state=='WA']"</span>, as <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "{\"name\":[\"Seattle\",\"Bellevue\",\"Olympia\"],\"state\":[\"WA\",\"WA\",\"WA\"]}"</span>
@@ -195,26 +209,61 @@ data.frame or tibble, as illustrated in the examples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> Olympia  WA   </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## use 'path' to pivot ndjson one record at at time</span></span></span>
-<span class="r-in"><span><span class="fu">j_pivot</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{name: name, state: state}"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       name state</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Seattle    WA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 New York    NY</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Bellevue    WA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Olympia    WA</span>
+<span class="r-in"><span><span class="fu">j_pivot</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             id        type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  26939254345 DeleteEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  26939254358   PushEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  26939254361 CreateEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  26939254365 CreateEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  26939254366   PushEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  26939254367   PushEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  26939254379   PushEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  26939254380 IssuesEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  26939254382   PushEvent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 26939254383   PushEvent</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## j_pivot discards arrays of size 0 '[]'</span></span></span>
-<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="st">"[{name: name, state: state}][?@.state=='WA']"</span></span></span>
-<span class="r-in"><span><span class="fu">j_query</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="va">path</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "[{\"name\":\"Seattle\",\"state\":\"WA\"}]" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2] "[]"                                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "[{\"name\":\"Bellevue\",\"state\":\"WA\"}]"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "[{\"name\":\"Olympia\",\"state\":\"WA\"}]" </span>
+<span class="r-in"><span><span class="co">## 'org' is a nested element; extract it</span></span></span>
+<span class="r-in"><span><span class="fu">j_pivot</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"org"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          id              login gravatar_id</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  30044474          gitcoinco            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 123667276 johnbieren-testing            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 123277977       CMPUT404-W23            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 120284018       mornystannit            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                              url</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          https://api.github.com/orgs/gitcoinco</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 https://api.github.com/orgs/johnbieren-testing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       https://api.github.com/orgs/CMPUT404-W23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       https://api.github.com/orgs/mornystannit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                           avatar_url</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  https://avatars.githubusercontent.com/u/30044474?</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 https://avatars.githubusercontent.com/u/123667276?</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 https://avatars.githubusercontent.com/u/123277977?</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 https://avatars.githubusercontent.com/u/120284018?</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## use j_pivot() to filter 'PushEvent' for organizations</span></span></span>
+<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="st">"[{id: id, type: type, org: org}]</span></span></span>
+<span class="r-in"><span><span class="st">             [?@.type == 'PushEvent' &amp;&amp; @.org != null]"</span></span></span>
 <span class="r-in"><span><span class="fu">j_pivot</span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       name state</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Seattle    WA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Bellevue    WA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Olympia    WA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            id      type    org.id          org.login org.gravatar_id</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 26939254358 PushEvent 123667276 johnbieren-testing                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 26939254382 PushEvent 123667276 johnbieren-testing                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                          org.url</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 https://api.github.com/orgs/johnbieren-testing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 https://api.github.com/orgs/johnbieren-testing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                       org.avatar_url  org.id.1  org.login.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 https://avatars.githubusercontent.com/u/123667276? 120284018 mornystannit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 https://avatars.githubusercontent.com/u/123667276? 120284018 mornystannit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   org.gravatar_id.1                                org.url.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   https://api.github.com/orgs/mornystannit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                   https://api.github.com/orgs/mornystannit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                     org.avatar_url.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 https://avatars.githubusercontent.com/u/120284018?</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 https://avatars.githubusercontent.com/u/120284018?</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## try also</span></span></span>
+<span class="r-in"><span><span class="co">##</span></span></span>
+<span class="r-in"><span><span class="co">##     j_pivot(ndjson_file, path, as = "tibble") |&gt;</span></span></span>
+<span class="r-in"><span><span class="co">##         tidyr::unnest_wider("org", names_sep = ".")</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

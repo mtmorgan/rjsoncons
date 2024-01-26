@@ -4,10 +4,13 @@
     <loc>https://mtmorgan.github.io/rjsoncons/404.html</loc>
   </url>
   <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/articles/index.html</loc>
+    <loc>https://mtmorgan.github.io/rjsoncons/articles/a_rjsoncons.html</loc>
   </url>
   <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/articles/rjsoncons.html</loc>
+    <loc>https://mtmorgan.github.io/rjsoncons/articles/b_ndjson_extended.html</loc>
+  </url>
+  <url>
+    <loc>https://mtmorgan.github.io/rjsoncons/articles/index.html</loc>
   </url>
   <url>
     <loc>https://mtmorgan.github.io/rjsoncons/authors.html</loc>
