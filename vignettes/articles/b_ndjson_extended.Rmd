@@ -1,0 +1,337 @@
+---
+title: "Processing NDJSON"
+author:
+- name: Martin Morgan
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY, US
+output:
+  BiocStyle::html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+)
+```
+
+# Installation & setup
+
+This article assumes that the [rjsoncons][], [listviewer][] (for
+interactively exploring JSON), [dplyr][] (for manipulating results as
+`tibble`) [tidyr][] (for unnesting columns in a tibble) and [cli][]
+(providing a progress indicator) are installed.
+
+```{r install, eval = FALSE}
+pkgs <- c("rjsoncons", "dplyr", "tidyr", "cli")
+needed <- pkgs[!pkgs %in% rownames(installed.packages())]
+install.packages(needed, repos = "https://CRAN.R-project.org")
+```
+
+Start by loading the [rjsoncons][] and [dplyr][] packages into the
+current session.
+
+```{r, message = FALSE}
+library(rjsoncons)
+library(dplyr)
+```
+
+We use data from [GH Archive][], a project to record activity on
+public GitHub repositories. Create a location for this file in the
+system-wide 'cache' directory for the rjsoncons package.
+
+```{r create_cache}
+cache <- tools::R_user_dir("rjsoncons", "cache")
+if (!dir.exists(cache))
+    dir.create(cache, recursive = TRUE)
+```
+
+If necessary, download a single file (1 hour of activity, about
+170,000 events, 100 Mb) from the GH Archive.
+
+```{r download_gharchive}
+archive_file <- "https://data.gharchive.org/2023-02-08-0.json.gz"
+ndjson_file <- file.path(cache, "2023-02-08-0.json.gz")
+if (!file.exists(ndjson_file))
+    download.file(archive_file, ndjson_file)
+```
+
+[rjsoncons]: https://mtmorgan.github.io/rjsoncons
+[dplyr]: https://CRAN.R-project.org/package=dplyr
+[cli]: https://CRAN.R-project.org/package=cli
+[GH Archive]: https://www.gharchive.org/
+
+# Data exploration
+
+Ensure that the `ndjson_file` defined above exists
+
+```{r ndjson_file_exists}
+stopifnot(
+    file.exists(ndjson_file)
+)
+```
+
+To get a sense of the data, read and visualize the first record
+
+```{r listviewer, eval = FALSE}
+j_query(ndjson_file, n_records = 1) |>
+    listviewer::jsonedit()
+```
+
+This query uses the default `path = "@"`, a JMESpath expression that
+returns the current element. The `n_records =` argument is available
+when processing NDJSON, and restricts the number of records
+input. This is very useful when exploring the data.
+
+The record contains the information below. Records have this general
+structure, but the information can differ, e.g., not all actions
+have an `org` field.
+
+``` json
+{
+  "id": "26939254345",
+  "type": "DeleteEvent",
+  "actor": {
+    "id": 19908762,
+    "login": "lucianHymer",
+    "display_login": "lucianHymer",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/lucianHymer",
+    "avatar_url": "https://avatars.githubusercontent.com/u/19908762?"
+  },
+  "repo": {
+    "id": 469847426,
+    "name": "gitcoinco/passport",
+    "url": "https://api.github.com/repos/gitcoinco/passport"
+  },
+  "payload": {
+    "ref": "format-alert-messages",
+    "ref_type": "branch",
+    "pusher_type": "user"
+  },
+  "public": true,
+  "created_at": "2023-02-08T00:00:00Z",
+  "org": {
+    "id": 30044474,
+    "login": "gitcoinco",
+    "gravatar_id": "",
+    "url": "https://api.github.com/orgs/gitcoinco",
+    "avatar_url": "https://avatars.githubusercontent.com/u/30044474?"
+  }
+}
+```
+
+We will work with the `"id"` and `"type"` top-level fields, available
+using JMESpath as
+
+```{r jmespath_1}
+j_query(ndjson_file, '{id: id, type: type}', n_records = 5)
+```
+
+A more elaborate query might combine these with other, nested, elements, e.g.,
+
+```{r jmespath_2}
+j_query(ndjson_file, '{id: id, type: type, "org.id": org.id}', n_records = 5)
+```
+
+Note that records 3-5 do not have an organization. 
+
+## Use JMESpath for queries
+
+JMESpath seems to be most appropriate when working with NDJSON
+files. 
+
+Here's a JMESpath query extracting just the `org` information; the
+query processes five records and returns five results; records 3-5 do
+not have this key, and are `"null"`.
+
+```{r jmespath_org}
+j_query(ndjson_file, 'org', n_records = 5)
+```
+
+JSONpointer path cannot be used, because it is an error if
+the key does not exist, and the third record cannot be processed
+
+```{r jsonpointer}
+try(
+    ## fails: 'b' does not exist
+    j_query('{"a": 1}', '/b')
+)
+
+try(
+    ## fails: record 3 does not have 'org' key
+    j_query(ndjson_file, '/org', n_records = 5)
+)
+```
+
+Also, JSONpointer does not allow one to create new objects from
+components of the data, so one could not assemble the `id` and `type`
+keys of the original object into a new object.
+
+JSONpath allows for missing keys
+
+```{r jsonpath}
+j_query(ndjson_file, "$.org", n_records = 5)
+```
+
+but it is not straight-forward to assemble new objects, e.g., placing
+the top-level `"id"` and `"type"` keys into a single object.
+
+## Use `tibble` with `j_pivot()`
+
+`j_pivot()` is very useful for extracting tabular data from JSON and
+NDJSON representations. Recall that `j_pivot()` transforms a JSON
+array or file records of objects to an object of arrays
+```{r j_pivot}
+path <- '{id: id, type: type}'
+j_pivot(ndjson_file, path, n_records = 5, as = "R") |>
+    str()
+```
+
+This can be represented as a `data.frame` or `tibble`
+
+```{r j_pivot_data_frame}
+j_pivot(ndjson_file, path, n_records = 5, as = "data.frame")
+```
+
+'Under the hood', `j_pivot()` is simply calling `as = "R"` and then
+`as.data.frame()` on the result. Unfortunately, `as.data.frame()`
+fails when some keys are translated to `NULL`, e.g., when `org` is
+absent
+
+```{r j_pivot_data_frame_org}
+path <- '{id: id, type: type, org: org}'
+try(
+    j_pivot(ndjson_file, path, n_records = 5, as = "data.frame")
+)
+```
+
+The coercion of the *R* representation to a tibble is robust to this
+missing data
+
+```{r j_pivot_tibble}
+tbl <- j_pivot(ndjson_file, path, n_records = 5, as = "tibble")
+tbl
+```
+
+The [Hierarchical data][] chapter of [R for Data Science][r4ds]
+suggests using `tidyr::unnest_wider()` and tidyr::unnest_longer()` for
+working with nested data. The result of the pivot can be flattened with
+
+```{r j_pivot_tibble_unnest}
+tbl |>
+    tidyr::unnest_wider("org", names_sep = ".")
+```
+
+If one were interested in only some of the keys in the nested `org`
+element, these could be incorporated directly into the `path`. Note
+that keys containing `.` need to be quoted `"org.id": org.id`.
+
+```{r j_pivot_path_nested}
+path <- '{id: id, type: type, "org.id": org.id}'
+j_pivot(ndjson_file, path, n_records = 5, as = "tibble")
+```
+
+[Hierarchical data]: https://r4ds.hadley.nz/rectangling
+[r4ds]: https://r4ds.hadley.nz/
+
+## Filters with JMESpath
+
+The strategy for filtering NDJSON with JMESpath is to create a length
+1 array containing the object of interest, and then filter the
+array. Thus to discover PushEvents from organizations, form an array
+with an object containing relevant information `[{id: id, type: type,
+org: org}]` and then filter the array using JMESpath's query syntax
+`[?@.type == 'PushEvent' && org != null]`. The type of quotation
+(single-quote, `'`) is important in the query, so use double quotes to
+define the path
+
+```{r j_query_filter}
+path <- "[{id: id, type: type, org: org}][?@.type == 'PushEvent' && org != null]"
+j_query(ndjson_file, path, n_records = 5)
+```
+
+`j_pivot()` removes empty records
+
+```{r j_pivot_filter}
+path <- "[{id: id, type: type, org: org}][?@.type == 'PushEvent' && org != null]"
+j_pivot(ndjson_file, path, n_records = 5, as = "tibble")
+```
+
+# Performance
+
+[rjsoncons][] is relatively performant when processing large
+files. Use `verbose = TRUE` to get a progress indicators.
+
+```{r j_pivot_all}
+system.time({
+    tbl <- j_pivot(
+        ndjson_file, '{id: id, type: type}',
+        as = "tibble", verbose = TRUE
+    )
+})
+tbl
+tbl |>
+    count(type, sort = TRUE)
+```
+
+On my system, this takes approximately 13s. Memory use
+is not extensive, because at the *R* level the file is processed in
+chunks and only the final result is represented in *R* data
+structures.
+
+The performance of [rjsoncons][] is comparable to the purpose-built
+[jq][] command-line tool. [jq][] takes about 9s when run at the
+command line. An additional 3s is required to input the command-line
+output to *R*. [jq][] provides greater flexibility than JMESpath, and
+is widely used.
+
+The use case outlined here compares very favorably to the performance
+of the [ndjson][] CRAN package, which took more than 600s to complete
+the task above. [ndjson][] reads the entire data set into *R*, whereas
+[rjsoncons][] only represents the final object with columns `id` and
+`type` in *R*.
+
+[DuckDB][] offers a [CRAN package][duckdb] that supports their [SQL
+interface to JSON][duckdb-json], and this is very performant. The
+following code takes just 3.7s to deliver a `data.frame` to *R*.
+
+```{r duckdb, eval = FALSE}
+library(glue)
+library(duckdb)
+library(DBI)
+
+con <- dbConnect(duckdb())
+dbExecute(con, "INSTALL 'json';") # only required once
+dbExecute(con, "LOAD 'json';")
+
+sql <- glue(
+    "SELECT id, type
+     FROM read_ndjson_auto('{ndjson_file}');"
+)
+
+system.time({
+    res <- dbGetQuery(con, sql)
+}) # 3.7 seconds!
+```
+
+The DuckDB SQL interface allows flexible selection, filtering, and
+data summary. It also treats a collection of JSON files as a single
+'database', and scales favorably and automatically with number of
+files being processed. DuckDB does not require additional software,
+other than the [duckdb][] CRAN package
+
+A [blog post][] provides additional details of the comparison between
+solutions, including discussion of design decisions that [rjsoncons][]
+adopted to achieve reasonable performance.
+
+[jq]: https://jqlang.github.io/jq/
+[ndjson]: https://CRAN.R-project.org/package=ndjson
+[DuckDB]: https://duckdb.org/
+[duckdb]: https://CRAN.R-project.org/package=duckdb
+[duckdb-json]: https://duckdb.org/2023/03/03/json.html#github-archive-examples
+[blog post]: https://mtmorgan.github.io/software/update/2024/01/25/rjsoncons-ndjson-performance.html
+
+# Session inforation {.unnumbered}
+
+```{r}
+sessionInfo()
+```

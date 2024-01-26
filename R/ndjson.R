@@ -122,7 +122,7 @@ ndjson_pivot <-
             do.call("c", lapply(pivot, `[[`, key))
         }, pivot)
     } else {
-        result <- pivot
+        result <- pivot[[1]]
     }
 
     switch(
