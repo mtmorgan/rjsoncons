@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9500</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,7 +98,7 @@ JSON or R objects using <a href="https://jmespath.org/" class="external-link">JM
 Link to the package for direct access to the ‘jsoncons’ C++ library.</p>
 <p>Install the released package version from CRAN</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">install.pacakges</span><span class="op">(</span><span class="st">"rjsoncons"</span>, repos <span class="op">=</span> <span class="st">"https://CRAN.R-project.org"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"rjsoncons"</span>, repos <span class="op">=</span> <span class="st">"https://CRAN.R-project.org"</span><span class="op">)</span></span></code></pre></div>
 <p>Install the development version with</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quiety <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
@@ -128,7 +128,7 @@ the version of the C++ library in use</p>
 <span><span class="st">  ]</span></span>
 <span><span class="st">}'</span></span></code></pre></div>
 <p>There are several common use cases. Use <a href="https://mtmorgan.github.io/rjsoncons/">rjsoncons</a> to query the
-JSON string using <a href="https://goessner.net/articles/JsonPath/" class="external-link">JSONpath</a>, <a href="https://jmespath.org/" class="external-link">JMESPath</a> or <a href="https://datatracker.ietf.org/doc/html/rfc6901" class="external-link">JSONpointer</a>
+JSON string using <a href="https://goessner.net/articles/JsonPath/" class="external-link">JSONpath</a>, <a href="https://jmespath.org/" class="external-link">JMESpath</a> or <a href="https://datatracker.ietf.org/doc/html/rfc6901" class="external-link">JSONpointer</a>
 syntax to filter larger documents to records of interest, e.g., only
 cities in New York state, using ‘JMESpath’ syntax.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -249,8 +249,8 @@ length 1000.</p>
 <p><code><a href="../reference/j_query.html">j_pivot()</a></code> transforms an NDJSON file or character vector
 of objects into a format convenient for input in <em>R</em>.
 <code><a href="../reference/j_query.html">j_pivot()</a></code> with NDJSON files and JMESpath paths work
-particularly well together, because JMESpath provides flexiblity in
-creating JSON objects to be pivotted.</p>
+particularly well together, because JMESpath provides flexibility in
+creating JSON objects to be pivoted.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">##             id        type</span></span>
@@ -265,7 +265,7 @@ creating JSON objects to be pivotted.</p>
 <span><span class="co">## 9  26939254382   PushEvent</span></span>
 <span><span class="co">## 10 26939254383   PushEvent</span></span></code></pre></div>
 <p>Filtering NDJSON files can require relatively more complicated paths,
-e.g., to filt ‘PushEvent’ types from organizations, construct a query
+e.g., to filter ‘PushEvent’ types from organizations, construct a query
 that acts on each NDJSON record to return an array of a single object,
 then apply a filter to replace uninteresting elements with 0-length
 arrays (using <code>as = "tibble"</code> often transforms the <em>R</em>
@@ -291,7 +291,7 @@ compared to <code>as = "data.frame"</code>).</p>
 <span><span class="co">##                                     org.avatar_url.1</span></span>
 <span><span class="co">## 1 https://avatars.githubusercontent.com/u/120284018?</span></span>
 <span><span class="co">## 2 https://avatars.githubusercontent.com/u/120284018?</span></span></code></pre></div>
-<p>A more complete example is used in the <a href="https://mtmrogan.github.io/rjsoncons/articles/b_ndjson.html" class="external-link">NDJSON
+<p>A more complete example is used in the <a href="https://mtmorgan.github.io/rjsoncons/articles/b_ndjson_extended.html">NDJSON
 extended vignette</a></p>
 </div>
 <div class="section level2">
@@ -449,7 +449,7 @@ library.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] rjsoncons_1.1.0.9500 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] rjsoncons_1.2.0  BiocStyle_2.30.0</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.45         </span></span>
