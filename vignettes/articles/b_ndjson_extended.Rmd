@@ -56,6 +56,8 @@ if (!file.exists(ndjson_file))
 
 [rjsoncons]: https://mtmorgan.github.io/rjsoncons
 [dplyr]: https://CRAN.R-project.org/package=dplyr
+[listviewer]: https://CRAN.R-project.org/package=listviewer
+[tidyr]: https://CRAN.R-project.org/package=tidyr
 [cli]: https://CRAN.R-project.org/package=cli
 [GH Archive]: https://www.gharchive.org/
 
@@ -284,6 +286,20 @@ command line. An additional 3s is required to input the command-line
 output to *R*. [jq][] provides greater flexibility than JMESpath, and
 is widely used.
 
+The CRAN package [jqr][] provides an *R* interface to the jq
+library. Linux and macOS users are required to have the jq library
+installed. A straight-forward use of the library takes about 22
+seconds; additional steps are required to translate the result to an
+*R* `data.frame`.
+
+```{r jqr}
+system.time({
+    jqr <-
+        jqr::jq(gzfile(ndjson_file), '{id, type}') |>
+        j_pivot(as = "tibble")
+})
+```
+
 The use case outlined here compares very favorably to the performance
 of the [ndjson][] CRAN package, which took more than 600s to complete
 the task above. [ndjson][] reads the entire data set into *R*, whereas
@@ -324,6 +340,7 @@ solutions, including discussion of design decisions that [rjsoncons][]
 adopted to achieve reasonable performance.
 
 [jq]: https://jqlang.github.io/jq/
+[jqr]: https://github.com/ropensci/jqr
 [ndjson]: https://CRAN.R-project.org/package=ndjson
 [DuckDB]: https://duckdb.org/
 [duckdb]: https://CRAN.R-project.org/package=duckdb
