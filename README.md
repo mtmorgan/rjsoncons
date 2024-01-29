@@ -61,4 +61,4 @@ C++ library.
 
 See the [introductory vignette][] for additional details.
 
-[introductory vignette]: https://mtmorgan.github.io/rjsoncons/articles/rjsoncons.html
+[introductory vignette]: https://mtmorgan.github.io/rjsoncons/articles/a_rjsoncons.html
