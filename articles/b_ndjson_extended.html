@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -356,15 +356,14 @@ relatively performant when processing large files. Use
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">## 0 records processed</span></span>
-<span><span class="co">## 19523 records processed</span></span>
-<span><span class="co">## 39215 records processed</span></span>
-<span><span class="co">## 69583 records processed</span></span>
-<span><span class="co">## 101451 records processed</span></span>
-<span><span class="co">## 131096 records processed</span></span>
-<span><span class="co">## 167963 records processed</span></span>
+<span><span class="co">## 24633 records processed</span></span>
+<span><span class="co">## 56063 records processed</span></span>
+<span><span class="co">## 87613 records processed</span></span>
+<span><span class="co">## 119347 records processed</span></span>
+<span><span class="co">## 151934 records processed</span></span>
 <span><span class="co">## 172049 records processed</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  16.379   0.049  16.429</span></span>
+<span><span class="co">##  16.153   0.044  16.197</span></span>
 <span><span class="va">tbl</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 172,049 × 2</span></span></span>
 <span><span class="co">##    id          type       </span></span>
@@ -422,7 +421,7 @@ to translate the result to an <em>R</em> <code>data.frame</code>.</p>
 <span>        <span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  20.905   0.047  20.955</span></span></code></pre></div>
+<span><span class="co">##  20.565   0.023  20.591</span></span></code></pre></div>
 <p>The use case outlined here compares very favorably to the performance
 of the <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a>
 CRAN package, which took more than 600s to complete the task above. <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a> reads the
@@ -488,7 +487,7 @@ achieve reasonable performance.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] dplyr_1.1.4      rjsoncons_1.2.0  BiocStyle_2.30.0</span></span>
+<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9000 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] jsonlite_1.8.8      compiler_4.3.2      BiocManager_1.30.22</span></span>
@@ -498,7 +497,7 @@ achieve reasonable performance.</p>
 <span><span class="co">## [13] generics_0.1.3      knitr_1.45          tibble_3.2.1       </span></span>
 <span><span class="co">## [16] bookdown_0.37       desc_1.4.3          bslib_0.6.1        </span></span>
 <span><span class="co">## [19] pillar_1.9.0        rlang_1.1.3         utf8_1.2.4         </span></span>
-<span><span class="co">## [22] cachem_1.0.8        stringi_1.8.3       xfun_0.41          </span></span>
+<span><span class="co">## [22] cachem_1.0.8        stringi_1.8.3       xfun_0.42          </span></span>
 <span><span class="co">## [25] fs_1.6.3            sass_0.4.8          lazyeval_0.2.2     </span></span>
 <span><span class="co">## [28] memoise_2.0.1       cli_3.6.2           withr_3.0.0        </span></span>
 <span><span class="co">## [31] pkgdown_2.0.7       magrittr_2.0.3      digest_0.6.34      </span></span>
