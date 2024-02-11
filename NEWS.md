@@ -1,3 +1,7 @@
+# rjsoncons 1.3.0
+
+- (1.2.0.9000) bug fix: support JSON `j_pivot()` file / url connections
+
 # rjsoncons 1.2.0
 
 - (1.1.0.9500) update documentation, include NDJSON-specific, web-only

@@ -120,4 +120,20 @@ expect_identical(
     '{"name":["Seattle"],"state":["WA"]}'
 )
 
+expect_identical(
+    j_pivot(json_file, "locations[]", as = "R"),
+    list(
+        name = c("Seattle", "New York", "Bellevue", "Olympia"), 
+        state = c("WA", "NY", "WA", "WA")
+    )
+)
+
+expect_identical(
+    j_pivot(ndjson_file, "", as = "R"),
+    list(
+        name = c("Seattle", "New York", "Bellevue", "Olympia"), 
+        state = c("WA", "NY", "WA", "WA")
+    )
+)
+
 expect_error(j_pivot(json, "locations[0].name"))

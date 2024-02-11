@@ -32,6 +32,7 @@ json_pivot <-
     if (identical(data_type, "R"))
         data_type <- "json"
 
+    data_type <- head(data_type, 1L)
     as0 <- ifelse(identical(as, "string"), as, "R")
     ex <- cpp_r_json_init(object_names, path, as0, data_type, path_type)
     cpp_r_json_pivot(ex, data, object_names)
