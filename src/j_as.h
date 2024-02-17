@@ -5,6 +5,7 @@
 #include <jsoncons/json.hpp>
 #include <cpp11.hpp>
 
+#include "readbinbuf.h"
 #include "utilities.h"
 
 using namespace jsoncons;
@@ -223,11 +224,54 @@ cpp11::sexp j_as(Json j, rjsoncons::as as)
     }
 }
 
+// (nd)json_as_r for character vectors and connections
+
 template<class Json>
-sexp as_r_impl(const std::string data)
+sexp json_as_r(const std::string data)
 {
-    Json j = Json::parse(data);
+    return(as_r<Json>(Json::parse(data)));
+}
+
+template<class Json>
+sexp json_as_r(const cpp11::sexp& con)
+{
+    readbinbuf cbuf(con);
+    std::istream is(&cbuf);
+    Json j = Json::parse(is);
+
     return as_r<Json>(j);
+}
+
+template<class Json>
+list ndjson_as_r(std::vector<std::string> data)
+{
+    cpp11::writable::list result;
+    result.reserve(data.size());
+    for (auto datum : data)
+        result.push_back(json_as_r<Json>(datum));
+
+    return result;
+}
+
+template<class Json>
+list ndjson_as_r(const cpp11::sexp& con)
+{
+    readbinbuf cbuf(con);
+    std::istream is(&cbuf);
+
+    json_decoder<Json> decoder;
+    json_stream_reader reader(is, decoder);
+    cpp11::writable::list result;
+
+    while (!reader.eof()) {
+        reader.read_next();
+        if (!reader.eof()) {
+            Json j = decoder.get_result();
+            result.push_back(as_r<Json>(j));
+        }
+    }
+
+    return result;
 }
 
 #endif

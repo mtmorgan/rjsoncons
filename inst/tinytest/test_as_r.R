@@ -120,3 +120,35 @@ expect_identical(as_r('[{"a": 2}, true]'), list(list(a = 2L), TRUE))
 expect_identical(as_r('[1, "a"]'), list(1L, "a"))
 
 expect_identical(as_r('[1, {"a": 2}]'), list(1L, list(a = 2L)))
+
+## asis / sort
+
+expect_identical(as_r('{"b": 2, "a": 1}', "sort"), list(a = 1L, b = 2L))
+
+expect_identical(as_r('[{"b": 2, "a": 1}]', "sort"), list(list(a = 1L, b = 2L)))
+
+## R, json, ndjson, connections
+
+json <- list(
+    locations = list(
+        list(name = "Seattle", state = "WA"),
+        list(name = "New York", state = "NY"),
+        list(name = "Bellevue", state = "WA"),
+        list(name = "Olympia", state = "WA")
+    ))
+
+json_file <- system.file(package = "rjsoncons", "extdata", "example.json")
+
+ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
+
+expect_identical(as_r(json_file), json)
+
+expect_identical(as_r(readLines(json_file)), json)
+
+expect_identical(as_r(paste(readLines(json_file), collapse = "\n")), json)
+
+expect_identical(as_r(ndjson_file), json$locations)
+
+expect_identical(as_r(readLines(ndjson_file)), json$locations)
+
+expect_identical(as_r(json), json) # R -> R

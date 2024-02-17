@@ -4,12 +4,15 @@
 #include <jsoncons/json.hpp>
 
 #include "utilities.h"
+#include "readbinbuf.h"
 #include "raw_buffer.h"
 #include "j_as.h"
 #include "r_json.h"
 
 using namespace jsoncons;        // convenience
 using namespace cpp11::literals; // _nm
+
+auto readbinbuf::read_bin = cpp11::package("base")["readBin"];
 
 [[cpp11::register]]
 std::string cpp_version()
@@ -24,11 +27,47 @@ std::string cpp_version()
 // as_r
 
 [[cpp11::register]]
-sexp cpp_as_r(std::string data, const std::string object_names)
+sexp cpp_as_r_json(std::string data, const std::string object_names)
 {
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: return as_r_impl<ojson>(data);
-    case object_names::sort: return as_r_impl<json>(data);
+    case object_names::asis: return json_as_r<ojson>(data);
+    case object_names::sort: return json_as_r<json>(data);
+    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }
+}
+
+[[cpp11::register]]
+sexp cpp_as_r_ndjson(
+    std::vector<std::string> data,
+    const std::string object_names)
+{
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: return ndjson_as_r<ojson>(data);
+    case object_names::sort: return ndjson_as_r<json>(data);
+    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }
+}
+
+[[cpp11::register]]
+sexp cpp_as_r_json_con(
+    const cpp11::sexp& con,
+    const std::string object_names)
+{
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: return json_as_r<ojson>(con);
+    case object_names::sort: return json_as_r<json>(con);
+    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }
+}
+
+[[cpp11::register]]
+sexp cpp_as_r_ndjson_con(
+    const cpp11::sexp& con,
+    const std::string object_names)
+{
+    switch(enum_index(object_names_map, object_names)) {
+    case object_names::asis: return ndjson_as_r<ojson>(con);
+    case object_names::sort: return ndjson_as_r<json>(con);
     default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
     }
 }

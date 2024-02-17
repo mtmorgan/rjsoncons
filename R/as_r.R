@@ -52,12 +52,34 @@
 #'
 #' @export
 as_r <-
-    function(data, object_names = "asis", ...)
+    function(
+        data, object_names = "asis", ..., data_type = j_data_type(data)
+    )
 {
     stopifnot(
-        .is_scalar_character(object_names)
+        .is_scalar_character(object_names),
+        object_names %in% c("asis", "sort"),
+        .is_j_data_type(data_type)
     )
 
-    data <- .as_json_string(data, ..., data_type = "json")
-    cpp_as_r(data, object_names)
+    if (.is_j_data_type_connection(data_type)) {
+        data <- .as_unopened_connection(data, data_type)
+        open(data, "rb")
+        on.exit(close(data))
+        switch(
+            data_type[[1]],
+            json = cpp_as_r_json_con(data, object_names),
+            ndjson = cpp_as_r_ndjson_con(data, object_names)
+        )
+    } else {
+        switch(
+            data_type[[1]],
+            R = ,
+            json = cpp_as_r_json(
+                .as_json_string(data, ..., data_type = data_type),
+                object_names
+            ),
+            ndjson = cpp_as_r_ndjson(data, object_names)
+        )
+    }
 }
