@@ -33,7 +33,7 @@
 
 #' @rdname j_data_type
 #'
-#' @title Detect JSON / NDJSON data and path types
+#' @title Detect JSON and NDJSON data and path types
 #'
 #' @description `j_data_type()` uses simple rules to determine whether
 #'     'data' is JSON, NDJSON, file, url, or R.

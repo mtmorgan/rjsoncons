@@ -333,7 +333,7 @@ The DuckDB SQL interface allows flexible selection, filtering, and
 data summary. It also treats a collection of JSON files as a single
 'database', and scales favorably and automatically with number of
 files being processed. DuckDB does not require additional software,
-other than the [duckdb][] CRAN package
+other than the [duckdb][] CRAN package.
 
 A [blog post][] provides additional details of the comparison between
 solutions, including discussion of design decisions that [rjsoncons][]
@@ -346,6 +346,17 @@ adopted to achieve reasonable performance.
 [duckdb]: https://CRAN.R-project.org/package=duckdb
 [duckdb-json]: https://duckdb.org/2023/03/03/json.html#github-archive-examples
 [blog post]: https://mtmorgan.github.io/software/update/2024/01/25/rjsoncons-ndjson-performance.html
+
+# Other packages
+
+There are two very fast JSON parsers available via CRAN,
+[RcppSimdJson][] and [yyjsonr][]. [RcppSimdJson][] supports
+JSONpointer for queries, but as noted for NDJSON this is only useful
+when all records contain the endpoint. [yyjsonr][] does not support
+queries or NDJSON at time of writing (18 February, 2024).
+
+[RcppSimdJson]: https://CRAN.R-project.org/package=RcppSimdJson
+[yyjsonr]: https://CRAN.R-project.org/package=yyjsonr
 
 # Session information {.unnumbered}
 

@@ -56,6 +56,10 @@ rjsoncons::version()
 
 # JSON Use cases
 
+Functions in this package work on JSON or NDJSON character vectors,
+file paths and URLs to JSON or NDJSON documents, and *R* objects that
+can be transformed to a JSON string.
+
 ## Select, filter and transform with `j_query()`
 
 Here is a simple JSON example document

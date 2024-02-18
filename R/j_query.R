@@ -15,7 +15,7 @@
 
 #' @rdname j_query
 #'
-#' @title Query and pivot for JSON / NDJSON documents
+#' @title Query and pivot JSON and NDJSON documents
 #'
 #' @description `j_query()` executes a query against a JSON or NDJSON
 #'     document, automatically inferring the type of `data` and
@@ -28,6 +28,13 @@
 #'     data.frame or tibble.
 #'
 #' @inheritParams jsonpath
+#'
+#' @param ... passed to `jsonlite::toJSON` when `data` is an *R* object.
+#' 
+#' @param n_records numeric(1) maximum number of NDJSON records parsed.
+#'
+#' @param verbose logical(1) report progress when parsing large NDJSON
+#'     files.
 #'
 #' @param data_type character(1) type of `data`; one of `"json"`,
 #'     `"ndjson"`. Inferred from `data` using `j_data_type()`.

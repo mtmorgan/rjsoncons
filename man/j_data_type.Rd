@@ -3,14 +3,15 @@
 \name{j_data_type}
 \alias{j_data_type}
 \alias{j_path_type}
-\title{Detect JSON / NDJSON data and path types}
+\title{Detect JSON and NDJSON data and path types}
 \usage{
 j_data_type(data)
 
 j_path_type(path)
 }
 \arguments{
-\item{data}{a character() JSON string or NDJSON records, or an \emph{R}
+\item{data}{a character() JSON string or NDJSON records, or the
+name of a file or URL containing JSON or NDJSON, or an \emph{R}
 object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
 \item{path}{character(1) JSONpointer, JSONpath or JMESpath query

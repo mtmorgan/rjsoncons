@@ -1,21 +1,17 @@
 #' @rdname as_r
 #'
-#' @title Parse JSON to R
+#' @title Parse JSON or NDJSON to R
 #'
-#' @description `as_r()` transforms a JSON string to an *R* object.
+#' @description `as_r()` transforms JSON or NDJSON to an *R* object.
 #'
 #' @inheritParams j_query
 #'
-#' @param data a character(1) JSON string or (unusually) an `R` object.
-#'
-#' @param ... passed to `jsonlite::toJSON()` in the unusual
-#'     circumstance that `data` is an `R` object.
-#'
 #' @details
 #'
-#' The `as = "R"` argument to `j_query()`, `j_pivot()`, etc., and the
-#' `as_r()` function transform a JSON string representation to an *R*
-#' object. Main rules are:
+#' The `as = "R"` argument to `j_query()`, `j_pivot()`, and the
+#' `as_r()` function transform JSON or NDJSON to an *R* object. JSON
+#' and NDJSON can be a character vector, file, or url, or an *R*
+#' object (which is first translated to a JSON string). Main rules are:
 #'
 #' - JSON arrays of a single type (boolean, integer, double, string)
 #'   are transformed to *R* vectors of the same length and
