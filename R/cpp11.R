@@ -4,26 +4,26 @@ cpp_version <- function() {
   .Call(`_rjsoncons_cpp_version`)
 }
 
-cpp_as_r <- function(data, object_names, data_type) {
-  .Call(`_rjsoncons_cpp_as_r`, data, object_names, data_type)
+cpp_as_r <- function(data, data_type, object_names) {
+  .Call(`_rjsoncons_cpp_as_r`, data, data_type, object_names)
 }
 
-cpp_as_r_con <- function(con, object_names, n_records, verbose, data_type) {
-  .Call(`_rjsoncons_cpp_as_r_con`, con, object_names, n_records, verbose, data_type)
+cpp_as_r_con <- function(con, data_type, object_names, n_records, verbose) {
+  .Call(`_rjsoncons_cpp_as_r_con`, con, data_type, object_names, n_records, verbose)
 }
 
-cpp_j_query <- function(data, object_names, path, as, data_type, path_type) {
-  .Call(`_rjsoncons_cpp_j_query`, data, object_names, path, as, data_type, path_type)
+cpp_j_query <- function(data, data_type, object_names, as, path, path_type) {
+  .Call(`_rjsoncons_cpp_j_query`, data, data_type, object_names, as, path, path_type)
 }
 
-cpp_j_query_con <- function(con, object_names, path, as, n_records, verbose, data_type, path_type) {
-  .Call(`_rjsoncons_cpp_j_query_con`, con, object_names, path, as, n_records, verbose, data_type, path_type)
+cpp_j_query_con <- function(con, data_type, object_names, as, path, path_type, n_records, verbose) {
+  .Call(`_rjsoncons_cpp_j_query_con`, con, data_type, object_names, as, path, path_type, n_records, verbose)
 }
 
-cpp_j_pivot <- function(data, object_names, path, as, data_type, path_type) {
-  .Call(`_rjsoncons_cpp_j_pivot`, data, object_names, path, as, data_type, path_type)
+cpp_j_pivot <- function(data, data_type, object_names, as, path, path_type) {
+  .Call(`_rjsoncons_cpp_j_pivot`, data, data_type, object_names, as, path, path_type)
 }
 
-cpp_j_pivot_con <- function(con, object_names, path, as, n_records, verbose, data_type, path_type) {
-  .Call(`_rjsoncons_cpp_j_pivot_con`, con, object_names, path, as, n_records, verbose, data_type, path_type)
+cpp_j_pivot_con <- function(con, data_type, object_names, as, path, path_type, n_records, verbose) {
+  .Call(`_rjsoncons_cpp_j_pivot_con`, con, data_type, object_names, as, path, path_type, n_records, verbose)
 }

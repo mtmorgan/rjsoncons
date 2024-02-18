@@ -23,14 +23,16 @@
 }
 
 .as_json_string <-
-    function(x, ..., data_type)
+    function(data, data_type, ...)
 {
-    if (identical(data_type, "R")) {
-        as.character(jsonlite::toJSON(x, ...))
+    if (.is_j_data_type_connection(data_type)) {
+        data
+    } else if (identical(data_type, "R")) {
+        as.character(jsonlite::toJSON(data, ...))
     } else if (identical(data_type, "json")) {
-        paste(x, collapse = "\n")
+        paste(data, collapse = "\n")
     } else { # ndjson
-        x
+        data
     }
 }
 

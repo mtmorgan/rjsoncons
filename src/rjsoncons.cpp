@@ -28,8 +28,8 @@ std::string cpp_version()
 
 [[cpp11::register]]
 sexp cpp_as_r(
-    std::vector<std::string> data, const std::string object_names,
-    const std::string data_type)
+    std::vector<std::string> data, const std::string data_type,
+    const std::string object_names)
 {
     sexp result;
 
@@ -51,9 +51,9 @@ sexp cpp_as_r(
 
 [[cpp11::register]]
 sexp cpp_as_r_con(
-    const cpp11::sexp& con, const std::string object_names,
-    const double n_records, const bool verbose,
-    const std::string data_type)
+    const cpp11::sexp& con, const std::string data_type,
+    const std::string object_names,
+    const double n_records, const bool verbose)
 {
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
@@ -76,9 +76,9 @@ sexp cpp_as_r_con(
 
 [[cpp11::register]]
 sexp cpp_j_query(
-    const std::vector<std::string> data, const std::string object_names,
-    const std::string path, const std::string as,
-    const std::string data_type, const std::string path_type)
+    const std::vector<std::string> data, const std::string data_type,
+    const std::string object_names, const std::string as,
+    const std::string path, const std::string path_type)
 {
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
@@ -99,10 +99,10 @@ sexp cpp_j_query(
 
 [[cpp11::register]]
 sexp cpp_j_query_con(
-    const cpp11::sexp& con, const std::string object_names,
-    const std::string path, const std::string as,
-    const double n_records, const bool verbose,
-    const std::string data_type, const std::string path_type)
+    const cpp11::sexp& con, const std::string data_type,
+    const std::string object_names, const std::string as,
+    const std::string path, const std::string path_type,
+    const double n_records, const bool verbose)
 {
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
@@ -129,9 +129,9 @@ sexp cpp_j_query_con(
 
 [[cpp11::register]]
 sexp cpp_j_pivot(
-    const std::vector<std::string> data, const std::string object_names,
-    const std::string path, const std::string as,
-    const std::string data_type, const std::string path_type)
+    const std::vector<std::string> data, const std::string data_type,
+    const std::string object_names, const std::string as,
+    const std::string path, const std::string path_type)
 {
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
@@ -152,10 +152,10 @@ sexp cpp_j_pivot(
 
 [[cpp11::register]]
 sexp cpp_j_pivot_con(
-    const cpp11::sexp& con, const std::string object_names,
-    const std::string path, const std::string as,
-    const double n_records, const bool verbose,
-    const std::string data_type, const std::string path_type)
+    const cpp11::sexp& con, const std::string data_type,
+    const std::string object_names, const std::string as,
+    const std::string path, const std::string path_type,
+    const double n_records, const bool verbose)
 {
     sexp result;
     switch(enum_index(object_names_map, object_names)) {

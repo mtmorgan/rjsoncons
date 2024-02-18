@@ -1,3 +1,18 @@
+.j_valid <-
+    function(data_type, object_names, path, path_type, n_records, verbose, ...)
+{
+    stopifnot(
+        .is_scalar_character(path, z.ok = TRUE),
+        object_names %in% c("asis", "sort"),
+        .is_scalar_numeric(n_records),
+        .is_scalar_logical(verbose),
+        .is_j_data_type(data_type),
+        .is_scalar_character(path_type),
+        path_type %in% j_path_type(),
+        ...
+    )
+}
+
 #' @rdname j_query
 #'
 #' @title Query and pivot for JSON / NDJSON documents
@@ -48,34 +63,19 @@ j_query <-
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
-    stopifnot(
-        .is_scalar_character(path, z.ok = TRUE),
-        object_names %in% c("asis", "sort"),
-        as %in% c("string", "R"),
-        .is_scalar_numeric(n_records),
-        .is_scalar_logical(verbose),
-        .is_j_data_type(data_type),
-        .is_scalar_character(path_type), path_type %in% j_path_type()
+    .j_valid(
+        data_type, object_names, path, path_type, n_records, verbose,
+        as %in% c("string", "R")
     )
 
-    if (.is_j_data_type_connection(data_type)) {
-        con <- .as_unopened_connection(data, data_type)
-        open(con, "rb")
-        on.exit(close(con))
-        result <- cpp_j_query_con(
-            con, object_names, path, as, n_records, verbose,
-            data_type[[1]], path_type
-        )
-    } else {
-        data <- .as_json_string(data, ..., data_type = data_type)
-        if (identical(data_type, "R"))
-            data_type <- "json"
-        result <- cpp_j_query(
-            data, object_names, path, as, data_type[[1]], path_type
-        )
-    }
+    data <- .as_json_string(data, data_type, ...)
+    result <- do_cpp(
+        cpp_j_query, cpp_j_query_con,
+        data, data_type, object_names, as, path, path_type,
+        n_records = n_records, verbose = verbose
+    )
 
-    if (identical(data_type[[1]], "json"))
+    if (data_type[[1]] %in% c("json", "R"))
         result <- result[[1]]
 
     result
@@ -130,34 +130,18 @@ j_pivot <-
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
-    stopifnot(
-        .is_scalar_character(path, z.ok = TRUE),
-        object_names %in% c("asis", "sort"),
-        as %in% c("string", "R", "data.frame", "tibble"),
-        .is_scalar_numeric(n_records),
-        .is_scalar_logical(verbose),
-        .is_j_data_type(data_type),
-        .is_scalar_character(path_type), path_type %in% j_path_type()
+    .j_valid(
+        data_type, object_names, path, path_type, n_records, verbose,
+        as %in% c("string", "R", "data.frame", "tibble")
     )
 
+    data <- .as_json_string(data, data_type, ...)
     as0 <- ifelse(identical(as, "string"), "string", "R")
-
-    if (.is_j_data_type_connection(data_type)) {
-        con <- .as_unopened_connection(data, data_type)
-        open(con, "rb")
-        on.exit(close(con))
-        pivot <- cpp_j_pivot_con(
-            con, object_names, path, as0, n_records, verbose,
-            data_type[[1]], path_type
-        )
-    } else {
-        data <- .as_json_string(data, ..., data_type = data_type)
-        if (identical(data_type, "R"))
-            data_type <- "json"
-        pivot <- cpp_j_pivot(
-            data, object_names, path, as0, data_type[[1]], path_type
-        )
-    }
+    pivot <- do_cpp(
+        cpp_j_pivot, cpp_j_pivot_con,
+        data, data_type, object_names, as0, path, path_type, 
+        n_records = n_records, verbose = verbose
+    )
 
     ## process pivot return types to output form
     if (identical(as, "string")) {

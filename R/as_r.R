@@ -66,21 +66,14 @@ as_r <-
         .is_j_data_type(data_type)
     )
 
-    if (.is_j_data_type_connection(data_type)) {
-        con <- .as_unopened_connection(data, data_type)
-        open(con, "rb")
-        on.exit(close(con))
-        result <- cpp_as_r_con(
-            con, object_names, n_records, verbose, data_type[[1]]
-        )
-    } else {
-        data <- .as_json_string(data, ..., data_type = data_type)
-        if (identical(data_type, "R"))
-            data_type <- "json"
-        result <- cpp_as_r(data, object_names, data_type)
-    }
+    data <- .as_json_string(data, data_type, ...)
+    result <- do_cpp(
+        cpp_as_r, cpp_as_r_con,
+        data, data_type, object_names,
+        n_records = n_records, verbose = verbose
+    )
 
-    if (identical(data_type[[1]], "json"))
+    if (data_type[[1]] %in% c("json", "R"))
         result <- result[[1]]
 
     result
