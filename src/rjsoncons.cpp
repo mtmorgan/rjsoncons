@@ -3,10 +3,8 @@
 #include <jsoncons/config/version.hpp>
 #include <jsoncons/json.hpp>
 
-#include "utilities.h"
+#include "enum_index.h"
 #include "readbinbuf.h"
-#include "raw_buffer.h"
-#include "j_as.h"
 #include "r_json.h"
 
 using namespace jsoncons;        // convenience
@@ -37,14 +35,14 @@ sexp cpp_as_r(
     case object_names::asis: {
         result = r_json<ojson>(data_type).as_r(data);
         break;
-    };
+    }
     case object_names::sort: {
         result = r_json<json>(data_type).as_r(data);
         break;
     }
     default: {
         cpp11::stop("unknown `object_names = '" + object_names + "'`");
-    };}
+    }}
 
     return result;
 }

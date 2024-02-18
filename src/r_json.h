@@ -7,7 +7,7 @@
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 #include <cpp11.hpp>
 
-#include "utilities.h"
+#include "enum_index.h"
 #include "readbinbuf.h"
 #include "j_as.h"
 
@@ -21,11 +21,11 @@ class r_json
     rjsoncons::as as_;
     rjsoncons::data_type data_type_;
     rjsoncons::path_type path_type_;
-    std::vector<Json> result_;
     // only one of the following will be valid per instance
     jmespath::jmespath_expression<Json> jmespath_;
     jsonpath::jsonpath_expression<Json> jsonpath_;
     const std::string jsonpointer_;
+    std::vector<Json> result_;
 
     // pivot implementation
 
