@@ -8,6 +8,7 @@
 #include <cpp11.hpp>
 
 #include "utilities.h"
+#include "readbinbuf.h"
 #include "j_as.h"
 
 using namespace cpp11;
@@ -17,10 +18,9 @@ using namespace rjsoncons;
 template<class Json>
 class r_json
 {
-    // FIXME: as_, data_type_, path_type_ should be enums
+    rjsoncons::as as_;
     rjsoncons::data_type data_type_;
     rjsoncons::path_type path_type_;
-    rjsoncons::as as_;
     std::vector<Json> result_;
     // only one of the following will be valid per instance
     jmespath::jmespath_expression<Json> jmespath_;
@@ -73,7 +73,7 @@ class r_json
             return object;
         }
 
-    Json pivot(const Json j)
+    Json pivot_one(const Json j)
         {
             Json value;
 
@@ -141,11 +141,20 @@ class r_json
 public:
     r_json() noexcept = default;
 
+    r_json(std::string data_type)
+        : as_(as::R),
+          data_type_(enum_index(data_type_map, data_type)),
+          path_type_(path_type::JSONpointer),
+          jmespath_(jmespath::make_expression<Json>("@")),
+          jsonpath_(jsonpath::make_expression<Json>("$")),
+          jsonpointer_("/")
+        {}
+
     r_json(std::string path, std::string as, std::string data_type,
            std::string path_type)
-        : data_type_(enum_index(data_type_map, data_type)),
+        : as_(enum_index(as_map, as)),
+          data_type_(enum_index(data_type_map, data_type)),
           path_type_(enum_index(path_type_map, path_type)),
-          as_(enum_index(as_map, as)),
           // only one 'path' is used; initialize others to a default
           jmespath_(
               path_type_ == path_type::JMESpath ?
@@ -157,6 +166,46 @@ public:
               jsonpath::make_expression<Json>("$")),
           jsonpointer_(path_type_ == path_type::JSONpointer ? path : "/")
         {}
+
+    // as_r
+
+    sexp as_r(const std::vector<std::string>& data)
+        {
+            result_.reserve(data.size());
+            std::transform(
+                data.begin(), data.end(), std::back_inserter(result_),
+                [&](const std::string datum) { return Json::parse(datum); });
+
+            return as();
+        }
+
+    sexp as_r(const cpp11::sexp& con, double n_records, bool verbose)
+        {
+            readbinbuf cbuf(con);
+            std::istream is(&cbuf);
+
+            switch(data_type_) {
+            case data_type::json_data_type: {
+                Json j = Json::parse(is);
+                result_.push_back(j);
+                break;
+            };
+            case data_type::ndjson_data_type: {
+                json_decoder<Json> decoder;
+                json_stream_reader reader(is, decoder);
+                double n = 0;
+                while (!reader.eof() && n < n_records) {
+                    reader.read_next();
+                    if (!reader.eof()) {
+                        Json j = decoder.get_result();
+                        result_.push_back(j);
+                        n += 1;
+                    }
+                }
+            };}
+
+            return as();
+        }
 
     // query
 
@@ -171,80 +220,112 @@ public:
             }
         }
 
-    void query(const std::vector<std::string> data)
+    sexp query(const std::vector<std::string>& data)
         {
-            result_.reserve(result_.size() + data.size());
+            // json_data_type has data.size() == 1
+            result_.reserve(data.size());
             std::transform(
                 data.begin(), data.end(), std::back_inserter(result_),
                 [&](const std::string datum) {
                     Json j = Json::parse(datum);
                     return query(j);
                 });
+
+            return as();
+        }
+
+    sexp query(const cpp11::sexp& con, double n_records, bool verbose)
+        {
+            readbinbuf cbuf(con);
+            std::istream is(&cbuf);
+
+            switch(data_type_) {
+            case data_type::json_data_type: {
+                Json j = Json::parse(is);
+                result_.push_back(query(j));
+                break;
+            };
+            case data_type::ndjson_data_type: {
+                json_decoder<Json> decoder;
+                json_stream_reader reader(is, decoder);
+                double n = 0;
+                while (!reader.eof() && n < n_records) {
+                    reader.read_next();
+                    if (!reader.eof()) {
+                        Json j = decoder.get_result();
+                        result_.push_back(query(j));
+                        n += 1;
+                    }
+                }
+                break;
+            };}
+
+            return as();
         }
 
     // pivot
 
-    void pivot(const std::vector<std::string> data)
+    void pivot(Json j)
+        {
+            // query and pivot
+            Json q = query(j);
+            Json p = pivot_one(q);
+            // append to result
+            pivot_append_result(p);
+        }
+
+    sexp pivot(const std::vector<std::string>& data)
         {
             // collect queries across all data
             for (const auto& datum: data) {
                 Json j = Json::parse(datum);
-                // query and pivot
-                Json q = query(j);
-                Json p = pivot(q);
-                // append to result
-                pivot_append_result(p);
+                pivot(j);
             }
+
+            return as();
+        }
+
+    sexp pivot(const cpp11::sexp& con, double n_records, bool verbose)
+        {
+            readbinbuf cbuf(con);
+            std::istream is(&cbuf);
+
+            switch(data_type_) {
+            case data_type::json_data_type: {
+                Json j = Json::parse(is);
+                pivot(j);
+                break;
+            };
+            case data_type::ndjson_data_type: {
+                json_decoder<Json> decoder;
+                json_stream_reader reader(is, decoder);
+                double n = 0;
+                while (!reader.eof() && n < n_records) {
+                    reader.read_next();
+                    if (!reader.eof()) {
+                        Json j = decoder.get_result();
+                        pivot(j);
+                        n += 1;
+                    }
+                }
+                break;
+            };}
+    
+            return as();
         }
 
     // as
 
-    cpp11::sexp as() const
+    sexp as() const
         {
             cpp11::writable::list result(result_.size());
             std::transform(
                 result_.begin(), result_.end(), result.begin(),
                 [&](Json j) { return j_as(j, as_); });
 
-            // FIXME: should be able to create cpp11::strings directly
-            return
-                as_ == as::string ? package("base")["unlist"](result) : result;
+            return as_ == as::string ?
+                package("base")["unlist"](result) : result;
         }
 };
-
-// R interface
-
-template<class Json>
-sexp r_json_init(
-    const std::string path, const std::string as, const std::string data_type,
-    const std::string path_type)
-{
-    r_json<Json> *ndj = new r_json<Json>(path, as, data_type, path_type);
-    external_pointer< r_json<Json> > extp(ndj);
-    return as_sexp(extp);
-}
-
-template<class Json>
-void r_json_query(sexp ext, const std::vector<std::string> data)
-{
-    external_pointer< r_json<Json> > extp(ext);
-    extp->query(data);
-}
-
-template<class Json>
-void r_json_pivot(sexp ext, const std::vector<std::string> data)
-{
-    external_pointer< r_json<Json> > extp(ext);
-    extp->pivot(data);
-}
-
-template<class Json>
-cpp11::sexp r_json_finish(sexp ext)
-{
-    external_pointer< r_json<Json> > extp(ext);
-    cpp11::sexp result = extp->as();
-    delete extp.release();
-    return result;
-}
 
 #endif

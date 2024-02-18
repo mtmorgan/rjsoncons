@@ -4,30 +4,26 @@ cpp_version <- function() {
   .Call(`_rjsoncons_cpp_version`)
 }
 
-cpp_as_r <- function(data, object_names) {
-  .Call(`_rjsoncons_cpp_as_r`, data, object_names)
+cpp_as_r <- function(data, object_names, data_type) {
+  .Call(`_rjsoncons_cpp_as_r`, data, object_names, data_type)
 }
 
-cpp_r_json_init <- function(object_names, path, as, data_type, path_type) {
-  .Call(`_rjsoncons_cpp_r_json_init`, object_names, path, as, data_type, path_type)
+cpp_as_r_con <- function(con, object_names, n_records, verbose, data_type) {
+  .Call(`_rjsoncons_cpp_as_r_con`, con, object_names, n_records, verbose, data_type)
 }
 
-cpp_r_json_query <- function(ext, data, object_names) {
-  invisible(.Call(`_rjsoncons_cpp_r_json_query`, ext, data, object_names))
+cpp_j_query <- function(data, object_names, path, as, data_type, path_type) {
+  .Call(`_rjsoncons_cpp_j_query`, data, object_names, path, as, data_type, path_type)
 }
 
-cpp_r_json_pivot <- function(ext, data, object_names) {
-  invisible(.Call(`_rjsoncons_cpp_r_json_pivot`, ext, data, object_names))
+cpp_j_query_con <- function(con, object_names, path, as, n_records, verbose, data_type, path_type) {
+  .Call(`_rjsoncons_cpp_j_query_con`, con, object_names, path, as, n_records, verbose, data_type, path_type)
 }
 
-cpp_r_json_query_raw <- function(ext, prefix, bin, n_records, object_names) {
-  .Call(`_rjsoncons_cpp_r_json_query_raw`, ext, prefix, bin, n_records, object_names)
+cpp_j_pivot <- function(data, object_names, path, as, data_type, path_type) {
+  .Call(`_rjsoncons_cpp_j_pivot`, data, object_names, path, as, data_type, path_type)
 }
 
-cpp_r_json_pivot_raw <- function(ext, prefix, bin, n_records, object_names) {
-  .Call(`_rjsoncons_cpp_r_json_pivot_raw`, ext, prefix, bin, n_records, object_names)
-}
-
-cpp_r_json_finish <- function(ext, object_names) {
-  .Call(`_rjsoncons_cpp_r_json_finish`, ext, object_names)
+cpp_j_pivot_con <- function(con, object_names, path, as, n_records, verbose, data_type, path_type) {
+  .Call(`_rjsoncons_cpp_j_pivot_con`, con, object_names, path, as, n_records, verbose, data_type, path_type)
 }

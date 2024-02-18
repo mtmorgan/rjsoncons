@@ -27,137 +27,153 @@ std::string cpp_version()
 // as_r
 
 [[cpp11::register]]
-sexp cpp_as_r_json(std::string data, const std::string object_names)
+sexp cpp_as_r(
+    std::vector<std::string> data, const std::string object_names,
+    const std::string data_type)
 {
+    sexp result;
+
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: return json_as_r<ojson>(data);
-    case object_names::sort: return json_as_r<json>(data);
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::asis: {
+        result = r_json<ojson>(data_type).as_r(data);
+        break;
+    };
+    case object_names::sort: {
+        result = r_json<json>(data_type).as_r(data);
+        break;
     }
+    default: {
+        cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    };}
+
+    return result;
 }
 
 [[cpp11::register]]
-sexp cpp_as_r_ndjson(
-    std::vector<std::string> data,
-    const std::string object_names)
+sexp cpp_as_r_con(
+    const cpp11::sexp& con, const std::string object_names,
+    const double n_records, const bool verbose,
+    const std::string data_type)
 {
+    sexp result;
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: return ndjson_as_r<ojson>(data);
-    case object_names::sort: return ndjson_as_r<json>(data);
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::asis: {
+        result = r_json<ojson>(data_type).as_r(con, n_records, verbose);
+        break;
     }
+    case object_names::sort: {
+        result = r_json<json>(data_type).as_r(con, n_records, verbose);
+        break;
+    }
+    default: {
+        cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }}
+
+    return result;
 }
 
+// j_query
+
 [[cpp11::register]]
-sexp cpp_as_r_json_con(
-    const cpp11::sexp& con,
-    const std::string object_names)
+sexp cpp_j_query(
+    const std::vector<std::string> data, const std::string object_names,
+    const std::string path, const std::string as,
+    const std::string data_type, const std::string path_type)
 {
+    sexp result;
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: return json_as_r<ojson>(con);
-    case object_names::sort: return json_as_r<json>(con);
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::asis: {
+        result = r_json<ojson>(path, as, data_type, path_type).query(data);
+        break;
     }
+    case object_names::sort: {
+        result = r_json<json>(path, as, data_type, path_type).query(data);
+        break;
+    }
+    default: {
+        cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }}
+
+    return result;
 }
 
 [[cpp11::register]]
-sexp cpp_as_r_ndjson_con(
-    const cpp11::sexp& con,
-    const std::string object_names)
+sexp cpp_j_query_con(
+    const cpp11::sexp& con, const std::string object_names,
+    const std::string path, const std::string as,
+    const double n_records, const bool verbose,
+    const std::string data_type, const std::string path_type)
 {
+    sexp result;
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: return ndjson_as_r<ojson>(con);
-    case object_names::sort: return ndjson_as_r<json>(con);
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::asis: {
+        result =
+            r_json<ojson>(path, as, data_type, path_type).
+            query(con, n_records, verbose);
+        break;
     }
+    case object_names::sort: {
+        result =
+            r_json<json>(path, as, data_type, path_type).
+            query(con, n_records, verbose);
+        break;
+    }
+    default: {
+        cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }}
+
+    return result;
 }
 
-// r_json
+// j_pivot
 
 [[cpp11::register]]
-sexp cpp_r_json_init(
-    const std::string object_names,
-    const std::string path,
-    const std::string as,
-    const std::string data_type,
-    const std::string path_type
-    )
+sexp cpp_j_pivot(
+    const std::vector<std::string> data, const std::string object_names,
+    const std::string path, const std::string as,
+    const std::string data_type, const std::string path_type)
 {
+    sexp result;
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis:
-        return r_json_init<ojson>(path, as, data_type, path_type);
-    case object_names::sort:
-        return r_json_init<json>(path, as, data_type, path_type);
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::asis: {
+        result = r_json<ojson>(path, as, data_type, path_type).pivot(data);
+        break;
     }
+    case object_names::sort: {
+        result = r_json<json>(path, as, data_type, path_type).pivot(data);
+        break;
+    }
+    default: {
+        cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }}
+
+    return result;
 }
 
 [[cpp11::register]]
-void cpp_r_json_query(
-    sexp ext,
-    const std::vector<std::string> data,
-    const std::string object_names)
+sexp cpp_j_pivot_con(
+    const cpp11::sexp& con, const std::string object_names,
+    const std::string path, const std::string as,
+    const double n_records, const bool verbose,
+    const std::string data_type, const std::string path_type)
 {
+    sexp result;
     switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: { r_json_query<ojson>(ext, data); break; }
-    case object_names::sort: { r_json_query<json>(ext, data); break; }
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::asis: {
+        result =
+            r_json<ojson>(path, as, data_type, path_type).
+            pivot(con, n_records, verbose);
+        break;
     }
-}
-
-[[cpp11::register]]
-void cpp_r_json_pivot(
-    sexp ext,
-    const std::vector<std::string> data,
-    const std::string object_names)
-{
-    switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: { r_json_pivot<ojson>(ext, data); break; }
-    case object_names::sort: { r_json_pivot<json>(ext, data); break; }
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    case object_names::sort: {
+        result =
+            r_json<json>(path, as, data_type, path_type).
+            pivot(con, n_records, verbose);
+        break;
     }
-}
+    default: {
+        cpp11::stop("unknown `object_names = '" + object_names + "'`");
+    }}
 
-// 'raw' versions of query and pivot
-
-[[cpp11::register]]
-cpp11::list cpp_r_json_query_raw(
-    sexp ext,
-    raws prefix, raws bin, int n_records,
-    const std::string object_names)
-{
-    rjsoncons::raw_buffer buffer(prefix, bin, n_records);
-    const std::vector<std::string> data = buffer.to_strings();
-    cpp_r_json_query(ext, data, object_names);
-
-    return cpp11::list({
-            "prefix"_nm = buffer.remainder(),
-            "n_lines"_nm = data.size()
-        });
-}
-
-[[cpp11::register]]
-cpp11::list cpp_r_json_pivot_raw(
-    sexp ext,
-    const raws prefix, const raws bin, int n_records,
-    const std::string object_names)
-{
-    rjsoncons::raw_buffer buffer(prefix, bin, n_records);
-    const std::vector<std::string> data = buffer.to_strings();
-    cpp_r_json_pivot(ext, data, object_names);
-
-    return cpp11::list({
-            "prefix"_nm = buffer.remainder(),
-            "n_lines"_nm = data.size()
-        });
-}
-
-[[cpp11::register]]
-cpp11::sexp cpp_r_json_finish(sexp ext, const std::string object_names)
-{
-    switch(enum_index(object_names_map, object_names)) {
-    case object_names::asis: return r_json_finish<ojson>(ext);
-    case object_names::sort: return r_json_finish<json>(ext);
-    default: cpp11::stop("unknown `object_names = '" + object_names + "'`");
-    }
+    return result;
 }

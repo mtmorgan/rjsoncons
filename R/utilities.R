@@ -27,8 +27,10 @@
 {
     if (identical(data_type, "R")) {
         as.character(jsonlite::toJSON(x, ...))
-    } else {
+    } else if (identical(data_type, "json")) {
         paste(x, collapse = "\n")
+    } else { # ndjson
+        x
     }
 }
 

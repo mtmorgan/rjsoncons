@@ -53,33 +53,35 @@
 #' @export
 as_r <-
     function(
-        data, object_names = "asis", ..., data_type = j_data_type(data)
+        data, object_names = "asis", ...,
+        n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data)
     )
 {
     stopifnot(
         .is_scalar_character(object_names),
         object_names %in% c("asis", "sort"),
+        .is_scalar_numeric(n_records),
+        .is_scalar_logical(verbose),
         .is_j_data_type(data_type)
     )
 
     if (.is_j_data_type_connection(data_type)) {
-        data <- .as_unopened_connection(data, data_type)
-        open(data, "rb")
-        on.exit(close(data))
-        switch(
-            data_type[[1]],
-            json = cpp_as_r_json_con(data, object_names),
-            ndjson = cpp_as_r_ndjson_con(data, object_names)
+        con <- .as_unopened_connection(data, data_type)
+        open(con, "rb")
+        on.exit(close(con))
+        result <- cpp_as_r_con(
+            con, object_names, n_records, verbose, data_type[[1]]
         )
     } else {
-        switch(
-            data_type[[1]],
-            R = ,
-            json = cpp_as_r_json(
-                .as_json_string(data, ..., data_type = data_type),
-                object_names
-            ),
-            ndjson = cpp_as_r_ndjson(data, object_names)
-        )
+        data <- .as_json_string(data, ..., data_type = data_type)
+        if (identical(data_type, "R"))
+            data_type <- "json"
+        result <- cpp_as_r(data, object_names, data_type)
     }
+
+    if (identical(data_type[[1]], "json"))
+        result <- result[[1]]
+
+    result
 }

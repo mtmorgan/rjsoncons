@@ -44,6 +44,7 @@
 j_query <-
     function(
         data, path = "", object_names = "asis", as = "string", ...,
+        n_records = Inf, verbose = FALSE,
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
@@ -51,29 +52,40 @@ j_query <-
         .is_scalar_character(path, z.ok = TRUE),
         object_names %in% c("asis", "sort"),
         as %in% c("string", "R"),
+        .is_scalar_numeric(n_records),
+        .is_scalar_logical(verbose),
         .is_j_data_type(data_type),
         .is_scalar_character(path_type), path_type %in% j_path_type()
     )
 
-    switch(
-        data_type[[1]],
-        json =,
-        R = json_query(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
-        ),
-        ndjson = ndjson_query(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
+    if (.is_j_data_type_connection(data_type)) {
+        con <- .as_unopened_connection(data, data_type)
+        open(con, "rb")
+        on.exit(close(con))
+        result <- cpp_j_query_con(
+            con, object_names, path, as, n_records, verbose,
+            data_type[[1]], path_type
         )
-    )
+    } else {
+        data <- .as_json_string(data, ..., data_type = data_type)
+        if (identical(data_type, "R"))
+            data_type <- "json"
+        result <- cpp_j_query(
+            data, object_names, path, as, data_type[[1]], path_type
+        )
+    }
+
+    if (identical(data_type[[1]], "json"))
+        result <- result[[1]]
+
+    result
 }
 
 #' @rdname j_query
 #'
 #' @description `j_pivot()` transforms a JSON array-of-objects to an
 #'     object-of-arrays; this can be useful when forming a
-#'     column-based tibble from row-oriented JSON.
+#'     column-based tibble from row-oriented JSON / NDJSON.
 #'
 #' @details
 #'
@@ -114,6 +126,7 @@ j_query <-
 j_pivot <-
     function(
         data, path = "", object_names = "asis", as = "string", ...,
+        n_records = Inf, verbose = FALSE,
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
@@ -121,20 +134,50 @@ j_pivot <-
         .is_scalar_character(path, z.ok = TRUE),
         object_names %in% c("asis", "sort"),
         as %in% c("string", "R", "data.frame", "tibble"),
+        .is_scalar_numeric(n_records),
+        .is_scalar_logical(verbose),
         .is_j_data_type(data_type),
         .is_scalar_character(path_type), path_type %in% j_path_type()
     )
 
-    switch(
-        data_type[[1]],
-        json =,
-        R = json_pivot(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
-        ),
-        ndjson = ndjson_pivot(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
+    as0 <- ifelse(identical(as, "string"), "string", "R")
+
+    if (.is_j_data_type_connection(data_type)) {
+        con <- .as_unopened_connection(data, data_type)
+        open(con, "rb")
+        on.exit(close(con))
+        pivot <- cpp_j_pivot_con(
+            con, object_names, path, as0, n_records, verbose,
+            data_type[[1]], path_type
         )
+    } else {
+        data <- .as_json_string(data, ..., data_type = data_type)
+        if (identical(data_type, "R"))
+            data_type <- "json"
+        pivot <- cpp_j_pivot(
+            data, object_names, path, as0, data_type[[1]], path_type
+        )
+    }
+
+    ## process pivot return types to output form
+    if (identical(as, "string")) {
+        result <- unlist(pivot, recursive = TRUE)
+    } else if (.is_j_data_type_connection(data_type)) {
+        ## unnest list-of-named chunks
+        keys <- names(pivot[[1]])
+        names(keys) <- keys
+        result <- lapply(keys, \(key, pivot) {
+            do.call("c", lapply(pivot, `[[`, key))
+        }, pivot)
+    } else {
+        result <- pivot[[1]]
+    }
+
+    switch(
+        as,
+        string = result,
+        R = result,
+        data.frame = as.data.frame(result),
+        tibble = tibble::as_tibble(result)
     )
 }
