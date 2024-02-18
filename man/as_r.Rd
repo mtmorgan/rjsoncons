@@ -2,29 +2,46 @@
 % Please edit documentation in R/as_r.R
 \name{as_r}
 \alias{as_r}
-\title{Parse JSON to R}
+\title{Parse JSON or NDJSON to R}
 \usage{
-as_r(data, object_names = "asis", ...)
+as_r(
+  data,
+  object_names = "asis",
+  ...,
+  n_records = Inf,
+  verbose = FALSE,
+  data_type = j_data_type(data)
+)
 }
 \arguments{
-\item{data}{a character(1) JSON string or (unusually) an \code{R} object.}
+\item{data}{a character() JSON string or NDJSON records, or the
+name of a file or URL containing JSON or NDJSON, or an \emph{R}
+object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
 \item{object_names}{character(1) order \code{data} object elements
 \code{"asis"} (default) or \code{"sort"} before filtering on \code{path}.}
 
-\item{...}{passed to \code{jsonlite::toJSON()} in the unusual
-circumstance that \code{data} is an \code{R} object.}
+\item{...}{passed to \code{jsonlite::toJSON} when \code{data} is an \emph{R} object.}
+
+\item{n_records}{numeric(1) maximum number of NDJSON records parsed.}
+
+\item{verbose}{logical(1) report progress when parsing large NDJSON
+files.}
+
+\item{data_type}{character(1) type of \code{data}; one of \code{"json"},
+\code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
 }
 \value{
 \code{as_r()} returns an \emph{R} object.
 }
 \description{
-\code{as_r()} transforms a JSON string to an \emph{R} object.
+\code{as_r()} transforms JSON or NDJSON to an \emph{R} object.
 }
 \details{
-The \code{as = "R"} argument to \code{j_query()}, \code{j_pivot()}, etc., and the
-\code{as_r()} function transform a JSON string representation to an \emph{R}
-object. Main rules are:
+The \code{as = "R"} argument to \code{j_query()}, \code{j_pivot()}, and the
+\code{as_r()} function transform JSON or NDJSON to an \emph{R} object. JSON
+and NDJSON can be a character vector, file, or url, or an \emph{R}
+object (which is first translated to a JSON string). Main rules are:
 \itemize{
 \item JSON arrays of a single type (boolean, integer, double, string)
 are transformed to \emph{R} vectors of the same length and

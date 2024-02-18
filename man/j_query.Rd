@@ -3,7 +3,7 @@
 \name{j_query}
 \alias{j_query}
 \alias{j_pivot}
-\title{Query and pivot for JSON / NDJSON documents}
+\title{Query and pivot JSON and NDJSON documents}
 \usage{
 j_query(
   data,
@@ -11,6 +11,8 @@ j_query(
   object_names = "asis",
   as = "string",
   ...,
+  n_records = Inf,
+  verbose = FALSE,
   data_type = j_data_type(data),
   path_type = j_path_type(path)
 )
@@ -21,12 +23,15 @@ j_pivot(
   object_names = "asis",
   as = "string",
   ...,
+  n_records = Inf,
+  verbose = FALSE,
   data_type = j_data_type(data),
   path_type = j_path_type(path)
 )
 }
 \arguments{
-\item{data}{a character() JSON string or NDJSON records, or an \emph{R}
+\item{data}{a character() JSON string or NDJSON records, or the
+name of a file or URL containing JSON or NDJSON, or an \emph{R}
 object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
 \item{path}{character(1) JSONpointer, JSONpath or JMESpath query
@@ -40,20 +45,12 @@ returns JSON / NDJSON strings; \code{"R"} parses JSON / NDJSON to R
 using rules in \code{as_r()}. For \code{j_pivot()} (JSON only), use \code{as = "data.frame"} or \code{as = "tibble"} to coerce the result to a
 data.frame or tibble.}
 
-\item{...}{arguments for parsing NDJSON, or passed to \code{jsonlite::toJSON} when
-\code{data} is not character-valued. For NDJSON,
-\itemize{
-\item Use \code{n_records = 2} to parse just the first two records of the
-NDJSON document.
-\item Use \code{verbose = TRUE} to obtain a progress bar when reading from a
-connection (file or URL). Requires the cli package.
-}
+\item{...}{passed to \code{jsonlite::toJSON} when \code{data} is an \emph{R} object.}
 
-As an example for use with \code{jsonlite::toJSON()}
-\itemize{
-\item use \code{auto_unbox = TRUE} to automatically 'unbox' vectors of
-length 1 to JSON scalar values.
-}}
+\item{n_records}{numeric(1) maximum number of NDJSON records parsed.}
+
+\item{verbose}{logical(1) report progress when parsing large NDJSON
+files.}
 
 \item{data_type}{character(1) type of \code{data}; one of \code{"json"},
 \code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
@@ -69,7 +66,7 @@ document, automatically inferring the type of \code{data} and
 
 \code{j_pivot()} transforms a JSON array-of-objects to an
 object-of-arrays; this can be useful when forming a
-column-based tibble from row-oriented JSON.
+column-based tibble from row-oriented JSON / NDJSON.
 }
 \details{
 \code{j_pivot()} transforms an 'array-of-objects' (typical when the JSON

@@ -5,8 +5,6 @@
 #include <jsoncons/json.hpp>
 #include <cpp11.hpp>
 
-#include "utilities.h"
-
 using namespace jsoncons;
 using namespace rjsoncons;
 
@@ -121,7 +119,7 @@ r_type r_vector_type(const Json j)
     return t;
 }
 
-template<class cpp11_t, class json_t, class Json>
+template<class Json, class cpp11_t, class json_t>
 sexp j_as_r_vector(const Json j)
 {
     cpp11_t value(j.size());
@@ -132,7 +130,7 @@ sexp j_as_r_vector(const Json j)
 }
 
 template<class Json>
-sexp as_r(const Json j)
+sexp j_as_r(const Json j)
 {
     sexp result;
     r_type rtype = r_atomic_type(j);
@@ -166,19 +164,19 @@ sexp as_r(const Json j)
             break;
         }
         case r_type::logical_value: {
-            result = j_as_r_vector<writable::logicals, bool>(j);
+            result = j_as_r_vector<Json, writable::logicals, bool>(j);
             break;
         }
         case r_type::integer_value: {
-            result = j_as_r_vector<writable::integers, int32_t>(j);
+            result = j_as_r_vector<Json, writable::integers, int32_t>(j);
             break;
         }
         case r_type::numeric_value: {
-            result = j_as_r_vector<writable::doubles, double>(j);
+            result = j_as_r_vector<Json, writable::doubles, double>(j);
             break;
         }
         case r_type::character_value: {
-            result = j_as_r_vector<writable::strings, std::string>(j);
+            result = j_as_r_vector<Json, writable::strings, std::string>(j);
             break;
         }
         case r_type::vector_value:
@@ -186,7 +184,7 @@ sexp as_r(const Json j)
             writable::list value(j.size());
             std::transform(
                 j.array_range().cbegin(), j.array_range().cend(), value.begin(),
-                [](const Json j_elt) { return as_r(j_elt); });
+                [](const Json j_elt) { return j_as_r(j_elt); });
             result = value;
             break;
         }}
@@ -200,7 +198,7 @@ sexp as_r(const Json j)
         int i = 0;
         for (auto it = range.cbegin(); it != range.cend(); ++it, ++i) {
             names[i] = it->key();
-            value[i] = as_r(it->value());
+            value[i] = j_as_r(it->value());
         }
 
         value.names() = names;
@@ -218,16 +216,9 @@ cpp11::sexp j_as(Json j, rjsoncons::as as)
 {
     switch(as) {
     case as::string: return as_sexp( j.template as<std::string>() );
-    case as::R: return as_r<Json>(j);
+    case as::R: return j_as_r<Json>(j);
     default: cpp11::stop("`as_r()` unknown `as = `");
     }
-}
-
-template<class Json>
-sexp as_r_impl(const std::string data)
-{
-    Json j = Json::parse(data);
-    return as_r<Json>(j);
 }
 
 #endif

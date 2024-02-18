@@ -1,5 +1,7 @@
 # rjsoncons 1.3.0
 
+- (1.2.0.9100) `as_r()` supports file and url connections; improved
+  connection implementation using C++ stream buffer.
 - (1.2.0.9000) bug fix: support JSON `j_pivot()` file / url connections
 
 # rjsoncons 1.2.0

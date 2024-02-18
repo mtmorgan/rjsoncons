@@ -1,6 +1,21 @@
+.j_valid <-
+    function(data_type, object_names, path, path_type, n_records, verbose, ...)
+{
+    stopifnot(
+        .is_scalar_character(path, z.ok = TRUE),
+        object_names %in% c("asis", "sort"),
+        .is_scalar_numeric(n_records),
+        .is_scalar_logical(verbose),
+        .is_j_data_type(data_type),
+        .is_scalar_character(path_type),
+        path_type %in% j_path_type(),
+        ...
+    )
+}
+
 #' @rdname j_query
 #'
-#' @title Query and pivot for JSON / NDJSON documents
+#' @title Query and pivot JSON and NDJSON documents
 #'
 #' @description `j_query()` executes a query against a JSON or NDJSON
 #'     document, automatically inferring the type of `data` and
@@ -13,6 +28,13 @@
 #'     data.frame or tibble.
 #'
 #' @inheritParams jsonpath
+#'
+#' @param ... passed to `jsonlite::toJSON` when `data` is an *R* object.
+#' 
+#' @param n_records numeric(1) maximum number of NDJSON records parsed.
+#'
+#' @param verbose logical(1) report progress when parsing large NDJSON
+#'     files.
 #'
 #' @param data_type character(1) type of `data`; one of `"json"`,
 #'     `"ndjson"`. Inferred from `data` using `j_data_type()`.
@@ -44,36 +66,33 @@
 j_query <-
     function(
         data, path = "", object_names = "asis", as = "string", ...,
+        n_records = Inf, verbose = FALSE,
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
-    stopifnot(
-        .is_scalar_character(path, z.ok = TRUE),
-        object_names %in% c("asis", "sort"),
-        as %in% c("string", "R"),
-        .is_j_data_type(data_type),
-        .is_scalar_character(path_type), path_type %in% j_path_type()
+    .j_valid(
+        data_type, object_names, path, path_type, n_records, verbose,
+        as %in% c("string", "R")
     )
 
-    switch(
-        data_type[[1]],
-        json =,
-        R = json_query(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
-        ),
-        ndjson = ndjson_query(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
-        )
+    data <- .as_json_string(data, data_type, ...)
+    result <- do_cpp(
+        cpp_j_query, cpp_j_query_con,
+        data, data_type, object_names, as, path, path_type,
+        n_records = n_records, verbose = verbose
     )
+
+    if (data_type[[1]] %in% c("json", "R"))
+        result <- result[[1]]
+
+    result
 }
 
 #' @rdname j_query
 #'
 #' @description `j_pivot()` transforms a JSON array-of-objects to an
 #'     object-of-arrays; this can be useful when forming a
-#'     column-based tibble from row-oriented JSON.
+#'     column-based tibble from row-oriented JSON / NDJSON.
 #'
 #' @details
 #'
@@ -114,27 +133,42 @@ j_query <-
 j_pivot <-
     function(
         data, path = "", object_names = "asis", as = "string", ...,
+        n_records = Inf, verbose = FALSE,
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
-    stopifnot(
-        .is_scalar_character(path, z.ok = TRUE),
-        object_names %in% c("asis", "sort"),
-        as %in% c("string", "R", "data.frame", "tibble"),
-        .is_j_data_type(data_type),
-        .is_scalar_character(path_type), path_type %in% j_path_type()
+    .j_valid(
+        data_type, object_names, path, path_type, n_records, verbose,
+        as %in% c("string", "R", "data.frame", "tibble")
     )
 
+    data <- .as_json_string(data, data_type, ...)
+    as0 <- ifelse(identical(as, "string"), "string", "R")
+    pivot <- do_cpp(
+        cpp_j_pivot, cpp_j_pivot_con,
+        data, data_type, object_names, as0, path, path_type, 
+        n_records = n_records, verbose = verbose
+    )
+
+    ## process pivot return types to output form
+    if (identical(as, "string")) {
+        result <- unlist(pivot, recursive = TRUE)
+    } else if (.is_j_data_type_connection(data_type)) {
+        ## unnest list-of-named chunks
+        keys <- names(pivot[[1]])
+        names(keys) <- keys
+        result <- lapply(keys, \(key, pivot) {
+            do.call("c", lapply(pivot, `[[`, key))
+        }, pivot)
+    } else {
+        result <- pivot[[1]]
+    }
+
     switch(
-        data_type[[1]],
-        json =,
-        R = json_pivot(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
-        ),
-        ndjson = ndjson_pivot(
-            data, path, object_names, as, ...,
-            path_type = path_type, data_type = data_type
-        )
+        as,
+        string = result,
+        R = result,
+        data.frame = as.data.frame(result),
+        tibble = tibble::as_tibble(result)
     )
 }

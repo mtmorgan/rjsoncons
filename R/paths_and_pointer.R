@@ -5,7 +5,8 @@
 #' @description `jsonpath()` executes a query against a JSON string or
 #'     vector NDJSON entries using the 'JSONpath' specification.
 #'
-#' @param data a character() JSON string or NDJSON records, or an *R*
+#' @param data a character() JSON string or NDJSON records, or the
+#'     name of a file or URL containing JSON or NDJSON, or an *R*
 #'     object parsed to a JSON string using `jsonlite::toJSON()`.
 #'
 #' @param path character(1) JSONpointer, JSONpath or JMESpath query

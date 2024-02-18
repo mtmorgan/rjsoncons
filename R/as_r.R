@@ -1,21 +1,17 @@
 #' @rdname as_r
 #'
-#' @title Parse JSON to R
+#' @title Parse JSON or NDJSON to R
 #'
-#' @description `as_r()` transforms a JSON string to an *R* object.
+#' @description `as_r()` transforms JSON or NDJSON to an *R* object.
 #'
 #' @inheritParams j_query
 #'
-#' @param data a character(1) JSON string or (unusually) an `R` object.
-#'
-#' @param ... passed to `jsonlite::toJSON()` in the unusual
-#'     circumstance that `data` is an `R` object.
-#'
 #' @details
 #'
-#' The `as = "R"` argument to `j_query()`, `j_pivot()`, etc., and the
-#' `as_r()` function transform a JSON string representation to an *R*
-#' object. Main rules are:
+#' The `as = "R"` argument to `j_query()`, `j_pivot()`, and the
+#' `as_r()` function transform JSON or NDJSON to an *R* object. JSON
+#' and NDJSON can be a character vector, file, or url, or an *R*
+#' object (which is first translated to a JSON string). Main rules are:
 #'
 #' - JSON arrays of a single type (boolean, integer, double, string)
 #'   are transformed to *R* vectors of the same length and
@@ -52,12 +48,29 @@
 #'
 #' @export
 as_r <-
-    function(data, object_names = "asis", ...)
+    function(
+        data, object_names = "asis", ...,
+        n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data)
+    )
 {
     stopifnot(
-        .is_scalar_character(object_names)
+        .is_scalar_character(object_names),
+        object_names %in% c("asis", "sort"),
+        .is_scalar_numeric(n_records),
+        .is_scalar_logical(verbose),
+        .is_j_data_type(data_type)
     )
 
-    data <- .as_json_string(data, ..., data_type = "json")
-    cpp_as_r(data, object_names)
+    data <- .as_json_string(data, data_type, ...)
+    result <- do_cpp(
+        cpp_as_r, cpp_as_r_con,
+        data, data_type, object_names,
+        n_records = n_records, verbose = verbose
+    )
+
+    if (data_type[[1]] %in% c("json", "R"))
+        result <- result[[1]]
+
+    result
 }

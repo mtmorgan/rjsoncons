@@ -21,3 +21,27 @@
 {
     .is_scalar(x) && is.logical(x)
 }
+
+.as_json_string <-
+    function(data, data_type, ...)
+{
+    if (.is_j_data_type_connection(data_type)) {
+        data
+    } else if (identical(data_type, "R")) {
+        as.character(jsonlite::toJSON(data, ...))
+    } else if (identical(data_type, "json")) {
+        paste(data, collapse = "\n")
+    } else { # ndjson
+        data
+    }
+}
+
+.as_unopened_connection <-
+    function(data, data_type)
+{
+    if (.is_j_data_type_file(data_type)) {
+        gzfile(data)
+    } else { # url
+        gzcon(url(data))
+    }
+}

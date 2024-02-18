@@ -1,5 +1,5 @@
-#ifndef RJSONCONS_UTILITIES_H
-#define RJSONCONS_UTILITIES_H
+#ifndef RJSONCONS_ENUM_INDEX_H
+#define RJSONCONS_ENUM_INDEX_H
 
 #include <string>
 #include <map>
