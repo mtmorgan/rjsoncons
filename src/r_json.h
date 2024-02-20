@@ -9,6 +9,7 @@
 
 #include "enum_index.h"
 #include "readbinbuf.h"
+#include "progressbar.h"
 #include "j_as.h"
 
 using namespace cpp11;
@@ -25,6 +26,8 @@ class r_json
     jmespath::jmespath_expression<Json> jmespath_;
     jsonpath::jsonpath_expression<Json> jsonpath_;
     const std::string jsonpointer_;
+
+    bool verbose_;
     std::vector<Json> result_;
 
     // pivot implementation
@@ -141,17 +144,19 @@ class r_json
 public:
     r_json() noexcept = default;
 
-    r_json(std::string data_type)
+    r_json(std::string data_type, bool verbose)
         : as_(as::R),
           data_type_(enum_index(data_type_map, data_type)),
           path_type_(path_type::JSONpointer),
           jmespath_(jmespath::make_expression<Json>("@")),
           jsonpath_(jsonpath::make_expression<Json>("$")),
-          jsonpointer_("/")
+          jsonpointer_("/"),
+          verbose_(verbose)
         {}
 
-    r_json(std::string path, std::string as, std::string data_type,
-           std::string path_type)
+    r_json(std::string path, std::string as,
+           std::string data_type, std::string path_type,
+           bool verbose)
         : as_(enum_index(as_map, as)),
           data_type_(enum_index(data_type_map, data_type)),
           path_type_(enum_index(path_type_map, path_type)),
@@ -164,7 +169,8 @@ public:
               path_type_ == path_type::JSONpath ?
               jsonpath::make_expression<Json>(path) :
               jsonpath::make_expression<Json>("$")),
-          jsonpointer_(path_type_ == path_type::JSONpointer ? path : "/")
+          jsonpointer_(path_type_ == path_type::JSONpointer ? path : "/"),
+          verbose_(verbose)
         {}
 
     // as_r
@@ -179,7 +185,7 @@ public:
             return as();
         }
 
-    sexp as_r(const cpp11::sexp& con, double n_records, bool verbose)
+    sexp as_r(const cpp11::sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -191,6 +197,7 @@ public:
                 break;
             };
             case data_type::ndjson_data_type: {
+                progressbar progress("coercing {cli::pb_current} records");
                 json_decoder<Json> decoder;
                 json_stream_reader reader(is, decoder);
                 double n = 0;
@@ -200,6 +207,8 @@ public:
                         Json j = decoder.get_result();
                         result_.push_back(j);
                         n += 1;
+                        if (verbose_)
+                            progress.tick();
                     }
                 }
             };}
@@ -234,7 +243,7 @@ public:
             return as();
         }
 
-    sexp query(const cpp11::sexp& con, double n_records, bool verbose)
+    sexp query(const cpp11::sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -246,6 +255,7 @@ public:
                 break;
             };
             case data_type::ndjson_data_type: {
+                progressbar progress("querying {cli::pb_current} records");
                 json_decoder<Json> decoder;
                 json_stream_reader reader(is, decoder);
                 double n = 0;
@@ -255,6 +265,8 @@ public:
                         Json j = decoder.get_result();
                         result_.push_back(query(j));
                         n += 1;
+                        if (verbose_)
+                            progress.tick();
                     }
                 }
                 break;
@@ -285,7 +297,7 @@ public:
             return as();
         }
 
-    sexp pivot(const cpp11::sexp& con, double n_records, bool verbose)
+    sexp pivot(const cpp11::sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -297,6 +309,7 @@ public:
                 break;
             };
             case data_type::ndjson_data_type: {
+                progressbar progress("pivoting {cli::pb_current} records");
                 json_decoder<Json> decoder;
                 json_stream_reader reader(is, decoder);
                 double n = 0;
@@ -306,6 +319,8 @@ public:
                         Json j = decoder.get_result();
                         pivot(j);
                         n += 1;
+                        if (verbose_)
+                            progress.tick();
                     }
                 }
                 break;
@@ -318,10 +333,14 @@ public:
 
     sexp as() const
         {
+            progressbar progress("coercing {cli::pb_current} records");
             cpp11::writable::list result(result_.size());
-            std::transform(
-                result_.begin(), result_.end(), result.begin(),
-                [&](Json j) { return j_as(j, as_); });
+            auto fun = [&](Json j) {
+                if (verbose_)
+                    progress.tick();
+                return j_as(j, as_);
+            };
+            std::transform(result_.begin(), result_.end(), result.begin(), fun);
 
             return as_ == as::string ?
                 package("base")["unlist"](result) : result;

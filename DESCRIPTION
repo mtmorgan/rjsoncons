@@ -1,6 +1,6 @@
 Package: rjsoncons
 Title: 'C++' Header-Only 'jsoncons' Library for 'JSON' Queries
-Version: 1.2.0.9100
+Version: 1.2.0.9200
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),
@@ -27,7 +27,7 @@ Description: The 'jsoncons'
     expression. The 'jsoncons' library is also be easily linked to
     other packages for direct access to 'C++' functionality.
 Suggests: jsonlite, tibble, cli, tinytest, BiocStyle, knitr, rmarkdown
-LinkingTo: cpp11
+LinkingTo: cpp11, cli
 License: BSL-1.0
 NeedsCompilation: yes
 Encoding: UTF-8
