@@ -33,11 +33,11 @@ sexp cpp_as_r(
 
     switch(enum_index(object_names_map, object_names)) {
     case object_names::asis: {
-        result = r_json<ojson>(data_type).as_r(data);
+        result = r_json<ojson>(data_type, false).as_r(data);
         break;
     }
     case object_names::sort: {
-        result = r_json<json>(data_type).as_r(data);
+        result = r_json<json>(data_type, false).as_r(data);
         break;
     }
     default: {
@@ -56,11 +56,11 @@ sexp cpp_as_r_con(
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
     case object_names::asis: {
-        result = r_json<ojson>(data_type).as_r(con, n_records, verbose);
+        result = r_json<ojson>(data_type, verbose).as_r(con, n_records);
         break;
     }
     case object_names::sort: {
-        result = r_json<json>(data_type).as_r(con, n_records, verbose);
+        result = r_json<json>(data_type, verbose).as_r(con, n_records);
         break;
     }
     default: {
@@ -81,11 +81,15 @@ sexp cpp_j_query(
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
     case object_names::asis: {
-        result = r_json<ojson>(path, as, data_type, path_type).query(data);
+        result =
+            r_json<ojson>(path, as, data_type, path_type, false).
+            query(data);
         break;
     }
     case object_names::sort: {
-        result = r_json<json>(path, as, data_type, path_type).query(data);
+        result =
+            r_json<json>(path, as, data_type, path_type, false).
+            query(data);
         break;
     }
     default: {
@@ -106,14 +110,14 @@ sexp cpp_j_query_con(
     switch(enum_index(object_names_map, object_names)) {
     case object_names::asis: {
         result =
-            r_json<ojson>(path, as, data_type, path_type).
-            query(con, n_records, verbose);
+            r_json<ojson>(path, as, data_type, path_type, verbose).
+            query(con, n_records);
         break;
     }
     case object_names::sort: {
         result =
-            r_json<json>(path, as, data_type, path_type).
-            query(con, n_records, verbose);
+            r_json<json>(path, as, data_type, path_type, verbose).
+            query(con, n_records);
         break;
     }
     default: {
@@ -134,11 +138,15 @@ sexp cpp_j_pivot(
     sexp result;
     switch(enum_index(object_names_map, object_names)) {
     case object_names::asis: {
-        result = r_json<ojson>(path, as, data_type, path_type).pivot(data);
+        result =
+            r_json<ojson>(path, as, data_type, path_type, false).
+            pivot(data);
         break;
     }
     case object_names::sort: {
-        result = r_json<json>(path, as, data_type, path_type).pivot(data);
+        result =
+            r_json<json>(path, as, data_type, path_type, false).
+            pivot(data);
         break;
     }
     default: {
@@ -159,14 +167,14 @@ sexp cpp_j_pivot_con(
     switch(enum_index(object_names_map, object_names)) {
     case object_names::asis: {
         result =
-            r_json<ojson>(path, as, data_type, path_type).
-            pivot(con, n_records, verbose);
+            r_json<ojson>(path, as, data_type, path_type, verbose).
+            pivot(con, n_records);
         break;
     }
     case object_names::sort: {
         result =
-            r_json<json>(path, as, data_type, path_type).
-            pivot(con, n_records, verbose);
+            r_json<json>(path, as, data_type, path_type, verbose).
+            pivot(con, n_records);
         break;
     }
     default: {

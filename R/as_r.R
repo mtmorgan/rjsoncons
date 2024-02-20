@@ -61,6 +61,8 @@ as_r <-
         .is_scalar_logical(verbose),
         .is_j_data_type(data_type)
     )
+    if (verbose && !requireNamespace("cli", quietly = TRUE))
+        stop("install package 'cli' when `verbose = TRUE`")
 
     data <- .as_json_string(data, data_type, ...)
     result <- do_cpp(
