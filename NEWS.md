@@ -1,12 +1,13 @@
 # rjsoncons 1.3.0
 
-- (1.2.0.9200) restore progress bar on NDJSON parsing
+- (1.2.0.9201) restore progress bar on NDJSON parsing
 - (1.2.0.9100) `as_r()` supports file and url connections; improved
   connection implementation using C++ stream buffer.
 - (1.2.0.9000) bug fix: support JSON `j_pivot()` file / url connections
 
 # rjsoncons 1.2.0
 
+- (1.2.0) CRAN release
 - (1.1.0.9500) update documentation, include NDJSON-specific, web-only
   vignette
 - (1.1.0.9400) support NDJSON and file / url connections

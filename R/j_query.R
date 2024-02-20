@@ -11,8 +11,6 @@
         path_type %in% j_path_type(),
         ...
     )
-    if (verbose && !requireNamespace("cli", quietly = TRUE))
-        stop("install package 'cli' when `verbose = TRUE`")
 }
 
 #' @rdname j_query
