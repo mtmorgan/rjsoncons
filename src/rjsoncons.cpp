@@ -10,7 +10,7 @@
 using namespace jsoncons;        // convenience
 using namespace cpp11::literals; // _nm
 
-auto readbinbuf::read_bin = cpp11::package("base")["readBin"];
+cpp11::function readbinbuf::read_bin = cpp11::package("base")["readBin"];
 
 [[cpp11::register]]
 std::string cpp_version()
