@@ -1,0 +1,223 @@
+---
+title: "Examples"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This article summarizes examples drawn from StackOverflow and
+elsewhere. Start by loading the [rjsoncons][] and [dplyr][] packages
+
+```{r rjsoncons, message = FALSE}
+library(rjsoncons)
+library(dplyr)
+```
+
+[rjsoncons]: https://mtmorgan.github.io/rjsoncons
+[dplyr]: https://CRAN.R-project.org/package=dplyr
+
+# Data frame columns as NDJSON
+
+<https://stackoverflow.com/questions/76447100>
+
+This question presented a `tibble` where one column contained JSON expressions.
+
+```{r, echo = FALSE}
+df <- structure(list(
+    subject = c("dtv85251vucquc45", "mcj8vdqz7sxmjcr0"),
+    response = c(
+        "{\"P0_Q0\":{\"aktiv\":2,\"bekümmert\":3,\"interessiert\":4,\"freudig erregt\":2,\"verärgert\":2,\"stark\":0,\"schuldig\":1,\"erschrocken\":1,\"feindselig\":1,\"angeregt\":2},\"P1_Q0\":{\"stolz\":1,\"gereizt\":1,\"begeistert\":2,\"beschämt\":2,\"wach\":1,\"nervös\":1,\"entschlossen\":1,\"ängstlich\":1,\"aufmerksam\":2,\"durcheinander\":2}}", 
+        "{\"P0_Q0\":{\"aktiv\":1,\"bekümmert\":3,\"interessiert\":1,\"freudig erregt\":1,\"verärgert\":0,\"stark\":0,\"schuldig\":2,\"erschrocken\":0,\"feindselig\":0,\"angeregt\":1},\"P1_Q0\":{\"stolz\":2,\"gereizt\":0,\"begeistert\":1,\"beschämt\":0,\"wach\":2,\"nervös\":0,\"entschlossen\":0,\"aufmerksam\":2,\"durcheinander\":0,\"ängstlich\":0}}"
+    )),
+    class = c("tbl_df", "tbl", "data.frame"), row.names = 1:2)
+```
+
+```{r}
+df
+```
+
+The goal was to extract the fields of each `P0_Q0` element as new
+columns. The `response` column can be viewed as NDJSON, so we can use
+`pivot(df$response, "P0_Q0")` for the hard work, and `bind_cols()` to
+prepend subject
+
+```{r}
+df |>
+    select(subject) |>
+    bind_cols(
+        j_pivot(df$response, "P0_Q0", as = "tibble")
+    )
+```
+
+My [initial response][76447258/547331] was early in package
+development, and motivated `j_pivot()` as an easier way to perform the
+common operation of transforming a JSON array-of-objects to and *R*
+data frame.
+
+[76447258/547331]: https://stackoverflow.com/a/76447258/547331
+
+# Constructing a pivot object using [JMESPath][]
+
+<https://stackoverflow.com/questions/78029215>
+
+This question had an array of objects, each of which had a single
+unique key-value pair. 
+
+```{r key-value}
+json <- '{
+    "encrypted_values":[
+        {"name_a":"value_a"}, 
+        {"name_b":"value_b"}, 
+        {"name_c":"value_c"}
+    ]
+}'
+```
+
+The goal was to create a tibble with keys in one column, and values in
+another.  `jsonlite::fromJSON()` or `j_pivot(json,
+"encrypted_values")` simplify the result to a tibble with a column for
+each object key, which is not desired.
+
+```{r key-value-wrong}
+jsonlite::fromJSON(json)$encrypted_values
+j_pivot(json, "encrypted_values", as = "tibble")
+```
+
+Instead, write a JMESPath query that extracts an object with the keys
+as one element, and values as another. This uses `@` to represent the
+current mode, and `keys()` and `values()` functions to extract
+associated elements. The trailing `[]` converts an array-of-arrays of
+keys (for example) to a simple array of keys.
+
+```{r key-value-query}
+query <- '{
+    name : encrypted_values[].keys(@)[],
+    value: encrypted_values[].values(@)[]
+}'
+j_pivot(json, query, as = "tibble")
+```
+
+[JMESPath]: https://jmespath.org
+
+# Reading from URLs
+
+<https://stackoverflow.com/questions/78023560>
+
+This question illustrates [rjsoncons][] ability to read URLs; the
+query itself extracts from the `fixtures` array of objects specific
+nested elements, and is similar to the previous question. In practice,
+I used `json <- readLines(url)` to create a local copy of the data to
+use while developing the query.
+
+```{r}
+url <- "https://www.nrl.com/draw//data?competition=111&season=2024"
+query <- 'fixtures[].{
+    homeTeam: homeTeam.nickName, 
+    awayTeam: awayTeam.nickName
+}'
+j_pivot(url, query, as = "tibble")
+```
+
+The easiest path to a more general answer (extract all members of
+'homeTeam' and 'awayTeam' as a tibble) might, like the posted answer,
+combine JSON extraction and [tidyr][].
+
+```{r}
+query <- 'fixtures[].{ homeTeam: homeTeam, awayTeam: awayTeam }'
+j_pivot(url, query, as = "tibble") |>
+    tidyr::unnest_wider(c("homeTeam", "awayTeam"), names_sep = "_")
+```
+
+[tidyr]: https://CRAN.R-project.org/package=tidyr
+
+# Deeply nested objects
+
+<https://stackoverflow.com/questions/77998013> 
+
+The details of this question are on StackOverflow, and the following
+code chunks are not evaluated directly. The example has several
+interesting elements:
+
+- The JSON is quite large (about 90 Mb), so processing is not
+  immediate. While developing the query, I focused on a subset of the
+  data for a more interactive experience.
+
+    ```{r, eval = FALSE}
+    Crime2013 <- j_query(json, "x.calls[9].args")
+    ```
+
+- JSON array indexing is 0-based, in contrast to 1-based *R* indexing.
+- In developing the JSON query, I spent quite a bit of time viewing
+  results using `listviewer::jsonedit()`, e.g.,
+
+    ```{r, eval = FALSE}
+    listviewer::jsonedit(j_query(Crime2013, "[0][*]"))
+    ```
+
+The objects of interest are polygon coordinates nested deeply in the
+JSON, at the location implied by JMESPath. One polygon is at
+
+```{r, eval = FALSE}
+query <- "x.calls[9].args[0][0][0][0]"
+j_pivot(json, query, as = "tibble")
+## # A tibble: 27 × 2
+##      lng   lat
+##    <dbl> <dbl>
+##  1 -43.3 -22.9
+##  2 -43.3 -22.9
+##  3 -43.3 -22.9
+##  4 -43.3 -22.9
+##  5 -43.3 -22.9
+##  6 -43.3 -22.9
+##  7 -43.3 -22.9
+##  8 -43.3 -22.9
+##  9 -43.3 -22.9
+## 10 -43.3 -22.9
+## # ℹ 17 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
+There are 3618 of these polygons, and they are extracted by using a
+wild-card `*` in place of an index `0` at a particular place in the
+path.
+
+```{r, eval = FALSE}
+query <- "x.calls[9].args[0][*][0][0]"
+j_pivot(json, query, as = "tibble")
+## # A tibble: 3,618 × 2
+##    lng        lat       
+##    <list>     <list>    
+##  1 <dbl [27]> <dbl [27]>
+##  2 <dbl [6]>  <dbl [6]> 
+##  3 <dbl [5]>  <dbl [5]> 
+##  4 <dbl [42]> <dbl [42]>
+##  5 <dbl [6]>  <dbl [6]> 
+##  6 <dbl [8]>  <dbl [8]> 
+##  7 <dbl [4]>  <dbl [4]> 
+##  8 <dbl [6]>  <dbl [6]> 
+##  9 <dbl [13]> <dbl [13]>
+## 10 <dbl [12]> <dbl [12]>
+## # ℹ 3,608 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
+`tidyr::unnest()` could be used to create a 'long' version of this
+result, as illustrated in [my response][78035500/547331].
+
+While exploring the data, the JMESPath function `length()` suggested
+two anomalies in the data (not all paths in `Crime2013` have just one
+polygon; a path used to identify polygons has only 2022 elements, but
+there are 3618 polygons); this could well be a misunderstanding on my
+part.
+
+[78035500/547331]: https://stackoverflow.com/a/78035500/547331
+
+# Session information {.unnumbered}
+
+```{r}
+sessionInfo()
+```
