@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9300</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a_rjsoncons.html">Using 'jsoncons' in R</a>
     <a class="dropdown-item" href="../articles/b_ndjson_extended.html">Processing NDJSON</a>
+    <a class="dropdown-item" href="../articles/c_examples.html">Examples</a>
   </div>
 </li>
 <li class="nav-item">
@@ -355,16 +356,12 @@ relatively performant when processing large files. Use
 <span>        as <span class="op">=</span> <span class="st">"tibble"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">## 0 records processed</span></span>
-<span><span class="co">## 19234 records processed</span></span>
-<span><span class="co">## 37764 records processed</span></span>
-<span><span class="co">## 67283 records processed</span></span>
-<span><span class="co">## 98564 records processed</span></span>
-<span><span class="co">## 128525 records processed</span></span>
-<span><span class="co">## 163498 records processed</span></span>
-<span><span class="co">## 172049 records processed</span></span>
+<span><span class="co">## pivoting 29194 records</span></span>
+<span><span class="co">## pivoting 64115 records</span></span>
+<span><span class="co">## pivoting 100678 records</span></span>
+<span><span class="co">## pivoting 135186 records</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  16.629   0.061  16.692</span></span>
+<span><span class="co">##  14.235   0.095  14.331</span></span>
 <span><span class="va">tbl</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 172,049 × 2</span></span></span>
 <span><span class="co">##    id          type       </span></span>
@@ -422,7 +419,7 @@ to translate the result to an <em>R</em> <code>data.frame</code>.</p>
 <span>        <span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  21.212   0.043  21.256</span></span></code></pre></div>
+<span><span class="co">##  20.911   0.020  20.933</span></span></code></pre></div>
 <p>The use case outlined here compares very favorably to the performance
 of the <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a>
 CRAN package, which took more than 600s to complete the task above. <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a> reads the
@@ -456,11 +453,20 @@ data summary. It also treats a collection of JSON files as a single
 ‘database’, and scales favorably and automatically with number of files
 being processed. DuckDB does not require additional software, other than
 the <a href="https://CRAN.R-project.org/package=duckdb" class="external-link">duckdb</a> CRAN
-package</p>
+package.</p>
 <p>A <a href="https://mtmorgan.github.io/software/update/2024/01/25/rjsoncons-ndjson-performance.html" class="external-link">blog
 post</a> provides additional details of the comparison between
 solutions, including discussion of design decisions that <a href="https://mtmorgan.github.io/rjsoncons">rjsoncons</a> adopted to
 achieve reasonable performance.</p>
+</div>
+<div class="section level2">
+<h2 id="other-packages">Other packages<a class="anchor" aria-label="anchor" href="#other-packages"></a>
+</h2>
+<p>There are two very fast JSON parsers available via CRAN, <a href="https://CRAN.R-project.org/package=RcppSimdJson" class="external-link">RcppSimdJson</a>
+and <a href="https://CRAN.R-project.org/package=yyjsonr" class="external-link">yyjsonr</a>. <a href="https://CRAN.R-project.org/package=RcppSimdJson" class="external-link">RcppSimdJson</a>
+supports JSONpointer for queries, but as noted for NDJSON this is only
+useful when all records contain the endpoint. <a href="https://CRAN.R-project.org/package=yyjsonr" class="external-link">yyjsonr</a> does not
+support queries or NDJSON at time of writing (18 February, 2024).</p>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
@@ -488,7 +494,7 @@ achieve reasonable performance.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9000 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9300 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] jsonlite_1.8.8      compiler_4.3.2      BiocManager_1.30.22</span></span>
