@@ -19,9 +19,9 @@ using namespace rjsoncons;
 template<class Json>
 class r_json
 {
-    rjsoncons::as as_;
-    rjsoncons::data_type data_type_;
-    rjsoncons::path_type path_type_;
+    const rjsoncons::as as_;
+    const rjsoncons::data_type data_type_;
+    const rjsoncons::path_type path_type_;
     // only one of the following will be valid per instance
     jmespath::jmespath_expression<Json> jmespath_;
     jsonpath::jsonpath_expression<Json> jsonpath_;
@@ -42,12 +42,15 @@ class r_json
             // visit each element in the array...
             for (const auto& elt : j.array_range()) {
                 // if it's an object...
-                if (elt.type() != json_type::object_value)
+                if (elt.type() != json_type::object_value) {
                     continue;
+                }
                 // ...collect member (key) names that have not yet been seen
-                for (const auto& member : elt.object_range())
-                    if (seen.insert(member.key()).second)
+                for (const auto& member : elt.object_range()) {
+                    if (seen.insert(member.key()).second) {
                         keys.push_back(member.key());
+                    }
+                }
             }
 
             return keys;
@@ -56,19 +59,21 @@ class r_json
     Json pivot_array_as_object(const Json j)
         {
             Json object(json_object_arg);
-            std::vector<std::string> keys = all_keys(j);
+            const std::vector<std::string> keys = all_keys(j);
 
             // initialize
-            for (const auto& key : keys)
+            for (const auto& key : keys) {
                 object[key] = Json(json_array_arg);
+            }
 
             // pivot
             for (const auto& elt : j.array_range()) {
                 for (const auto& key : keys) {
                     // non-object values or missing elements are assigned 'null'
                     Json value = Json::null();
-                    if (elt.type() == json_type::object_value)
+                    if (elt.type() == json_type::object_value) {
                         value = elt.at_or_null(key);
+                    }
                     object[key].push_back(value);
                 }
             }
@@ -81,13 +86,9 @@ class r_json
             Json value;
 
             switch(j.type()) {
-            case json_type::null_value: {
-                value = j;
-                break;
-            }
+            case json_type::null_value:
             case json_type::object_value: {
-                // optimistically assuming that this is already an
-                // object-of-arrays
+                // 'object_value' assumes j is already object-of-array
                 value = j;
                 break;
             }
@@ -95,9 +96,9 @@ class r_json
                 value = pivot_array_as_object(j);
                 break;
             }
-            default:
+            default: {
                 cpp11::stop("`j_pivot()` 'path' must yield an object or array");
-            };
+            }}
 
             // a Json object-of-arrays
             return value;
@@ -144,7 +145,7 @@ class r_json
 public:
     r_json() noexcept = default;
 
-    r_json(std::string data_type, bool verbose)
+    r_json(const std::string& data_type, bool verbose)
         : as_(as::R),
           data_type_(enum_index(data_type_map, data_type)),
           path_type_(path_type::JSONpointer),
@@ -154,8 +155,8 @@ public:
           verbose_(verbose)
         {}
 
-    r_json(std::string path, std::string as,
-           std::string data_type, std::string path_type,
+    r_json(std::string path, const std::string& as,
+           const std::string& data_type, const std::string& path_type,
            bool verbose)
         : as_(enum_index(as_map, as)),
           data_type_(enum_index(data_type_map, data_type)),
@@ -185,7 +186,7 @@ public:
             return as();
         }
 
-    sexp as_r(const cpp11::sexp& con, double n_records)
+    sexp as_r(const sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -195,7 +196,7 @@ public:
                 Json j = Json::parse(is);
                 result_.push_back(j);
                 break;
-            };
+            }
             case data_type::ndjson_data_type: {
                 progressbar progress("coercing {cli::pb_current} records");
                 json_decoder<Json> decoder;
@@ -207,11 +208,12 @@ public:
                         Json j = decoder.get_result();
                         result_.push_back(j);
                         n += 1;
-                        if (verbose_)
+                        if (verbose_) {
                             progress.tick();
+                        }
                     }
                 }
-            };}
+            }}
 
             return as();
         }
@@ -243,7 +245,7 @@ public:
             return as();
         }
 
-    sexp query(const cpp11::sexp& con, double n_records)
+    sexp query(const sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -253,7 +255,7 @@ public:
                 Json j = Json::parse(is);
                 result_.push_back(query(j));
                 break;
-            };
+            }
             case data_type::ndjson_data_type: {
                 progressbar progress("querying {cli::pb_current} records");
                 json_decoder<Json> decoder;
@@ -265,12 +267,13 @@ public:
                         Json j = decoder.get_result();
                         result_.push_back(query(j));
                         n += 1;
-                        if (verbose_)
+                        if (verbose_) {
                             progress.tick();
+                        }
                     }
                 }
                 break;
-            };}
+            }}
 
             return as();
         }
@@ -297,7 +300,7 @@ public:
             return as();
         }
 
-    sexp pivot(const cpp11::sexp& con, double n_records)
+    sexp pivot(const sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -307,7 +310,7 @@ public:
                 Json j = Json::parse(is);
                 pivot(j);
                 break;
-            };
+            }
             case data_type::ndjson_data_type: {
                 progressbar progress("pivoting {cli::pb_current} records");
                 json_decoder<Json> decoder;
@@ -319,12 +322,13 @@ public:
                         Json j = decoder.get_result();
                         pivot(j);
                         n += 1;
-                        if (verbose_)
+                        if (verbose_) {
                             progress.tick();
+                        }
                     }
                 }
                 break;
-            };}
+            }}
     
             return as();
         }
@@ -334,10 +338,11 @@ public:
     sexp as() const
         {
             progressbar progress("coercing {cli::pb_current} records");
-            cpp11::writable::list result(result_.size());
+            const writable::list result(result_.size());
             auto fun = [&](Json j) {
-                if (verbose_)
+                if (verbose_) {
                     progress.tick();
+                }
                 return j_as(j, as_);
             };
             std::transform(result_.begin(), result_.end(), result.begin(), fun);

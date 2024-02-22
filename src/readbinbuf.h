@@ -11,14 +11,14 @@
 class readbinbuf : public std::streambuf {
     // inline is a C++17 extension
     // inline static auto read_bin = cpp11::package("base")["readBin"];
-    static cpp11::function read_bin; // defined in rjsoncons.cpp
-    const cpp11::sexp& con_;
+    static function read_bin; // defined in rjsoncons.cpp
+    const sexp& con_;
     char *buf_;
     const int n_bytes_ = 1 << 22; // 4 Mb buffer
 
   public:
 
-    readbinbuf(const cpp11::sexp& con) : con_(con) {
+    readbinbuf(const sexp& con) : con_(con) {
         buf_ = new char[n_bytes_];
     }
 
@@ -27,7 +27,7 @@ class readbinbuf : public std::streambuf {
     int underflow() {
         if (gptr() == egptr()) {
             SEXP chunk = read_bin(con_, "raw", n_bytes_);
-            R_xlen_t chunk_len = Rf_xlength(chunk);
+            const R_xlen_t chunk_len = Rf_xlength(chunk);
             // copy data to avoid worrying about PROTECTion
             std::copy(RAW(chunk), RAW(chunk) + chunk_len, buf_);
             setg(buf_, buf_, buf_ + chunk_len);

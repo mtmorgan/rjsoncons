@@ -33,11 +33,12 @@ namespace rjsoncons {           // enums
     // R string to enum value.
     template<class T>
     T enum_index(
-        const std::map<std::string, T>& enum_map, const std::string key)
+        const std::map<std::string, T>& enum_map, const std::string& key)
     {
         auto value = enum_map.find(key);
-        if (value == std::end(enum_map))
+        if (value == std::end(enum_map)) {
             cpp11::stop("'" + key + "' unknown");
+        }
 
         return value->second;
     }

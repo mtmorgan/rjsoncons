@@ -25,7 +25,7 @@ bool is_integer(Int64_t int64_value)
     // can a 64-bit signed or unsigned int be represented as (signed)
     // int32_t?  'volatile' writes data to avoid compiler
     // 'optimization' that would short-circuit the test
-    volatile int32_t int32_value = static_cast<int32_t>(int64_value);
+    volatile auto int32_value = static_cast<int32_t>(int64_value);
     return
         int32_value != R_NaInt &&
         static_cast<Int64_t>(int32_value) == int64_value;
@@ -88,8 +88,10 @@ r_type r_vector_type(const Json j)
 
         // promotions
         if (t != rt) {
-            if (t > rt)         // simplify comparisons by ordering low to high
+            if (t > rt) {
+                // simplify comparisons by ordering low to high
                 std::swap(t, rt);
+            }
             if (t == r_type::integer_value) { // 'number'
                 bool is_number =
                     rt == r_type::integer_value || rt == r_type::numeric_value;
@@ -133,7 +135,7 @@ template<class Json>
 sexp j_as_r(const Json j)
 {
     sexp result;
-    r_type rtype = r_atomic_type(j);
+    const r_type rtype = r_atomic_type(j);
 
     switch(rtype) {
     case r_type::null_value: {
@@ -157,7 +159,7 @@ sexp j_as_r(const Json j)
         break;
     }
     case r_type::vector_value: {
-        r_type member_type = r_vector_type(j);
+        const r_type member_type = r_vector_type(j);
         switch(member_type) {
         case r_type::null_value: {
             result = writable::list(j.size()); // default: NULL elements
@@ -181,7 +183,7 @@ sexp j_as_r(const Json j)
         }
         case r_type::vector_value:
         case r_type::list_value: {
-            writable::list value(j.size());
+            const writable::list value(j.size());
             std::transform(
                 j.array_range().cbegin(), j.array_range().cend(), value.begin(),
                 [](const Json j_elt) { return j_as_r(j_elt); });
@@ -191,8 +193,8 @@ sexp j_as_r(const Json j)
         break;                  // r_type::vector_value
     }
     case r_type::list_value: {
-        writable::list value(j.size());
-        writable::strings names(j.size());
+        const writable::list value(j.size());
+        const writable::strings names(j.size());
         auto range = j.object_range();
 
         int i = 0;
@@ -212,7 +214,7 @@ sexp j_as_r(const Json j)
 // json to R
 
 template<class Json>
-cpp11::sexp j_as(Json j, rjsoncons::as as)
+sexp j_as(Json j, rjsoncons::as as)
 {
     switch(as) {
     case as::string: return as_sexp( j.template as<std::string>() );

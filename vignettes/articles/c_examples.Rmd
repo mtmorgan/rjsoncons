@@ -46,11 +46,10 @@ columns. The `response` column can be viewed as NDJSON, so we can use
 prepend subject
 
 ```{r}
-df |>
-    select(subject) |>
-    bind_cols(
-        j_pivot(df$response, "P0_Q0", as = "tibble")
-    )
+bind_cols(
+    df |> select(subject),
+    df |> pull(response) |> j_pivot("P0_Q0", as = "tibble")
+)
 ```
 
 My [initial response][76447258/547331] was early in package
