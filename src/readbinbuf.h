@@ -27,7 +27,7 @@ class readbinbuf : public std::streambuf {
     int underflow() {
         if (gptr() == egptr()) {
             SEXP chunk = read_bin(con_, "raw", n_bytes_);
-            R_xlen_t chunk_len = Rf_xlength(chunk);
+            const R_xlen_t chunk_len = Rf_xlength(chunk);
             // copy data to avoid worrying about PROTECTion
             std::copy(RAW(chunk), RAW(chunk) + chunk_len, buf_);
             setg(buf_, buf_, buf_ + chunk_len);

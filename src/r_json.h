@@ -59,7 +59,7 @@ class r_json
     Json pivot_array_as_object(const Json j)
         {
             Json object(json_object_arg);
-            std::vector<std::string> keys = all_keys(j);
+            const std::vector<std::string> keys = all_keys(j);
 
             // initialize
             for (const auto& key : keys) {
@@ -338,7 +338,7 @@ public:
     sexp as() const
         {
             progressbar progress("coercing {cli::pb_current} records");
-            writable::list result(result_.size());
+            const writable::list result(result_.size());
             auto fun = [&](Json j) {
                 if (verbose_) {
                     progress.tick();

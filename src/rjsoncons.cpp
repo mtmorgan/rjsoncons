@@ -15,7 +15,7 @@ function readbinbuf::read_bin = cpp11::package("base")["readBin"];
 [[cpp11::register]]
 std::string cpp_version()
 {
-    versioning_info v = version();
+    const versioning_info v = version();
     return
         std::to_string(v.major) + '.' +
         std::to_string(v.minor) + '.' +

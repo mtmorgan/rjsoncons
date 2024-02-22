@@ -135,7 +135,7 @@ template<class Json>
 sexp j_as_r(const Json j)
 {
     sexp result;
-    r_type rtype = r_atomic_type(j);
+    const r_type rtype = r_atomic_type(j);
 
     switch(rtype) {
     case r_type::null_value: {
@@ -159,7 +159,7 @@ sexp j_as_r(const Json j)
         break;
     }
     case r_type::vector_value: {
-        r_type member_type = r_vector_type(j);
+        const r_type member_type = r_vector_type(j);
         switch(member_type) {
         case r_type::null_value: {
             result = writable::list(j.size()); // default: NULL elements
@@ -183,7 +183,7 @@ sexp j_as_r(const Json j)
         }
         case r_type::vector_value:
         case r_type::list_value: {
-            writable::list value(j.size());
+            const writable::list value(j.size());
             std::transform(
                 j.array_range().cbegin(), j.array_range().cend(), value.begin(),
                 [](const Json j_elt) { return j_as_r(j_elt); });
@@ -193,8 +193,8 @@ sexp j_as_r(const Json j)
         break;                  // r_type::vector_value
     }
     case r_type::list_value: {
-        writable::list value(j.size());
-        writable::strings names(j.size());
+        const writable::list value(j.size());
+        const writable::strings names(j.size());
         auto range = j.object_range();
 
         int i = 0;
