@@ -86,13 +86,9 @@ class r_json
             Json value;
 
             switch(j.type()) {
-            case json_type::null_value: {
-                value = j;
-                break;
-            }
+            case json_type::null_value:
             case json_type::object_value: {
-                // optimistically assuming that this is already an
-                // object-of-arrays
+                // 'object_value' assumes j is already object-of-array
                 value = j;
                 break;
             }
@@ -100,9 +96,9 @@ class r_json
                 value = pivot_array_as_object(j);
                 break;
             }
-            default:
+            default: {
                 cpp11::stop("`j_pivot()` 'path' must yield an object or array");
-            };
+            }}
 
             // a Json object-of-arrays
             return value;

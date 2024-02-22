@@ -6,26 +6,26 @@
 #include <cli/progress.h>
 
 class progressbar {
-    sexp bar;
-    int n;
+    sexp bar_;
+    int n_;
   public:
     progressbar(const std::string& format)
-        : n(0)
+        : n_(0)
         {
-            bar = cli_progress_bar(NA_REAL, NULL);
-            cli_progress_set_format(bar, format.c_str());
+            bar_ = cli_progress_bar(NA_REAL, nullptr);
+            cli_progress_set_format(bar_, format.c_str());
         }
 
     ~progressbar()
         {
-            cli_progress_done(bar);
+            cli_progress_done(bar_);
         }
 
     void tick()
     {
-        n += 1;
+        n_ += 1;
         if (CLI_SHOULD_TICK) {
-            cli_progress_set(bar, n);
+            cli_progress_set(bar_, n_);
         }
     }
 };

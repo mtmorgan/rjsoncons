@@ -25,7 +25,7 @@ bool is_integer(Int64_t int64_value)
     // can a 64-bit signed or unsigned int be represented as (signed)
     // int32_t?  'volatile' writes data to avoid compiler
     // 'optimization' that would short-circuit the test
-    volatile int32_t int32_value = static_cast<int32_t>(int64_value);
+    volatile auto int32_value = static_cast<int32_t>(int64_value);
     return
         int32_value != R_NaInt &&
         static_cast<Int64_t>(int32_value) == int64_value;
