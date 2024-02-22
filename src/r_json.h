@@ -42,12 +42,15 @@ class r_json
             // visit each element in the array...
             for (const auto& elt : j.array_range()) {
                 // if it's an object...
-                if (elt.type() != json_type::object_value)
+                if (elt.type() != json_type::object_value) {
                     continue;
+                }
                 // ...collect member (key) names that have not yet been seen
-                for (const auto& member : elt.object_range())
-                    if (seen.insert(member.key()).second)
+                for (const auto& member : elt.object_range()) {
+                    if (seen.insert(member.key()).second) {
                         keys.push_back(member.key());
+                    }
+                }
             }
 
             return keys;
@@ -59,16 +62,18 @@ class r_json
             std::vector<std::string> keys = all_keys(j);
 
             // initialize
-            for (const auto& key : keys)
+            for (const auto& key : keys) {
                 object[key] = Json(json_array_arg);
+            }
 
             // pivot
             for (const auto& elt : j.array_range()) {
                 for (const auto& key : keys) {
                     // non-object values or missing elements are assigned 'null'
                     Json value = Json::null();
-                    if (elt.type() == json_type::object_value)
+                    if (elt.type() == json_type::object_value) {
                         value = elt.at_or_null(key);
+                    }
                     object[key].push_back(value);
                 }
             }
@@ -195,7 +200,7 @@ public:
                 Json j = Json::parse(is);
                 result_.push_back(j);
                 break;
-            };
+            }
             case data_type::ndjson_data_type: {
                 progressbar progress("coercing {cli::pb_current} records");
                 json_decoder<Json> decoder;
@@ -207,11 +212,12 @@ public:
                         Json j = decoder.get_result();
                         result_.push_back(j);
                         n += 1;
-                        if (verbose_)
+                        if (verbose_) {
                             progress.tick();
+                        }
                     }
                 }
-            };}
+            }}
 
             return as();
         }
@@ -253,7 +259,7 @@ public:
                 Json j = Json::parse(is);
                 result_.push_back(query(j));
                 break;
-            };
+            }
             case data_type::ndjson_data_type: {
                 progressbar progress("querying {cli::pb_current} records");
                 json_decoder<Json> decoder;
@@ -265,12 +271,13 @@ public:
                         Json j = decoder.get_result();
                         result_.push_back(query(j));
                         n += 1;
-                        if (verbose_)
+                        if (verbose_) {
                             progress.tick();
+                        }
                     }
                 }
                 break;
-            };}
+            }}
 
             return as();
         }
@@ -307,7 +314,7 @@ public:
                 Json j = Json::parse(is);
                 pivot(j);
                 break;
-            };
+            }
             case data_type::ndjson_data_type: {
                 progressbar progress("pivoting {cli::pb_current} records");
                 json_decoder<Json> decoder;
@@ -319,12 +326,13 @@ public:
                         Json j = decoder.get_result();
                         pivot(j);
                         n += 1;
-                        if (verbose_)
+                        if (verbose_) {
                             progress.tick();
+                        }
                     }
                 }
                 break;
-            };}
+            }}
     
             return as();
         }
@@ -336,8 +344,9 @@ public:
             progressbar progress("coercing {cli::pb_current} records");
             writable::list result(result_.size());
             auto fun = [&](Json j) {
-                if (verbose_)
+                if (verbose_) {
                     progress.tick();
+                }
                 return j_as(j, as_);
             };
             std::transform(result_.begin(), result_.end(), result.begin(), fun);

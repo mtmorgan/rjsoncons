@@ -88,8 +88,10 @@ r_type r_vector_type(const Json j)
 
         // promotions
         if (t != rt) {
-            if (t > rt)         // simplify comparisons by ordering low to high
+            if (t > rt) {
+                // simplify comparisons by ordering low to high
                 std::swap(t, rt);
+            }
             if (t == r_type::integer_value) { // 'number'
                 bool is_number =
                     rt == r_type::integer_value || rt == r_type::numeric_value;

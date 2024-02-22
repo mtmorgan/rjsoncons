@@ -24,8 +24,9 @@ class progressbar {
     void tick()
     {
         n += 1;
-        if (CLI_SHOULD_TICK)
+        if (CLI_SHOULD_TICK) {
             cli_progress_set(bar, n);
+        }
     }
 };
 
