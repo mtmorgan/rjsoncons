@@ -13,45 +13,45 @@ extern "C" SEXP _rjsoncons_cpp_version() {
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_as_r(std::vector<std::string> data, const std::string data_type, const std::string object_names);
+sexp cpp_as_r(const std::vector<std::string>& data, const std::string& data_type, const std::string& object_names);
 extern "C" SEXP _rjsoncons_cpp_as_r(SEXP data, SEXP data_type, SEXP object_names) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_as_r(cpp11::as_cpp<cpp11::decay_t<std::vector<std::string>>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names)));
+    return cpp11::as_sexp(cpp_as_r(cpp11::as_cpp<cpp11::decay_t<const std::vector<std::string>&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names)));
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_as_r_con(const cpp11::sexp& con, const std::string data_type, const std::string object_names, const double n_records, const bool verbose);
+sexp cpp_as_r_con(const sexp& con, const std::string& data_type, const std::string& object_names, const double n_records, const bool verbose);
 extern "C" SEXP _rjsoncons_cpp_as_r_con(SEXP con, SEXP data_type, SEXP object_names, SEXP n_records, SEXP verbose) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_as_r_con(cpp11::as_cpp<cpp11::decay_t<const cpp11::sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
+    return cpp11::as_sexp(cpp_as_r_con(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_j_query(const std::vector<std::string> data, const std::string data_type, const std::string object_names, const std::string as, const std::string path, const std::string path_type);
+sexp cpp_j_query(const std::vector<std::string>& data, const std::string& data_type, const std::string& object_names, const std::string& as, const std::string& path, const std::string& path_type);
 extern "C" SEXP _rjsoncons_cpp_j_query(SEXP data, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_query(cpp11::as_cpp<cpp11::decay_t<const std::vector<std::string>>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path_type)));
+    return cpp11::as_sexp(cpp_j_query(cpp11::as_cpp<cpp11::decay_t<const std::vector<std::string>&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type)));
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_j_query_con(const cpp11::sexp& con, const std::string data_type, const std::string object_names, const std::string as, const std::string path, const std::string path_type, const double n_records, const bool verbose);
+sexp cpp_j_query_con(const sexp& con, const std::string& data_type, const std::string& object_names, const std::string& as, const std::string& path, const std::string& path_type, const double n_records, const bool verbose);
 extern "C" SEXP _rjsoncons_cpp_j_query_con(SEXP con, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type, SEXP n_records, SEXP verbose) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_query_con(cpp11::as_cpp<cpp11::decay_t<const cpp11::sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path_type), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
+    return cpp11::as_sexp(cpp_j_query_con(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_j_pivot(const std::vector<std::string> data, const std::string data_type, const std::string object_names, const std::string as, const std::string path, const std::string path_type);
+sexp cpp_j_pivot(const std::vector<std::string>& data, const std::string& data_type, const std::string& object_names, const std::string& as, const std::string& path, const std::string& path_type);
 extern "C" SEXP _rjsoncons_cpp_j_pivot(SEXP data, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_pivot(cpp11::as_cpp<cpp11::decay_t<const std::vector<std::string>>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path_type)));
+    return cpp11::as_sexp(cpp_j_pivot(cpp11::as_cpp<cpp11::decay_t<const std::vector<std::string>&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type)));
   END_CPP11
 }
 // rjsoncons.cpp
-sexp cpp_j_pivot_con(const cpp11::sexp& con, const std::string data_type, const std::string object_names, const std::string as, const std::string path, const std::string path_type, const double n_records, const bool verbose);
+sexp cpp_j_pivot_con(const sexp& con, const std::string& data_type, const std::string& object_names, const std::string& as, const std::string& path, const std::string& path_type, const double n_records, const bool verbose);
 extern "C" SEXP _rjsoncons_cpp_j_pivot_con(SEXP con, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type, SEXP n_records, SEXP verbose) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_pivot_con(cpp11::as_cpp<cpp11::decay_t<const cpp11::sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string>>(path_type), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
+    return cpp11::as_sexp(cpp_j_pivot_con(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
   END_CPP11
 }
 

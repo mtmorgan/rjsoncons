@@ -9,7 +9,7 @@ class progressbar {
     sexp bar;
     int n;
   public:
-    progressbar(std::string format)
+    progressbar(const std::string& format)
         : n(0)
         {
             bar = cli_progress_bar(NA_REAL, NULL);

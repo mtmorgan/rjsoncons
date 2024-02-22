@@ -19,9 +19,9 @@ using namespace rjsoncons;
 template<class Json>
 class r_json
 {
-    rjsoncons::as as_;
-    rjsoncons::data_type data_type_;
-    rjsoncons::path_type path_type_;
+    const rjsoncons::as as_;
+    const rjsoncons::data_type data_type_;
+    const rjsoncons::path_type path_type_;
     // only one of the following will be valid per instance
     jmespath::jmespath_expression<Json> jmespath_;
     jsonpath::jsonpath_expression<Json> jsonpath_;
@@ -144,7 +144,7 @@ class r_json
 public:
     r_json() noexcept = default;
 
-    r_json(std::string data_type, bool verbose)
+    r_json(const std::string& data_type, bool verbose)
         : as_(as::R),
           data_type_(enum_index(data_type_map, data_type)),
           path_type_(path_type::JSONpointer),
@@ -154,8 +154,8 @@ public:
           verbose_(verbose)
         {}
 
-    r_json(std::string path, std::string as,
-           std::string data_type, std::string path_type,
+    r_json(std::string path, const std::string& as,
+           const std::string& data_type, const std::string& path_type,
            bool verbose)
         : as_(enum_index(as_map, as)),
           data_type_(enum_index(data_type_map, data_type)),
@@ -185,7 +185,7 @@ public:
             return as();
         }
 
-    sexp as_r(const cpp11::sexp& con, double n_records)
+    sexp as_r(const sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -243,7 +243,7 @@ public:
             return as();
         }
 
-    sexp query(const cpp11::sexp& con, double n_records)
+    sexp query(const sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -297,7 +297,7 @@ public:
             return as();
         }
 
-    sexp pivot(const cpp11::sexp& con, double n_records)
+    sexp pivot(const sexp& con, double n_records)
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -334,7 +334,7 @@ public:
     sexp as() const
         {
             progressbar progress("coercing {cli::pb_current} records");
-            cpp11::writable::list result(result_.size());
+            writable::list result(result_.size());
             auto fun = [&](Json j) {
                 if (verbose_)
                     progress.tick();

@@ -212,7 +212,7 @@ sexp j_as_r(const Json j)
 // json to R
 
 template<class Json>
-cpp11::sexp j_as(Json j, rjsoncons::as as)
+sexp j_as(Json j, rjsoncons::as as)
 {
     switch(as) {
     case as::string: return as_sexp( j.template as<std::string>() );
