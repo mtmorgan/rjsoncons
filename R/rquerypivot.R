@@ -13,7 +13,7 @@
     )
 }
 
-#' @rdname j_query
+#' @rdname rquerypivot
 #'
 #' @title Query and pivot JSON and NDJSON documents
 #'
@@ -88,7 +88,7 @@ j_query <-
     result
 }
 
-#' @rdname j_query
+#' @rdname rquerypivot
 #'
 #' @description `j_pivot()` transforms a JSON array-of-objects to an
 #'     object-of-arrays; this can be useful when forming a
