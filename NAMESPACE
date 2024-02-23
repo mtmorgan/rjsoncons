@@ -2,6 +2,8 @@
 
 export(as_r)
 export(j_data_type)
+export(j_patch_apply)
+export(j_patch_from)
 export(j_path_type)
 export(j_pivot)
 export(j_query)
