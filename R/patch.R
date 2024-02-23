@@ -1,3 +1,5 @@
+J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
+
 .is_j_patch_type <-
     function(x)
 {
@@ -10,7 +12,28 @@
     open(con, "rb")
     on.exit(close(con))
     lines <- readLines(con, warn = FALSE)
-    paste(trimws(lines), collapse = "\n")
+    paste0(trimws(lines), collapse = "\n")
+}
+
+.j_patch_patch_validate <-
+    function(x)
+{
+    ## FIXME: use j_schema_validate() when available
+    bad_op <- character()
+    if (!j_query(patch, "type(@)") %in% "array") {
+        stop("'patch' must be a JSON array")
+    }
+    op <- j_query(patch, "[].op", as = "R")
+    bad_op <- setdiff(op, J_PATCH_OP)
+    if (length(bad_op)) {
+        stop(
+            "'patch' malformed:\n",
+            "  op: ", toString(bad_op), "\n",
+            "  not in: ", toString(J_PATCH_OP), "\n",
+            call. = FALSE
+        )
+    }
+
 }
 
 #' @rdname patch
@@ -39,14 +62,14 @@
 #'
 #' ## add a biscuit
 #' patch <- '[
-#'     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut" }}
+#'     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}
 #' ]'
 #' j_patch_apply(data_file, patch, as = "R") |> str()
 #'
 #' ## add a biscuit and choose a favorite
 #'patch <- '[
-#'     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut" }},
-#'     {"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"}
+#'     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}},
+#'     {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}
 #' ]'
 #' biscuits <- j_patch_apply(data_file, patch)
 #' as_r(biscuits) |> str()
@@ -75,6 +98,7 @@ j_patch_apply <-
 
     data <- .as_json_string(data, data_type, ...)
     patch <- .as_json_string(patch, patch_type, ...)
+    .j_patch_patch_validate(patch)
 
     result <- do_cpp(
         cpp_j_patch_apply, NULL,
