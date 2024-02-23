@@ -17,7 +17,7 @@ using namespace jsoncons;
 using namespace rjsoncons;
 
 template<class Json>
-class r_json
+class rquerypivot
 {
     const rjsoncons::as as_;
     const rjsoncons::data_type data_type_;
@@ -176,7 +176,8 @@ class r_json
 
     // do_strings() / do_connection()
     sexp do_strings(
-        const std::vector<std::string>& data, void (r_json::*transform)(Json j))
+        const std::vector<std::string>& data,
+        void (rquerypivot::*transform)(Json j))
         {
             result_.reserve(data.size());
             for (const auto& datum: data) {
@@ -188,7 +189,8 @@ class r_json
         }
 
     sexp do_connection(
-        const sexp& con, double n_records, void (r_json::*transform)(Json j))
+        const sexp& con, double n_records,
+        void (rquerypivot::*transform)(Json j))
         {
             readbinbuf cbuf(con);
             std::istream is(&cbuf);
@@ -222,9 +224,9 @@ class r_json
         }
 
 public:
-    r_json() noexcept = default;
+    rquerypivot() noexcept = default;
 
-    r_json(const std::string& data_type, bool verbose)
+    rquerypivot(const std::string& data_type, bool verbose)
         : as_(as::R),
           data_type_(enum_index(data_type_map, data_type)),
           path_type_(path_type::JSONpointer),
@@ -234,7 +236,7 @@ public:
           verbose_(verbose)
         {}
 
-    r_json(std::string path, const std::string& as,
+    rquerypivot(std::string path, const std::string& as,
            const std::string& data_type, const std::string& path_type,
            bool verbose)
         : as_(enum_index(as_map, as)),
@@ -257,12 +259,13 @@ public:
 
     sexp as_r(const std::vector<std::string>& data)
         {
-            return do_strings(data, &r_json::identity_transform);
+            return do_strings(data, &rquerypivot::identity_transform);
         }
 
     sexp as_r(const sexp& con, double n_records)
         {
-            return do_connection(con, n_records, &r_json::identity_transform);
+            return
+                do_connection(con, n_records, &rquerypivot::identity_transform);
         }
 
     // query
@@ -270,12 +273,12 @@ public:
     sexp query(const std::vector<std::string>& data)
         {
             // json_data_type has data.size() == 1
-            return do_strings(data, &r_json::query_transform);
+            return do_strings(data, &rquerypivot::query_transform);
         }
 
     sexp query(const sexp& con, double n_records)
         {
-            return do_connection(con, n_records, &r_json::query_transform);
+            return do_connection(con, n_records, &rquerypivot::query_transform);
         }
 
     // pivot
@@ -283,12 +286,12 @@ public:
     sexp pivot(const std::vector<std::string>& data)
         {
             // collect queries across all data
-            return do_strings(data, &r_json::pivot_transform);
+            return do_strings(data, &rquerypivot::pivot_transform);
         }
 
     sexp pivot(const sexp& con, double n_records)
         {
-            return do_connection(con, n_records, &r_json::pivot_transform);
+            return do_connection(con, n_records, &rquerypivot::pivot_transform);
         }
 
     // as
