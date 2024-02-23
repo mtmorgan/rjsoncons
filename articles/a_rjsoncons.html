@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9301</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9401</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -136,21 +136,21 @@ JSON string using <a href="https://goessner.net/articles/JsonPath/" class="exter
 syntax to filter larger documents to records of interest, e.g., only
 cities in New York state, using ‘JMESpath’ syntax.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'NY']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'NY']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">## [{"name":"New York","state":"NY"}]</span></span></code></pre></div>
 <p>Use the <code>as = "R"</code> argument to extract deeply nested
 elements as <em>R</em> objects, e.g., a character vector of city names
 in Washington state.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA'].name"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA'].name"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
 <span><span class="co">## [1] "Seattle"  "Bellevue" "Olympia"</span></span></code></pre></div>
 <p>The JSON Pointer specification is simpler, indexing a single object
 in the document. JSON arrays are 0-based.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"/locations/0/state"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"/locations/0/state"</span><span class="op">)</span></span>
 <span><span class="co">## [1] "WA"</span></span></code></pre></div>
-<p>The examples above use <code><a href="../reference/j_query.html">j_query()</a></code>, which automatically
+<p>The examples above use <code><a href="../reference/rquerypivot.html">j_query()</a></code>, which automatically
 infers query specification from the form of <code>path</code> using
 <code><a href="../reference/j_data_type.html">j_path_type()</a></code>. It may be useful to indicate query
 specification more explicitly using <code><a href="../reference/paths_and_pointer.html">jsonpointer()</a></code>,
@@ -171,7 +171,7 @@ can be incorporated directly in <em>R</em> as a
 <span><span class="st">    name: locations[].name,</span></span>
 <span><span class="st">    state: locations[].state</span></span>
 <span><span class="st">}'</span></span>
-<span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">##       name state</span></span>
 <span><span class="co">## 1  Seattle    WA</span></span>
@@ -180,15 +180,15 @@ can be incorporated directly in <em>R</em> as a
 <span><span class="co">## 4  Olympia    WA</span></span></code></pre></div>
 <p>The transformation from JSON ‘array-of-objects’ to ‘object-of-arrays’
 suitable for direct representation as a <code>data.frame</code> is
-common, and is implemented directly as <code><a href="../reference/j_query.html">j_pivot()</a></code></p>
+common, and is implemented directly as <code><a href="../reference/rquerypivot.html">j_pivot()</a></code></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">##       name state</span></span>
 <span><span class="co">## 1  Seattle    WA</span></span>
 <span><span class="co">## 2 New York    NY</span></span>
 <span><span class="co">## 3 Bellevue    WA</span></span>
 <span><span class="co">## 4  Olympia    WA</span></span></code></pre></div>
-<p><code><a href="../reference/j_query.html">j_pivot()</a></code> also support <code>as = "tibble"</code> when
+<p><code><a href="../reference/rquerypivot.html">j_pivot()</a></code> also support <code>as = "tibble"</code> when
 the <a href="https://CRAN.R-project.org/package=dplyr" class="external-link">dplyr</a> package
 is installed.</p>
 </div>
@@ -204,7 +204,7 @@ be added to the function call.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## `lst` is an *R* list</span></span>
 <span><span class="va">lst</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">json</span>, simplifyVector <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">lst</span>, <span class="st">"locations[?state == 'WA'].name | sort(@)"</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">lst</span>, <span class="st">"locations[?state == 'WA'].name | sort(@)"</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">## ["Bellevue","Olympia","Seattle"]</span></span></code></pre></div>
 </div>
@@ -223,40 +223,40 @@ package are the first 10 lines of <a href="https://data.gharchive.org/2023-02-08
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"extdata"</span>, <span class="st">"2023-02-08-0.json"</span><span class="op">)</span></span></code></pre></div>
 <p>NDJSON can be read into R
 (<code>ndjson &lt;- readLines(ndjson_file)</code>) and used in
-<code><a href="../reference/j_query.html">j_query()</a></code> / <code><a href="../reference/j_query.html">j_pivot()</a></code>, but it is often better
+<code><a href="../reference/rquerypivot.html">j_query()</a></code> / <code><a href="../reference/rquerypivot.html">j_pivot()</a></code>, but it is often better
 to leave full NDJSON files on disk. Thus the first argument to
-<code><a href="../reference/j_query.html">j_query()</a></code> or <code><a href="../reference/j_query.html">j_pivot()</a></code> is usually a (text or
+<code><a href="../reference/rquerypivot.html">j_query()</a></code> or <code><a href="../reference/rquerypivot.html">j_pivot()</a></code> is usually a (text or
 gz-compressed) file path or URL. Two additional options are available
 when working with NDJSON. <code>n_records</code> limits the number of
 records processed. Using <code>n_records</code> can be very useful when
 exploring the data. For instance, the first record of a file can be
 viewed interactively with</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">ndjson_file</span>, n_records <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">ndjson_file</span>, n_records <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">listviewer</span><span class="fu">::</span><span class="fu">jsonedit</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>The option <code>verbose = TRUE</code> adds a progress indicator,
 which provides confidence that progress is being made while parsing
 large files. The progress bar requires the <a href="https://CRAN.R-project.org/package=cli" class="external-link">cli</a> package.</p>
-<p><code><a href="../reference/j_query.html">j_query()</a></code> provides a one-to-one mapping of NDJSON lines
+<p><code><a href="../reference/rquerypivot.html">j_query()</a></code> provides a one-to-one mapping of NDJSON lines
 / elements to the return value, e.g.,
 <code>j_query(ndjson_file, "@", as = "string")</code> on an NDJSON file
 with 1000 lines will return a character vector of 1000 elements, or with
 <code>j_query(ndjson, "@", as = "R")</code> an <em>R</em> list with
 length 1000.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span>, n_records <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span>, n_records <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">## [1] "{\"id\":\"26939254345\",\"type\":\"DeleteEvent\"}"</span></span>
 <span><span class="co">## [2] "{\"id\":\"26939254358\",\"type\":\"PushEvent\"}"  </span></span>
 <span><span class="co">## [3] "{\"id\":\"26939254361\",\"type\":\"CreateEvent\"}"</span></span>
 <span><span class="co">## [4] "{\"id\":\"26939254365\",\"type\":\"CreateEvent\"}"</span></span>
 <span><span class="co">## [5] "{\"id\":\"26939254366\",\"type\":\"PushEvent\"}"</span></span></code></pre></div>
-<p><code><a href="../reference/j_query.html">j_pivot()</a></code> transforms an NDJSON file or character vector
+<p><code><a href="../reference/rquerypivot.html">j_pivot()</a></code> transforms an NDJSON file or character vector
 of objects into a format convenient for input in <em>R</em>.
-<code><a href="../reference/j_query.html">j_pivot()</a></code> with NDJSON files and JMESpath paths work
+<code><a href="../reference/rquerypivot.html">j_pivot()</a></code> with NDJSON files and JMESpath paths work
 particularly well together, because JMESpath provides flexibility in
 creating JSON objects to be pivoted.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="st">"{id: id, type: type}"</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">##             id        type</span></span>
 <span><span class="co">## 1  26939254345 DeleteEvent</span></span>
 <span><span class="co">## 2  26939254358   PushEvent</span></span>
@@ -279,7 +279,7 @@ compared to <code>as = "data.frame"</code>).</p>
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span></span>
 <span>    <span class="st">"[{id: id, type: type, org: org}]</span></span>
 <span><span class="st">         [?@.type == 'PushEvent' &amp;&amp; @.org != null]"</span></span>
-<span><span class="fu"><a href="../reference/j_query.html">j_pivot</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">ndjson_file</span>, <span class="va">path</span>, as <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">##            id      type    org.id          org.login org.gravatar_id</span></span>
 <span><span class="co">## 1 26939254358 PushEvent 123667276 johnbieren-testing                </span></span>
 <span><span class="co">## 2 26939254382 PushEvent 123667276 johnbieren-testing                </span></span>
@@ -400,7 +400,7 @@ returning the query as a JSON string, e.g., using the
 <code>fromJSON()</code> in the <a href="https://CRAN.R-project.org/package=jsonlite" class="external-link">jsonlite</a>
 package.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/j_query.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="co">## `fromJSON()` simplifies list-of-objects to data.frame</span></span>
 <span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## NULL</span></span></code></pre></div>
@@ -453,7 +453,7 @@ library.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] rjsoncons_1.2.0.9301 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] rjsoncons_1.2.0.9401 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.45         </span></span>
