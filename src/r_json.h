@@ -30,6 +30,19 @@ class r_json
     bool verbose_;
     std::vector<Json> result_;
 
+    // query implementation
+
+    Json query(Json j)
+        {
+            switch(path_type_) {
+            case path_type::JSONpointer:
+                return jsonpointer::get<Json>(j, jsonpointer_);
+            case path_type::JSONpath: return jsonpath_.evaluate(j);
+            case path_type::JMESpath: return jmespath_.evaluate(j);
+            default: cpp11::stop("`j_query()` unknown 'path_type'");
+            }
+        }
+
     // pivot implementation
 
     std::vector<std::string> all_keys(const Json j)
@@ -81,7 +94,7 @@ class r_json
             return object;
         }
 
-    Json pivot_one(const Json j)
+    Json pivot(const Json j)
         {
             Json value;
 
@@ -142,6 +155,72 @@ class r_json
             }
         }
 
+    // transformers for use in do_strings() / do_connection()
+    void identity_transform(Json j)
+        {
+            result_.push_back(j);
+        }
+
+
+    void query_transform(Json j)
+        {
+            result_.push_back(query(j));
+        }
+
+    void pivot_transform(Json j)
+        {
+            Json q = query(j);
+            Json p = pivot(q);
+            pivot_append_result(p);
+        }
+
+    // do_strings() / do_connection()
+    sexp do_strings(
+        const std::vector<std::string>& data, void (r_json::*transform)(Json j))
+        {
+            result_.reserve(data.size());
+            for (const auto& datum: data) {
+                Json j = Json::parse(datum);
+                (this->*transform)(j);
+            }
+
+            return as();
+        }
+
+    sexp do_connection(
+        const sexp& con, double n_records, void (r_json::*transform)(Json j))
+        {
+            readbinbuf cbuf(con);
+            std::istream is(&cbuf);
+
+            switch(data_type_) {
+            case data_type::json_data_type: {
+                Json j = Json::parse(is);
+                (this->*transform)(j);
+                break;
+            }
+            case data_type::ndjson_data_type: {
+                progressbar progress("processing {cli::pb_current} records");
+                json_decoder<Json> decoder;
+                json_stream_reader reader(is, decoder);
+                double n = 0;
+
+                while (!reader.eof() && n < n_records) {
+                    reader.read_next();
+                    if (!reader.eof()) {
+                        Json j = decoder.get_result();
+                        (this->*transform)(j);
+                        n += 1;
+                        if (verbose_) {
+                            progress.tick();
+                        }
+                    }
+                }
+            }}
+
+            return as();
+        }
+
 public:
     r_json() noexcept = default;
 
@@ -178,159 +257,38 @@ public:
 
     sexp as_r(const std::vector<std::string>& data)
         {
-            result_.reserve(data.size());
-            std::transform(
-                data.begin(), data.end(), std::back_inserter(result_),
-                [&](const std::string datum) { return Json::parse(datum); });
-
-            return as();
+            return do_strings(data, &r_json::identity_transform);
         }
 
     sexp as_r(const sexp& con, double n_records)
         {
-            readbinbuf cbuf(con);
-            std::istream is(&cbuf);
-
-            switch(data_type_) {
-            case data_type::json_data_type: {
-                Json j = Json::parse(is);
-                result_.push_back(j);
-                break;
-            }
-            case data_type::ndjson_data_type: {
-                progressbar progress("coercing {cli::pb_current} records");
-                json_decoder<Json> decoder;
-                json_stream_reader reader(is, decoder);
-                double n = 0;
-                while (!reader.eof() && n < n_records) {
-                    reader.read_next();
-                    if (!reader.eof()) {
-                        Json j = decoder.get_result();
-                        result_.push_back(j);
-                        n += 1;
-                        if (verbose_) {
-                            progress.tick();
-                        }
-                    }
-                }
-            }}
-
-            return as();
+            return do_connection(con, n_records, &r_json::identity_transform);
         }
 
     // query
 
-    Json query(Json j)
-        {
-            switch(path_type_) {
-            case path_type::JSONpointer:
-                return jsonpointer::get<Json>(j, jsonpointer_);
-            case path_type::JSONpath: return jsonpath_.evaluate(j);
-            case path_type::JMESpath: return jmespath_.evaluate(j);
-            default: cpp11::stop("`j_query()` unknown 'path_type'");
-            }
-        }
-
     sexp query(const std::vector<std::string>& data)
         {
             // json_data_type has data.size() == 1
-            result_.reserve(data.size());
-            std::transform(
-                data.begin(), data.end(), std::back_inserter(result_),
-                [&](const std::string datum) {
-                    Json j = Json::parse(datum);
-                    return query(j);
-                });
-
-            return as();
+            return do_strings(data, &r_json::query_transform);
         }
 
     sexp query(const sexp& con, double n_records)
         {
-            readbinbuf cbuf(con);
-            std::istream is(&cbuf);
-
-            switch(data_type_) {
-            case data_type::json_data_type: {
-                Json j = Json::parse(is);
-                result_.push_back(query(j));
-                break;
-            }
-            case data_type::ndjson_data_type: {
-                progressbar progress("querying {cli::pb_current} records");
-                json_decoder<Json> decoder;
-                json_stream_reader reader(is, decoder);
-                double n = 0;
-                while (!reader.eof() && n < n_records) {
-                    reader.read_next();
-                    if (!reader.eof()) {
-                        Json j = decoder.get_result();
-                        result_.push_back(query(j));
-                        n += 1;
-                        if (verbose_) {
-                            progress.tick();
-                        }
-                    }
-                }
-                break;
-            }}
-
-            return as();
+            return do_connection(con, n_records, &r_json::query_transform);
         }
 
     // pivot
 
-    void pivot(Json j)
-        {
-            // query and pivot
-            Json q = query(j);
-            Json p = pivot_one(q);
-            // append to result
-            pivot_append_result(p);
-        }
-
     sexp pivot(const std::vector<std::string>& data)
         {
             // collect queries across all data
-            for (const auto& datum: data) {
-                Json j = Json::parse(datum);
-                pivot(j);
-            }
-
-            return as();
+            return do_strings(data, &r_json::pivot_transform);
         }
 
     sexp pivot(const sexp& con, double n_records)
         {
-            readbinbuf cbuf(con);
-            std::istream is(&cbuf);
-
-            switch(data_type_) {
-            case data_type::json_data_type: {
-                Json j = Json::parse(is);
-                pivot(j);
-                break;
-            }
-            case data_type::ndjson_data_type: {
-                progressbar progress("pivoting {cli::pb_current} records");
-                json_decoder<Json> decoder;
-                json_stream_reader reader(is, decoder);
-                double n = 0;
-                while (!reader.eof() && n < n_records) {
-                    reader.read_next();
-                    if (!reader.eof()) {
-                        Json j = decoder.get_result();
-                        pivot(j);
-                        n += 1;
-                        if (verbose_) {
-                            progress.tick();
-                        }
-                    }
-                }
-                break;
-            }}
-    
-            return as();
+            return do_connection(con, n_records, &r_json::pivot_transform);
         }
 
     // as
