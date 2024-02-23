@@ -1,5 +1,6 @@
 # rjsoncons 1.3.0
 
+- (1.2.0.9401) internal C++ code cleanup and refactoring
 - (1.2.0.9300) add 'Examples' web-only vignette
 - (1.2.0.9201) restore progress bar on NDJSON parsing
 - (1.2.0.9100) `as_r()` supports file and url connections; improved
