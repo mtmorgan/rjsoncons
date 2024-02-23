@@ -27,3 +27,11 @@ cpp_j_pivot <- function(data, data_type, object_names, as, path, path_type) {
 cpp_j_pivot_con <- function(con, data_type, object_names, as, path, path_type, n_records, verbose) {
   .Call(`_rjsoncons_cpp_j_pivot_con`, con, data_type, object_names, as, path, path_type, n_records, verbose)
 }
+
+cpp_j_patch_apply <- function(data, data_type, patch, as) {
+  .Call(`_rjsoncons_cpp_j_patch_apply`, data, data_type, patch, as)
+}
+
+cpp_j_patch_from <- function(data_x, data_type_x, data_y, data_type_y, as) {
+  .Call(`_rjsoncons_cpp_j_patch_from`, data_x, data_type_x, data_y, data_type_y, as)
+}
