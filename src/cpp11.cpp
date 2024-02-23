@@ -5,6 +5,20 @@
 #include "cpp11/declarations.hpp"
 #include <R_ext/Visibility.h>
 
+// patch.cpp
+sexp cpp_j_patch_apply(const std::string& data, const std::string& data_type, const std::string& patch, const std::string& as);
+extern "C" SEXP _rjsoncons_cpp_j_patch_apply(SEXP data, SEXP data_type, SEXP patch, SEXP as) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_j_patch_apply(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(patch), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as)));
+  END_CPP11
+}
+// patch.cpp
+sexp cpp_j_patch_from(const std::string& data_x, const std::string& data_type_x, const std::string& data_y, const std::string& data_type_y, const std::string& as);
+extern "C" SEXP _rjsoncons_cpp_j_patch_from(SEXP data_x, SEXP data_type_x, SEXP data_y, SEXP data_type_y, SEXP as) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_j_patch_from(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_x), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type_x), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_y), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type_y), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as)));
+  END_CPP11
+}
 // rjsoncons.cpp
 std::string cpp_version();
 extern "C" SEXP _rjsoncons_cpp_version() {
@@ -52,20 +66,6 @@ sexp cpp_j_pivot_con(const sexp& con, const std::string& data_type, const std::s
 extern "C" SEXP _rjsoncons_cpp_j_pivot_con(SEXP con, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type, SEXP n_records, SEXP verbose) {
   BEGIN_CPP11
     return cpp11::as_sexp(cpp_j_pivot_con(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
-  END_CPP11
-}
-// rjsoncons.cpp
-sexp cpp_j_patch_apply(const std::string& data, const std::string& data_type, const std::string& patch, const std::string& as);
-extern "C" SEXP _rjsoncons_cpp_j_patch_apply(SEXP data, SEXP data_type, SEXP patch, SEXP as) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_patch_apply(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(patch), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as)));
-  END_CPP11
-}
-// rjsoncons.cpp
-sexp cpp_j_patch_from(const std::string& data_x, const std::string& data_type_x, const std::string& data_y, const std::string& data_type_y, const std::string& as);
-extern "C" SEXP _rjsoncons_cpp_j_patch_from(SEXP data_x, SEXP data_type_x, SEXP data_y, SEXP data_type_y, SEXP as) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_patch_from(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_x), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type_x), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_y), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type_y), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as)));
   END_CPP11
 }
 
