@@ -57,6 +57,49 @@ J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
 #' @return `j_patch_apply()` returns a JSON string or *R* object
 #'     representing 'data' patched according to 'patch'.
 #'
+#' @details
+#'
+#' For `j_patch_apply()`, 'patch' is a JSON array of objects. Each
+#' object describes how the patch is to be applied. Simple examples
+#' are available at <https://jsonpatch.com>, with verbs 'add',
+#' 'remove', 'replace', 'copy' and 'test'. The 'path' element of each
+#' operation is a JSON pointer; remember that JSON arrays are 0-based.
+#'
+#' 
+#' - `add` -- add elements to an existing document.
+#'     ```
+#'     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}
+#'     ```
+#' - `remove` -- remove elements from a document.
+#'     ```
+#'     {"op": "remove", "path": "/biscuits/0"}
+#'     ```
+#' - `replace` -- replace one element with another
+#'     ```
+#'     {
+#'         "op": "replace", "path": "/biscuits/0/name",
+#'         "value": "Chocolate Digestive"
+#'     }
+#'     ```
+#' - `copy` -- copy a path to another location.
+#'     ```
+#'     {"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"}
+#'     ```
+#' - `move` -- move a path to another location.
+#'     ```
+#'     {"op": "move", "from": "/biscuits", "path": "/cookies"}
+#'     ```
+#' - `test` -- test for the existence of a path; if the path does not
+#'   exist, do not apply any of the patch.
+#'     ```
+#'     {"op": "test", "path": "/best_biscuit/name", "value": "Choco Leibniz"}
+#'     ```
+#' 
+#' The examples below illustrate a patch with one (a JSON array with a
+#' single object) or several (a JSON array with several arguments)
+#' operations. `j_patch_apply()` fits naturally into a pipeline
+#' composed with `|>` to transform JSON between representations.
+#'
 #' @examples
 #' data_file <- system.file(package = "rjsoncons", "extdata", "patch_data.json")
 #'

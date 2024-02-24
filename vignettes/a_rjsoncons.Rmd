@@ -54,7 +54,7 @@ library(rjsoncons)
 rjsoncons::version()
 ```
 
-# JSON Use cases
+# Query and pivot
 
 Functions in this package work on JSON or NDJSON character vectors,
 file paths and URLs to JSON or NDJSON documents, and *R* objects that
@@ -136,29 +136,14 @@ installed.
 [tidyr]: https://CRAN.R-project.org/package=tidyr
 [r4ds]: https://r4ds.hadley.nz/
 [hierarchical data]: https://r4ds.hadley.nz/rectangling
-
-## *R* objects as input
-
-[rjsoncons][] can filter and transform _R_ objects. These are
-converted to JSON using `jsonlite::toJSON()` before queries are made;
-`toJSON()` arguments like `auto_unbox = TRUE` can be added to the
-function call.
-
-```{r r_list}
-## `lst` is an *R* list
-lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
-j_query(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
-    cat("\n")
-```
-
-# NDJSON support
+## NDJSON support
 
 [rjsoncons][] supports [NDJSON][] (new-line delimited JSON). NDJSON
 consists of a file or character vector where each line / element
 represents a JSON record. This example uses data from the [GitHub
 Archive][] project recording all actions on public GitHub
 repositories. The data included in the package are the first 10 lines
-of <https://data.gharchive.org/2023-02-08-0.json.gz>. 
+of <https://data.gharchive.org/2023-02-08-0.json.gz>.
 
 ```{r}
 ndjson_file <-
@@ -224,6 +209,117 @@ vignette][ndjson-extended]
 [GitHub Archive]: https://www.gharchive.org/
 [ndjson-extended]: https://mtmorgan.github.io/rjsoncons/articles/b_ndjson_extended.html
 [cli]: https://CRAN.R-project.org/package=cli
+
+## *R* objects as input
+
+[rjsoncons][] can filter and transform _R_ objects. These are
+converted to JSON using `jsonlite::toJSON()` before queries are made;
+`toJSON()` arguments like `auto_unbox = TRUE` can be added to the
+function call.
+
+```{r r_list}
+## `lst` is an *R* list
+lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+j_query(lst, "locations[?state == 'WA'].name | sort(@)", auto_unbox = TRUE) |>
+    cat("\n")
+```
+
+# Patch
+
+[JSON Patch][] provides a simple way to edit or transform a JSON
+document using JSON commands.
+
+## Applying a patch with `j_patch_apply()`
+
+Starting with the JSON document
+
+```{r}
+json <- '{
+  "biscuits": [
+    { "name": "Digestive" },
+    { "name": "Choco Leibniz" }
+  ]
+}'
+```
+
+one can `"add"` another biscuit, and copy a favorite biscuit to a new
+locations using the following patch
+
+```{r}
+patch <- '[
+    {"op": "add", "path": "/biscuits/1", "value": { "name": "Ginger Nut" }},
+    {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}
+]'
+```
+
+The paths are specified using JSON pointer notation; remember that
+JSON arrays are 0-based, compared to 1-based *R* arrays. Applying the
+patch results in a new JSON document
+
+```{r}
+j_patch_apply(json, patch) |>
+    jsonlite::prettify()
+```
+
+From the [JSON patch][] web site, available operations and example
+JSON are:
+
+- `add` -- add elements to an existing document.
+
+    ```
+    {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}
+    ```
+
+- `remove` -- remove elements from a document.
+
+    ```
+    {"op": "remove", "path": "/biscuits/0"}
+    ```
+
+- `replace` -- replace one element with another
+
+    ```
+    {
+        "op": "replace", "path": "/biscuits/0/name",
+        "value": "Chocolate Digestive"
+    }
+    ```
+
+- `copy` -- copy a path to another location.
+
+    ```
+    {"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"}
+    ```
+
+- `move` -- move a path to another location.
+
+    ```
+    {"op": "move", "from": "/biscuits", "path": "/cookies"}
+    ```
+
+- `test` -- test for the existence of a path; if the path does not
+  exist, do not apply any of the patch.
+
+    ```
+    {"op": "test", "path": "/best_biscuit/name", "value": "Choco Leibniz"}
+    ```
+
+Formal description of these operations is provided in Section 4 of
+[RFC6902][]. A patch command is *always* an array, even when a single
+operation is involved.
+
+## Difference between documents with `j_patch_from()`
+
+The `j_patch_from()` function constructs a patch from the difference
+between two documents
+
+```{r}
+j_patch_from(j_patch_apply(json, patch), json) |>
+    jsonlite::prettify()
+```
+
+[JSON Patch]: https://jsonpatch.com/
+[RFC6902]: https://datatracker.ietf.org/doc/html/rfc6902/#section-4
 
 # The JSON parser
 

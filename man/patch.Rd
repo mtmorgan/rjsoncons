@@ -39,22 +39,65 @@ rules in JSON 'patch'.
 \code{j_patch_from()} computes a JSON patch describing the
 difference between to JSON documents.
 }
+\details{
+For \code{j_patch_apply()}, 'patch' is a JSON array of objects. Each
+object describes how the patch is to be applied. Simple examples
+are available at \url{https://jsonpatch.com}, with verbs 'add',
+'remove', 'replace', 'copy' and 'test'. The 'path' element of each
+operation is a JSON pointer; remember that JSON arrays are 0-based.
+\itemize{
+\item \code{add} -- add elements to an existing document.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "add", "path": "/biscuits/1", "value": \{"name": "Ginger Nut"\}\}
+}\if{html}{\out{</div>}}
+\item \code{remove} -- remove elements from a document.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "remove", "path": "/biscuits/0"\}
+}\if{html}{\out{</div>}}
+\item \code{replace} -- replace one element with another
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{
+    "op": "replace", "path": "/biscuits/0/name",
+    "value": "Chocolate Digestive"
+\}
+}\if{html}{\out{</div>}}
+\item \code{copy} -- copy a path to another location.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"\}
+}\if{html}{\out{</div>}}
+\item \code{move} -- move a path to another location.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "move", "from": "/biscuits", "path": "/cookies"\}
+}\if{html}{\out{</div>}}
+\item \code{test} -- test for the existence of a path; if the path does not
+exist, do not apply any of the patch.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "test", "path": "/best_biscuit/name", "value": "Choco Leibniz"\}
+}\if{html}{\out{</div>}}
+}
+
+The examples below illustrate a patch with one (a JSON array with a
+single object) or several (a JSON array with several arguments)
+operations. \code{j_patch_apply()} fits naturally into a pipeline
+composed with \verb{|>} to transform JSON between representations.
+}
 \examples{
 data_file <- system.file(package = "rjsoncons", "extdata", "patch_data.json")
 
 ## add a biscuit
-patch <-
-    '{"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut" }}'
+patch <- '[
+    {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}
+]'
 j_patch_apply(data_file, patch, as = "R") |> str()
 
 ## add a biscuit and choose a favorite
 patch <- '[
-    {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut" }},
-    {"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"}
+    {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}},
+    {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}
 ]'
 biscuits <- j_patch_apply(data_file, patch)
 as_r(biscuits) |> str()
 
-j_patch_from(data_file, biscuits, as = "R") |> str()
+j_patch_from(biscuits, data_file, as = "R") |> str()
 
 }
