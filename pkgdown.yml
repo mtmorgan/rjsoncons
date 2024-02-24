@@ -5,7 +5,7 @@ articles:
   a_rjsoncons: a_rjsoncons.html
   b_ndjson_extended: b_ndjson_extended.html
   c_examples: c_examples.html
-last_built: 2024-02-24T19:56Z
+last_built: 2024-02-24T20:19Z
 urls:
   reference: https://mtmorgan.github.io/rjsoncons/reference
   article: https://mtmorgan.github.io/rjsoncons/articles

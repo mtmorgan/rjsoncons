@@ -321,9 +321,9 @@ biscuit to a new locations using the following patch</p>
 <span><span class="st">    {"op": "add", "path": "/biscuits/1", "value": { "name": "Ginger Nut" }},</span></span>
 <span><span class="st">    {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}</span></span>
 <span><span class="st">]'</span></span></code></pre></div>
-<p>The paths are specified using JSON pointer notation; remember that
-JSON arrays are 0-based, compared to 1-based <em>R</em> arrays. Applying
-the patch results in a new JSON document</p>
+<p>The paths are specified using <a href="https://datatracker.ietf.org/doc/html/rfc6901" class="external-link">JSONpointer</a>
+notation; remember that JSON arrays are 0-based, compared to 1-based
+<em>R</em> arrays. Applying the patch results in a new JSON document</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/prettify.html" class="external-link">prettify</a></span><span class="op">(</span><span class="op">)</span></span>
