@@ -4,7 +4,8 @@
 \alias{jsonpath}
 \alias{jmespath}
 \alias{jsonpointer}
-\title{JSONpath, JMESpath, or JSONpointer query of JSON / NDJSON documents}
+\title{JSONpath, JMESpath, or JSONpointer query of JSON / NDJSON
+documents; use \code{j_query()} instead}
 \usage{
 jsonpath(data, path, object_names = "asis", as = "string", ...)
 
