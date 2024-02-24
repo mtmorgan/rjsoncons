@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9401</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9500</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,48 +54,47 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.0" id="rjsoncons-130">rjsoncons 1.3.0<a class="anchor" aria-label="anchor" href="#rjsoncons-130"></a></h2>
-<ul><li>(1.2.0.9401) internal C++ code cleanup and refactoring</li>
-<li>(1.2.0.9300) add ‘Examples’ web-only vignette</li>
-<li>(1.2.0.9201) restore progress bar on NDJSON parsing</li>
+<ul><li>(1.2.0.9500) add JSON patch support with <code><a href="../reference/patch.html">j_patch_apply()</a></code>, <code><a href="../reference/patch.html">j_patch_from()</a></code>.</li>
+<li>(1.2.0.9401) internal C++ code cleanup and refactoring.</li>
+<li>(1.2.0.9300) add ‘Examples’ web-only vignette.</li>
+<li>(1.2.0.9201) restore progress bar on NDJSON parsing.</li>
 <li>(1.2.0.9100) <code><a href="../reference/as_r.html">as_r()</a></code> supports file and url connections; improved connection implementation using C++ stream buffer.</li>
-<li>(1.2.0.9000) bug fix: support JSON <code><a href="../reference/rquerypivot.html">j_pivot()</a></code> file / url connections</li>
+<li>(1.2.0.9000) bug fix: support JSON <code><a href="../reference/rquerypivot.html">j_pivot()</a></code> file / url connections.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.0" id="rjsoncons-120">rjsoncons 1.2.0<a class="anchor" aria-label="anchor" href="#rjsoncons-120"></a></h2><p class="text-muted">CRAN release: 2024-01-26</p>
-<ul><li>(1.2.0) CRAN release</li>
-<li>(1.1.0.9500) update documentation, include NDJSON-specific, web-only vignette</li>
-<li>(1.1.0.9400) support NDJSON and file / url connections</li>
-<li>(1.1.0.9300) implement <code><a href="../reference/rquerypivot.html">j_query()</a></code> (query without requiring path specification), <code><a href="../reference/rquerypivot.html">j_pivot()</a></code>, and <code><a href="../reference/j_data_type.html">j_path_type()</a></code>. Remove <code>jsonpivot()</code>.</li>
+<ul><li>(1.2.0) CRAN release.</li>
+<li>(1.1.0.9500) update documentation, include NDJSON-specific, web-only vignette.</li>
+<li>(1.1.0.9400) support NDJSON and file / url connections.</li>
+<li>(1.1.0.9300) implement <code><a href="../reference/rquerypivot.html">j_query()</a></code> (query without requiring path. specification), <code><a href="../reference/rquerypivot.html">j_pivot()</a></code>, and <code><a href="../reference/j_data_type.html">j_path_type()</a></code>. Remove <code>jsonpivot()</code>.</li>
 <li>(1.1.0.9200) implement <code><a href="../reference/paths_and_pointer.html">jsonpointer()</a></code> for querying JSON documents.</li>
 <li>(1.1.0.9100) update jsoncons library to 173.2, relaxing compiler requirements to c++11.</li>
-<li>(1.1.0.9000) implement <code>jsonpivot()</code> to transform JSON array-of-objects to object-of-arrays, a common step before representation as a data.frame.</li>
+<li>(1.1.0.9000) implement <code>jsonpivot()</code> to transform JSON. array-of-objects to object-of-arrays, a common step before representation as a data.frame.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="rjsoncons-110">rjsoncons 1.1.0<a class="anchor" aria-label="anchor" href="#rjsoncons-110"></a></h2><p class="text-muted">CRAN release: 2023-12-11</p>
-<ul><li>(1.1.0) CRAN release</li>
-<li>(1.0.1.9100) using jsonlite (e.g., ‘toJSON()’ for parsing R objects) requires separate installation of jsonlite.</li>
-<li>(1.0.1.9000) update jsoncons library to 0.172.1; addresses segfault on ‘fedora’ CRAN builder</li>
+<ul><li>(1.1.0) CRAN release.</li>
+<li>(1.0.1.9100) using jsonlite (e.g., ‘toJSON()’ for parsing R objects). requires separate installation of jsonlite.</li>
+<li>(1.0.1.9000) update jsoncons library to 0.172.1; addresses segfault on ‘fedora’ CRAN builder.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="rjsoncons-101">rjsoncons 1.0.1<a class="anchor" aria-label="anchor" href="#rjsoncons-101"></a></h2><p class="text-muted">CRAN release: 2023-12-03</p>
-<ul><li>(1.0.1) CRAN release</li>
-<li>(1.0.0.9200) use pkgdown</li>
-<li>(1.0.0.9100) parse JSON to R with <code>as = "R"</code> argument and <code><a href="../reference/as_r.html">as_r()</a></code>
-</li>
+<ul><li>(1.0.1) CRAN release.</li>
+<li>(1.0.0.9200) use pkgdown.</li>
+<li>(1.0.0.9100) parse JSON to R with <code>as = "R"</code> argument and <code><a href="../reference/as_r.html">as_r()</a></code>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="rjsoncons-100">rjsoncons 1.0.0<a class="anchor" aria-label="anchor" href="#rjsoncons-100"></a></h2><p class="text-muted">CRAN release: 2022-09-29</p>
-<ul><li>(1.0.0) initial CRAN release</li>
-<li>(0.0.99) pre-release version</li>
-<li>(0.0.3) support object names ordering ‘asis’ or ‘sort’</li>
-<li>(0.0.3) DESCRIPTION file updates: correct ‘Title:’ capitalization; avoid warnings about most misspellings</li>
-<li>(0.0.3) Add GitHub action to rebuild README.md from vignettes/rjsoncons.Rmd</li>
-<li>(0.0.2) jsoncons library update</li>
-<li>(0.0.2) support for R object query in addition to JSON string</li>
-<li>(0.0.2) add unit tests</li>
-<li>(0.0.2) R and minor C++ code refactoring</li>
-<li>(0.0.1) initial C++ / R implementation of <code><a href="../reference/paths_and_pointer.html">jmespath()</a></code> / <code><a href="../reference/paths_and_pointer.html">jsonpath()</a></code>
-</li>
+<ul><li>(1.0.0) initial CRAN release.</li>
+<li>(0.0.99) pre-release version.</li>
+<li>(0.0.3) support object names ordering ‘asis’ or ‘sort’.</li>
+<li>(0.0.3) DESCRIPTION file updates: correct ‘Title:’ capitalization; avoid warnings about most misspellings.</li>
+<li>(0.0.3) Add GitHub action to rebuild README.md from vignettes/rjsoncons.Rmd.</li>
+<li>(0.0.2) jsoncons library update.</li>
+<li>(0.0.2) support for R object query in addition to JSON string.</li>
+<li>(0.0.2) add unit tests.</li>
+<li>(0.0.2) R and minor C++ code refactoring.</li>
+<li>(0.0.1) initial C++ / R implementation of <code><a href="../reference/paths_and_pointer.html">jmespath()</a></code> / <code><a href="../reference/paths_and_pointer.html">jsonpath()</a></code>.</li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

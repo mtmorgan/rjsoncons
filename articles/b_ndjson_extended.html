@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9401</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9500</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -356,12 +356,12 @@ relatively performant when processing large files. Use
 <span>        as <span class="op">=</span> <span class="st">"tibble"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">## processing 23284 records</span></span>
-<span><span class="co">## processing 59362 records</span></span>
-<span><span class="co">## processing 95965 records</span></span>
-<span><span class="co">## processing 131052 records</span></span>
+<span><span class="co">## processing 45963 records</span></span>
+<span><span class="co">## processing 80964 records</span></span>
+<span><span class="co">## processing 116626 records</span></span>
+<span><span class="co">## processing 152755 records</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  13.946   0.119  14.066</span></span>
+<span><span class="co">##  14.465   0.116  14.586</span></span>
 <span><span class="va">tbl</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 172,049 × 2</span></span></span>
 <span><span class="co">##    id          type       </span></span>
@@ -419,7 +419,7 @@ to translate the result to an <em>R</em> <code>data.frame</code>.</p>
 <span>        <span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  20.938   0.036  20.976</span></span></code></pre></div>
+<span><span class="co">##  23.894   0.049  23.946</span></span></code></pre></div>
 <p>The use case outlined here compares very favorably to the performance
 of the <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a>
 CRAN package, which took more than 600s to complete the task above. <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a> reads the
@@ -494,7 +494,7 @@ support queries or NDJSON at time of writing (18 February, 2024).</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9401 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9500 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] jsonlite_1.8.8      compiler_4.3.2      BiocManager_1.30.22</span></span>
