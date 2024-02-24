@@ -1,6 +1,6 @@
 Package: rjsoncons
 Title: 'C++' Header-Only 'jsoncons' Library for 'JSON' Queries
-Version: 1.2.0.9401
+Version: 1.2.0.9500
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),
@@ -24,8 +24,10 @@ Description: The 'jsoncons'
     (filter or transform) and pivot (convert from array-of-objects to
     object-of-arrays, for easy import into 'R') 'JSON' or 'NDJSON'
     strings or files using 'JSONpointer', 'JSONpath' or 'JMESpath'
-    expression. The 'jsoncons' library is also be easily linked to
-    other packages for direct access to 'C++' functionality.
+    expressions. The package also supports 'JSON' patch for
+    conveniently editing JSON documents. The 'jsoncons' library is
+    easily linked to other packages for direct access to 'C++'
+    functionality.
 Imports: cli
 Suggests: jsonlite, tibble, tinytest, BiocStyle, knitr, rmarkdown
 LinkingTo: cpp11, cli

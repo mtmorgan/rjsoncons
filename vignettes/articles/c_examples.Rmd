@@ -20,7 +20,9 @@ library(dplyr)
 [rjsoncons]: https://mtmorgan.github.io/rjsoncons
 [dplyr]: https://CRAN.R-project.org/package=dplyr
 
-# Data frame columns as NDJSON
+# Query and pivot
+
+## Data frame columns as NDJSON
 
 <https://stackoverflow.com/questions/76447100>
 
@@ -59,7 +61,7 @@ data frame.
 
 [76447258/547331]: https://stackoverflow.com/a/76447258/547331
 
-# Constructing a pivot object using [JMESPath][]
+## Constructing a pivot object using [JMESPath][]
 
 <https://stackoverflow.com/questions/78029215>
 
@@ -102,7 +104,7 @@ j_pivot(json, query, as = "tibble")
 
 [JMESPath]: https://jmespath.org
 
-# Reading from URLs
+## Reading from URLs
 
 <https://stackoverflow.com/questions/78023560>
 
@@ -133,7 +135,7 @@ j_pivot(url, query, as = "tibble") |>
 
 [tidyr]: https://CRAN.R-project.org/package=tidyr
 
-# Deeply nested objects
+## Deeply nested objects
 
 <https://stackoverflow.com/questions/77998013> 
 
@@ -214,6 +216,65 @@ there are 3618 polygons); this could well be a misunderstanding on my
 part.
 
 [78035500/547331]: https://stackoverflow.com/a/78035500/547331
+
+# Patch
+
+## Moving elements
+
+<https://stackoverflow.com/questions/78047988>
+
+The example is not completely reproducible, but the challenge is that
+the [igraph][] package produces JSON like
+
+```{r}
+data <- '
+{
+  "nodes": [
+     {
+        "name": "something"
+     },
+     {
+        "name": "something_else"
+     }
+  ],
+  "links": [
+      {
+         "source": "something",
+         "target": "something_else"
+      }
+   ],
+  "attributes": {
+      "directed": false
+  }
+}'
+```
+
+but the desired data moves the 'directed' attribute to a top-level
+field. From the [JSON patch][] documentation, the patch is a single
+'move' operation from `/attributes/directed` to the top-level `/`:
+
+```{r}
+patch <- '[
+    {"op": "move", "from": "/attributes/directed", "path": "/directed"}
+]'
+```
+
+The patch is accomplished with
+
+```{r}
+patched_data <- j_patch_apply(data, patch)
+```
+
+This JSON string could be visualized with
+`listviwer::jsonedit(patched_data)`, or `patched_data |> as_r() |>
+str()`, or
+
+```{r}
+patched_data |>
+    jsonlite::prettify()
+```
+
+[JSON patch]: https://jsonpatch.com
 
 # Session information {.unnumbered}
 
