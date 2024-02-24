@@ -20,6 +20,13 @@ object.}
 string, \code{"R"} returns an \emph{R} object using the rules in
 \code{as_r()}.}
 
+\item{...}{passed to \code{jsonlite::toJSON} when \code{data}, \code{patch},
+\code{data_x}, and / or \code{data_y} is an \emph{R} object.  Usually, it is
+appropriate to add the \code{jsonlite::toJSON()} argument
+\code{auto_unbox = TRUE} when \code{patch} is an \emph{R} object (because the
+elements of the patch objects are scalar-valued, not arrays of
+length 1).}
+
 \item{data_x}{As for \code{data}.}
 
 \item{data_y}{As for \code{data}.}

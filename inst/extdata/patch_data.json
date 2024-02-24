@@ -1,6 +1,6 @@
 {
-  "biscuits": [
-    { "name": "Digestive" },
-    { "name": "Choco Leibniz" }
+  "biscuits":[
+    {"name":"Digestive"},
+    {"name":"Choco Leibniz"}
   ]
 }
