@@ -252,7 +252,7 @@ patch <- '[
 ]'
 ```
 
-The paths are specified using JSON pointer notation; remember that
+The paths are specified using [JSONpointer][] notation; remember that
 JSON arrays are 0-based, compared to 1-based *R* arrays. Applying the
 patch results in a new JSON document
 
