@@ -275,6 +275,7 @@ patched_data |>
 ```
 
 [JSON patch]: https://jsonpatch.com
+[igraph]: https://CRAN.R-project.org/package=igraph
 
 # Session information {.unnumbered}
 
