@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9501</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9502</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -323,27 +323,34 @@ biscuit to a new locations using the following patch</p>
 <span><span class="st">]'</span></span></code></pre></div>
 <p>The paths are specified using <a href="https://datatracker.ietf.org/doc/html/rfc6901" class="external-link">JSONpointer</a>
 notation; remember that JSON arrays are 0-based, compared to 1-based
-<em>R</em> arrays. Applying the patch results in a new JSON document</p>
+<em>R</em> arrays. Applying the patch results in a new JSON
+document.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/prettify.html" class="external-link">prettify</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">## {</span></span>
-<span><span class="co">##     "biscuits": [</span></span>
-<span><span class="co">##         {</span></span>
-<span><span class="co">##             "name": "Digestive"</span></span>
-<span><span class="co">##         },</span></span>
-<span><span class="co">##         {</span></span>
-<span><span class="co">##             "name": "Ginger Nut"</span></span>
-<span><span class="co">##         },</span></span>
-<span><span class="co">##         {</span></span>
-<span><span class="co">##             "name": "Choco Leibniz"</span></span>
-<span><span class="co">##         }</span></span>
-<span><span class="co">##     ],</span></span>
-<span><span class="co">##     "best_biscuit": {</span></span>
-<span><span class="co">##         "name": "Choco Leibniz"</span></span>
-<span><span class="co">##     }</span></span>
-<span><span class="co">## }</span></span>
-<span><span class="co">## </span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span></span>
+<span><span class="co">## [1] "{\"biscuits\":[{\"name\":\"Digestive\"},{\"name\":\"Ginger Nut\"},{\"name\":\"Choco Leibniz\"}],\"best_biscuit\":{\"name\":\"Choco Leibniz\"}}"</span></span></code></pre></div>
+<p>Patches can also be created from <em>R</em> objects with the helper
+function <code><a href="../reference/patch.html">j_patch_op()</a></code>.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ops</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="../reference/patch.html">j_patch_op</a></span><span class="op">(</span></span>
+<span>        <span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Ginger Nut"</span><span class="op">)</span>,</span>
+<span>        auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="../reference/patch.html">j_patch_op</a></span><span class="op">(</span><span class="st">"copy"</span>, <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/2"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span>, <span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">ops</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">## [1] TRUE</span></span></code></pre></div>
+<p><code><a href="../reference/patch.html">j_patch_op()</a></code> takes care of unboxing <code>op=</code>,
+<code>path=</code>, and <code>from=</code>, but some care must be taken
+in ‘unboxing’ the <code>value=</code> argument for operations such as
+‘add’; it may also be appropriate to unbox only specific fields,
+e.g.,</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Ginger Nut"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/patch.html">j_patch_op</a></span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="va">value</span><span class="op">)</span></span>
+<span><span class="co">## [</span></span>
+<span><span class="co">##     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span></span>
+<span><span class="co">## ]</span></span></code></pre></div>
 <p>From the <a href="https://jsonpatch.com/" class="external-link">JSON patch</a> web site,
 available operations and example JSON are:</p>
 <ul>
@@ -385,7 +392,7 @@ operation is involved.</p>
 </h3>
 <p>The <code><a href="../reference/patch.html">j_patch_from()</a></code> function constructs a patch from the
 difference between two documents</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/patch.html">j_patch_from</a></span><span class="op">(</span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span>, <span class="va">json</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/prettify.html" class="external-link">prettify</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## [</span></span>
@@ -411,7 +418,7 @@ difference between two documents</p>
 </h2>
 <p>The package includes a JSON parser, used with the argument
 <code>as = "R"</code> or directly with <code><a href="../reference/as_r.html">as_r()</a></code></p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{"a": 1.0, "b": [2, 3, 4]}'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; List of 2</span></span>
@@ -420,7 +427,7 @@ difference between two documents</p>
 <p>The main rules of this transformation are outlined here. JSON arrays
 of a single type (boolean, integer, double, string) are transformed to
 <em>R</em> vectors of the same length and corresponding type.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[true, false, true]'</span><span class="op">)</span> <span class="co"># boolean -&gt; logical</span></span>
 <span><span class="co">## [1]  TRUE FALSE  TRUE</span></span>
 <span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2, 3]'</span><span class="op">)</span>           <span class="co"># integer -&gt; integer</span></span>
@@ -431,18 +438,18 @@ of a single type (boolean, integer, double, string) are transformed to
 <span><span class="co">## [1] "a" "b" "c"</span></span></code></pre></div>
 <p>JSON arrays mixing integer and double values are transformed to
 <em>R</em> numeric vectors.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2.0]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># numeric</span></span>
 <span><span class="co">## [1] "numeric"</span></span></code></pre></div>
 <p>If a JSON integer array contains a value larger than <em>R</em>’s
 32-bit integer representation, the array is transformed to an <em>R</em>
 numeric vector. NOTE that this results in loss of precision for JSON
 integer values greater than <code>2^53</code>.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2147483648]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># 64-bit integers -&gt; numeric</span></span>
 <span><span class="co">## [1] "numeric"</span></span></code></pre></div>
 <p>JSON objects are transformed to <em>R</em> named lists.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{}'</span><span class="op">)</span></span>
 <span><span class="co">## named list()</span></span>
 <span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{"a": 1.0, "b": [2, 3, 4]}'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -451,12 +458,12 @@ integer values greater than <code>2^53</code>.</p>
 <span><span class="co">##  $ b: int [1:3] 2 3 4</span></span></code></pre></div>
 <p>There are several additional details. A JSON scalar and a JSON vector
 of length 1 are represented in the same way in <em>R</em>.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">"3.14"</span><span class="op">)</span>, <span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">"[3.14]"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">## [1] TRUE</span></span></code></pre></div>
 <p>JSON arrays mixing types other than integer and double are
 transformed to <em>R</em> lists</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[true, 1, "a"]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 3</span></span>
 <span><span class="co">##  $ : logi TRUE</span></span>
@@ -465,7 +472,7 @@ transformed to <em>R</em> lists</p>
 <p>JSON <code>null</code> values are represented as <em>R</em>
 <code>NULL</code> values; arrays of <code>null</code> are transformed to
 lists</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'null'</span><span class="op">)</span>                  <span class="co"># NULL</span></span>
 <span><span class="co">## NULL</span></span>
 <span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[null]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span>       <span class="co"># list(NULL)</span></span>
@@ -479,7 +486,7 @@ lists</p>
 <code>object_names=</code> argument. The default preserves names as they
 appear in the JSON definition; use <code>"sort"</code> to sort names
 alphabetically. This argument is applied recursively.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">json</span> <span class="op">&lt;-</span> <span class="st">'{"b": 1, "a": {"d": 2, "c": 3}}'</span></span>
 <span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="va">json</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 2</span></span>
@@ -498,7 +505,7 @@ alphabetically. This argument is applied recursively.</p>
 <code>simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE)</code>.
 Unit tests (using the <a href="https://CRAN.R-project.org/package=tinytest" class="external-link">tinytest</a>
 framework) providing additional details are available at</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"tinytest"</span>, <span class="st">"test_as_r.R"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="using-jsonlitefromjson">Using <code>jsonlite::fromJSON()</code><a class="anchor" aria-label="anchor" href="#using-jsonlitefromjson"></a>
@@ -507,7 +514,7 @@ framework) providing additional details are available at</p>
 returning the query as a JSON string, e.g., using the
 <code>fromJSON()</code> in the <a href="https://CRAN.R-project.org/package=jsonlite" class="external-link">jsonlite</a>
 package.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"locations[?state == 'WA']"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="co">## `fromJSON()` simplifies list-of-objects to data.frame</span></span>
 <span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -538,7 +545,7 @@ library.</p>
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
 <p>This vignette was compiled using the following software versions</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## R version 4.3.2 (2023-10-31)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
@@ -561,7 +568,7 @@ library.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] rjsoncons_1.2.0.9501 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] rjsoncons_1.2.0.9502 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.45         </span></span>

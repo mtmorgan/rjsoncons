@@ -3,11 +3,17 @@
 https://jsonpatch.com to transform JSON 'data' according the
 rules in JSON 'patch'.
 j_patch_from() computes a JSON patch describing the
-difference between to JSON documents."><title>Patch or compute the difference between two JSON documents — j_patch_apply • rjsoncons</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Patch or compute the difference between two JSON documents — j_patch_apply"><meta property="og:description" content="j_patch_apply() uses JSON Patch
+difference between two JSON documents.
+j_patch_op() translates R arguments to the JSON
+representation of a patch, validating and 'unboxing' arguments
+as necessary."><title>Patch or compute the difference between two JSON documents — j_patch_apply • rjsoncons</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Patch or compute the difference between two JSON documents — j_patch_apply"><meta property="og:description" content="j_patch_apply() uses JSON Patch
 https://jsonpatch.com to transform JSON 'data' according the
 rules in JSON 'patch'.
 j_patch_from() computes a JSON patch describing the
-difference between to JSON documents."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+difference between two JSON documents.
+j_patch_op() translates R arguments to the JSON
+representation of a patch, validating and 'unboxing' arguments
+as necessary."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body>
@@ -18,7 +24,7 @@ difference between to JSON documents."><!-- mathjax --><script src="https://cdnj
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9501</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9502</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,14 +72,34 @@ difference between to JSON documents."><!-- mathjax --><script src="https://cdnj
 <a href="https://jsonpatch.com" class="external-link">https://jsonpatch.com</a> to transform JSON 'data' according the
 rules in JSON 'patch'.</p>
 <p><code>j_patch_from()</code> computes a JSON patch describing the
-difference between to JSON documents.</p>
+difference between two JSON documents.</p>
+<p><code>j_patch_op()</code> translates <em>R</em> arguments to the JSON
+representation of a patch, validating and 'unboxing' arguments
+as necessary.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">j_patch_apply</span><span class="op">(</span><span class="va">data</span>, <span class="va">patch</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">j_patch_from</span><span class="op">(</span><span class="va">data_x</span>, <span class="va">data_y</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">j_patch_from</span><span class="op">(</span><span class="va">data_x</span>, <span class="va">data_y</span>, as <span class="op">=</span> <span class="st">"string"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">j_patch_op</span><span class="op">(</span><span class="va">op</span>, <span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for default</span></span>
+<span><span class="fu">j_patch_op</span><span class="op">(</span><span class="va">op</span>, <span class="va">path</span>, <span class="va">...</span>, from <span class="op">=</span> <span class="cn">NULL</span>, value <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for j_patch_op</span></span>
+<span><span class="fu">j_patch_op</span><span class="op">(</span><span class="va">op</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for j_patch_op</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">...</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for j_patch_op</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for j_patch_op</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -84,8 +110,8 @@ be converted to JSON using <code>jsonline::fromJSON(data, ...)</code>.</p></dd>
 
 
 <dt>patch</dt>
-<dd><p>JSON 'patch' as character vector, file, URL, or <em>R</em>
-object.</p></dd>
+<dd><p>JSON 'patch' as character vector, file, URL, <em>R</em>
+object, or the result of <code>j_patch_op()</code>.</p></dd>
 
 
 <dt>as</dt>
@@ -95,12 +121,15 @@ string, <code>"R"</code> returns an <em>R</em> object using the rules in
 
 
 <dt>...</dt>
-<dd><p>passed to <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON</a></code> when <code>data</code>, <code>patch</code>,
-<code>data_x</code>, and / or <code>data_y</code> is an <em>R</em> object.  Usually, it is
-appropriate to add the <code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON()</a></code> argument
-<code>auto_unbox = TRUE</code> when <code>patch</code> is an <em>R</em> object (because the
-elements of the patch objects are scalar-valued, not arrays of
-length 1).</p></dd>
+<dd><p>For <code>j_patch_apply()</code> and <code>j_patch_diff()</code>, arguments passed to
+<code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON</a></code> when <code>data</code>, <code>patch</code>, <code>data_x</code>, and / or
+<code>data_y</code> is an <em>R</em> object.  It is appropriate to add the
+<code><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">jsonlite::toJSON()</a></code> argument <code>auto_unbox = TRUE</code> when <code>patch</code> is
+an <em>R</em> object and any 'value' fields are JSON scalars; for more
+complicated scenarios 'value' fields should be marked with
+<code><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">jsonlite::unbox()</a></code> before being passsed to <code>j_patch_*()</code>.</p>
+<p>For <code>j_patch_op()</code> the <code>...</code> are additional arguments to the patch
+operation, e.g., <code>path = ', </code>value = '.</p></dd>
 
 
 <dt>data_x</dt>
@@ -109,6 +138,34 @@ length 1).</p></dd>
 
 <dt>data_y</dt>
 <dd><p>As for <code>data</code>.</p></dd>
+
+
+<dt>op</dt>
+<dd><p>A patch operation (<code>"add"</code>, <code>"remove"</code>, <code>"replace"</code>,
+<code>"copy"</code>, <code>"move"</code>, <code>"test"</code>), or when 'piping' an object
+created by <code>j_patch_op()</code>.</p></dd>
+
+
+<dt>path</dt>
+<dd><p>A character(1) JSONPointer path to the location being patched.</p></dd>
+
+
+<dt>from</dt>
+<dd><p>A character(1) JSONPointer path to the location an
+object will be copied or moved from.</p></dd>
+
+
+<dt>value</dt>
+<dd><p>An <em>R</em> object to be translated into JSON and used during
+add, replace, or test.</p></dd>
+
+
+<dt>recursive</dt>
+<dd><p>Ignored.</p></dd>
+
+
+<dt>x</dt>
+<dd><p>An object produced by <code>j_patch_op()</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -138,9 +195,9 @@ operation is a JSON pointer; remember that JSON arrays are 0-based.</p><ul><li><
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"value"</span><span class="sc">:</span> <span class="st">"Chocolate Digestive"</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre><p></p></div></li>
 <li><p><code>copy</code> -- copy a path to another location.</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">"op"</span><span class="sc">:</span> <span class="st">"copy"</span>, <span class="st">"from"</span><span class="sc">:</span> <span class="st">"/biscuits/0"</span>, <span class="st">"path"</span><span class="sc">:</span> <span class="st">"/best_biscuit"</span>}</span></code></pre><p></p></div></li>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">"op"</span><span class="sc">:</span> <span class="st">"copy"</span>, <span class="st">"path"</span><span class="sc">:</span> <span class="st">"/best_biscuit"</span>, <span class="st">"from"</span><span class="sc">:</span> <span class="st">"/biscuits/0"</span>}</span></code></pre><p></p></div></li>
 <li><p><code>move</code> -- move a path to another location.</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">"op"</span><span class="sc">:</span> <span class="st">"move"</span>, <span class="st">"from"</span><span class="sc">:</span> <span class="st">"/biscuits"</span>, <span class="st">"path"</span><span class="sc">:</span> <span class="st">"/cookies"</span>}</span></code></pre><p></p></div></li>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">"op"</span><span class="sc">:</span> <span class="st">"move"</span>, <span class="st">"path"</span><span class="sc">:</span> <span class="st">"/cookies"</span>, <span class="st">"from"</span><span class="sc">:</span> <span class="st">"/biscuits"</span>}</span></code></pre><p></p></div></li>
 <li><p><code>test</code> -- test for the existence of a path; if the path does not
 exist, do not apply any of the patch.</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">"op"</span><span class="sc">:</span> <span class="st">"test"</span>, <span class="st">"path"</span><span class="sc">:</span> <span class="st">"/best_biscuit/name"</span>, <span class="st">"value"</span><span class="sc">:</span> <span class="st">"Choco Leibniz"</span>}</span></code></pre><p></p></div></li>
@@ -148,11 +205,18 @@ exist, do not apply any of the patch.</p>
 single object) or several (a JSON array with several arguments)
 operations. <code>j_patch_apply()</code> fits naturally into a pipeline
 composed with <code>|&gt;</code> to transform JSON between representations.</p>
+<p>The <code>j_patch_op()</code> function takes care to ensure that <code>op</code>, <code>path</code>,
+and <code>from</code> arguments are 'unboxed' (represented as JSON scalars
+rather than arrays). The user must ensure that <code>value</code> is
+represented correctly by applying <code><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">jsonlite::unbox()</a></code> to individual
+elements or adding <code>auto_unbox = TRUE</code> to <code>...</code>. Examples
+illustrate these different scenarios.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">data_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"extdata"</span>, <span class="st">"patch_data.json"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">data_file</span> <span class="op">&lt;-</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"extdata"</span>, <span class="st">"patch_data.json"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## add a biscuit</span></span></span>
 <span class="r-in"><span><span class="va">patch</span> <span class="op">&lt;-</span> <span class="st">'[</span></span></span>
@@ -171,7 +235,7 @@ composed with <code>|&gt;</code> to transform JSON between representations.</p>
 <span class="r-in"><span><span class="co">## add a biscuit and choose a favorite</span></span></span>
 <span class="r-in"><span><span class="va">patch</span> <span class="op">&lt;-</span> <span class="st">'[</span></span></span>
 <span class="r-in"><span><span class="st">    {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}},</span></span></span>
-<span class="r-in"><span><span class="st">    {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}</span></span></span>
+<span class="r-in"><span><span class="st">    {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/2"}</span></span></span>
 <span class="r-in"><span><span class="st">]'</span></span></span>
 <span class="r-in"><span><span class="va">biscuits</span> <span class="op">&lt;-</span> <span class="fu">j_patch_apply</span><span class="op">(</span><span class="va">data_file</span>, <span class="va">patch</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="as_r.html">as_r</a></span><span class="op">(</span><span class="va">biscuits</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span></span>
@@ -198,6 +262,64 @@ composed with <code>|&gt;</code> to transform JSON between representations.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ :List of 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ op  : chr "remove"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ path: chr "/best_biscuit"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## helper for constructing patch operations from R objects</span></span></span>
+<span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"add"</span>, path <span class="op">=</span> <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Ginger Nut"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="co">## 'Ginger Nut' is a JSON scalar, so auto-unbox the 'value' argument</span></span></span>
+<span class="r-in"><span>    auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"remove"</span>, <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"remove","path":"/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"replace"</span>, <span class="st">"/biscuits/0/name"</span>,</span></span>
+<span class="r-in"><span>    <span class="co">## also possible to unbox arguments explicitly</span></span></span>
+<span class="r-in"><span>    value <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Chocolate Digestive"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"replace","path":"/biscuits/0/name","value":"Chocolate Digestive"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"copy","path":"/best_biscuit","from":"/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"move"</span>, <span class="st">"/cookies"</span>, from <span class="op">=</span> <span class="st">"/biscuits"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"move","path":"/cookies","from":"/biscuits"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"test"</span>, <span class="st">"/best_biscuit/name"</span>, value <span class="op">=</span> <span class="st">"Choco Leibniz"</span>,</span></span>
+<span class="r-in"><span>    auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"test","path":"/best_biscuit/name","value":"Choco Leibniz"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## several operations</span></span></span>
+<span class="r-in"><span><span class="va">value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Ginger Nut"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ops</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="va">value</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, path <span class="op">=</span> <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ops</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"copy","path":"/best_biscuit","from":"/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ops</span> <span class="op">&lt;-</span></span></span>
+<span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="va">value</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, path <span class="op">=</span> <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ops</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"copy","path":"/best_biscuit","from":"/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

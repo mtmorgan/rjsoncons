@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9501</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9502</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -212,14 +212,14 @@ combine JSON extraction and <a href="https://CRAN.R-project.org/package=tidyr" c
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 10</span></span></span>
 <span><span class="co">#&gt;   homeTeam_teamId homeTeam_nickName homeTeam_odds homeTeam_teamPosition</span></span>
 <span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>002 Sea Eagles        2.17          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>001 Roosters          2.51          0                    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>002 Sea Eagles        2.11          0                    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>001 Roosters          2.45          0                    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>003 Knights           1.42          0                    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>032 Warriors          1.60          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>021 Storm             2.24          0                    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>021 Storm             2.15          0                    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          <span style="text-decoration: underline;">500</span>031 Eels              1.47          0                    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>          <span style="text-decoration: underline;">500</span>004 Titans            1.49          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="text-decoration: underline;">500</span>723 Dolphins          2.67          0                    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="text-decoration: underline;">500</span>723 Dolphins          2.76          0                    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: homeTeam_theme &lt;list&gt;, awayTeam_teamId &lt;int&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_nickName &lt;chr&gt;, awayTeam_odds &lt;chr&gt;, awayTeam_teamPosition &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_theme &lt;list&gt;</span></span></span></code></pre></div>
@@ -306,7 +306,8 @@ could well be a misunderstanding on my part.</p>
 </h3>
 <p><a href="https://stackoverflow.com/questions/78047988" class="external-link uri">https://stackoverflow.com/questions/78047988</a></p>
 <p>The example is not completely reproducible, but the challenge is that
-the [igraph][] package produces JSON like</p>
+the <a href="https://CRAN.R-project.org/package=igraph" class="external-link">igraph</a>
+package produces JSON like</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="st">'</span></span>
 <span><span class="st">{</span></span>
@@ -394,7 +395,7 @@ documentation, the patch is a single ‘move’ operation from
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dplyr_1.1.4          rjsoncons_1.2.0.9501</span></span>
+<span><span class="co">#&gt; [1] dplyr_1.1.4          rjsoncons_1.2.0.9502</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] jsonlite_1.8.8    compiler_4.3.2    tidyselect_1.2.0  stringr_1.5.1    </span></span>
