@@ -53,3 +53,59 @@ expect_identical(
     j_patch_from(j_patch_apply(json, patch), json_r, auto_unbox = TRUE),
     '[{"op":"add","path":"/biscuits/1","value":{"name":"Choco Leibniz"}}]'
 )
+
+## j_patch_op
+
+value0 <- list(name = "Ginger Nut")
+value1 <- list(name = jsonlite::unbox("Ginger Nut"))
+path <- "/biscuits/1"
+
+expect_identical(
+    as.character(j_patch_op("add", path, value = value0)),
+    '[{"op":"add","path":"/biscuits/1","value":{"name":["Ginger Nut"]}}]'
+)
+expect_identical(
+    as.character(j_patch_op("add", path, value = value1)),
+    '[{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
+)
+expect_identical(
+    as.character(j_patch_op("add", path, value = value0, auto_unbox = TRUE)),
+    '[{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
+)
+
+expect_identical(
+    as.character(j_patch_op("remove", path)),
+    '[{"op":"remove","path":"/biscuits/1"}]'
+)
+
+expect_identical(
+    as.character(j_patch_op("replace", path, value = value1)),
+    '[{"op":"replace","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
+)
+
+expect_identical(
+    as.character(j_patch_op("copy", path, from = path)),
+    '[{"op":"copy","path":"/biscuits/1","from":"/biscuits/1"}]'
+)
+
+expect_identical(
+    as.character(j_patch_op("move", path, from = path)),
+    '[{"op":"move","path":"/biscuits/1","from":"/biscuits/1"}]'
+)
+
+expect_identical(
+    as.character(j_patch_op("test", path, value = value1)),
+    '[{"op":"test","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
+)
+
+expect_error(j_patch_op())
+expect_error(j_patch_op("add"))           # no 'path'
+expect_error(j_patch_op("add", path))     # no 'value'
+expect_error(j_patch_op("remove"))        # no 'path'
+expect_error(j_patch_op("replace", path)) # no 'value'
+expect_error(j_patch_op("copy", path))    # no 'from'
+expect_error(j_patch_op("move", path))    # no 'from'
+expect_error(j_patch_op("test", path))    # no 'value'
+
+patch <- j_patch_op("remove", "/biscuits")
+expect_identical(j_patch_apply(json, patch), "{}")

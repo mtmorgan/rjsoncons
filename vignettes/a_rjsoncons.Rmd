@@ -254,11 +254,34 @@ patch <- '[
 
 The paths are specified using [JSONpointer][] notation; remember that
 JSON arrays are 0-based, compared to 1-based *R* arrays. Applying the
-patch results in a new JSON document
+patch results in a new JSON document.
 
 ```{r}
-j_patch_apply(json, patch) |>
-    jsonlite::prettify()
+j_patch_apply(json, patch)
+```
+
+Patches can also be created from *R* objects with the helper function
+`j_patch_op()`.
+
+```{r}
+ops <- c(
+    j_patch_op(
+        "add", "/biscuits/1", value = list(name = "Ginger Nut"),
+        auto_unbox = TRUE
+    ),
+    j_patch_op("copy", "/best_biscuit", from = "/biscuits/2")
+)
+identical(j_patch_apply(json, patch), j_patch_apply(json, ops))
+```
+
+`j_patch_op()` takes care of unboxing `op=`, `path=`, and `from=`, but
+some care must be taken in 'unboxing' the `value=` argument for
+operations such as 'add'; it may also be appropriate to unbox only
+specific fields, e.g.,
+
+```{r}
+value <- list(name = jsonlite::unbox("Ginger Nut"))
+j_patch_op("add", "/biscuits/1", value = value)
 ```
 
 From the [JSON patch][] web site, available operations and example

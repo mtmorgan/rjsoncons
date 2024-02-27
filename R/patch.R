@@ -47,19 +47,25 @@ J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
 #' @param data JSON character vector, file, URL, or an *R* object to
 #'     be converted to JSON using `jsonline::fromJSON(data, ...)`.
 #'
-#' @param patch JSON 'patch' as character vector, file, URL, or *R*
-#'     object.
+#' @param patch JSON 'patch' as character vector, file, URL, *R*
+#'     object, or the result of `j_patch_op()`.
 #'
 #' @param as character(1) return type; `"string"` returns a JSON
 #'     string, `"R"` returns an *R* object using the rules in
 #'     `as_r()`.
 #'
-#' @param ... passed to `jsonlite::toJSON` when `data`, `patch`,
-#'     `data_x`, and / or `data_y` is an _R_ object.  Usually, it is
-#'     appropriate to add the `jsonlite::toJSON()` argument
-#'     `auto_unbox = TRUE` when `patch` is an *R* object (because the
-#'     elements of the patch objects are scalar-valued, not arrays of
-#'     length 1).
+#' @param ...
+#'
+#' For `j_patch_apply()` and `j_patch_diff()`, arguments passed to
+#' `jsonlite::toJSON` when `data`, `patch`, `data_x`, and / or
+#' `data_y` is an _R_ object.  It is appropriate to add the
+#' `jsonlite::toJSON()` argument `auto_unbox = TRUE` when `patch` is
+#' an *R* object and any 'value' fields are JSON scalars; for more
+#' complicated scenarios 'value' fields should be marked with
+#' `jsonlite::unbox()` before being passsed to `j_patch_*()`.
+#'
+#' For `j_patch_op()` the `...` are additional arguments to the patch
+#' operation, e.g., `path = ', `value = '.
 #'
 #' @return `j_patch_apply()` returns a JSON string or *R* object
 #'     representing 'data' patched according to 'patch'.
@@ -90,11 +96,11 @@ J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
 #'     ```
 #' - `copy` -- copy a path to another location.
 #'     ```
-#'     {"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"}
+#'     {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}
 #'     ```
 #' - `move` -- move a path to another location.
 #'     ```
-#'     {"op": "move", "from": "/biscuits", "path": "/cookies"}
+#'     {"op": "move", "path": "/cookies", "from": "/biscuits"}
 #'     ```
 #' - `test` -- test for the existence of a path; if the path does not
 #'   exist, do not apply any of the patch.
@@ -108,7 +114,8 @@ J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
 #' composed with `|>` to transform JSON between representations.
 #'
 #' @examples
-#' data_file <- system.file(package = "rjsoncons", "extdata", "patch_data.json")
+#' data_file <-
+#'     system.file(package = "rjsoncons", "extdata", "patch_data.json")
 #'
 #' ## add a biscuit
 #' patch <- '[
@@ -119,7 +126,7 @@ J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
 #' ## add a biscuit and choose a favorite
 #'patch <- '[
 #'     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}},
-#'     {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}
+#'     {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/2"}
 #' ]'
 #' biscuits <- j_patch_apply(data_file, patch)
 #' as_r(biscuits) |> str()
@@ -129,6 +136,10 @@ j_patch_apply <-
     function(data, patch, as = "string", ...)
 {
     data_type <- j_data_type(data)
+    if (inherits(patch, "j_patch_op")) {
+        ## formats as JSON array-of-objects
+        patch <- as.character(patch)
+    }
     patch_type <- j_data_type(patch)
     stopifnot(
         ## FIXME: support NDJSON
@@ -162,7 +173,7 @@ j_patch_apply <-
 #' @rdname patch
 #'
 #' @description `j_patch_from()` computes a JSON patch describing the
-#'     difference between to JSON documents.
+#'     difference between two JSON documents.
 #'
 #' @param data_x As for `data`.
 #'
@@ -207,4 +218,145 @@ j_patch_from <-
     )
 
     result
+}
+
+#' @rdname patch
+#'
+#' @description `j_patch_op()` translates *R* arguments to the JSON
+#'     representation of a patch, validating and 'unboxing' arguments
+#'     as necessary.
+#'
+#' @param op A patch operation (`"add"`, `"remove"`, `"replace"`,
+#'     `"copy"`, `"move"`, `"test"`), or when 'piping' an object
+#'     created by `j_patch_op()`.
+#'
+#' @param path A character(1) JSONPointer path to the location being patched.
+#'
+#' @param from A character(1) JSONPointer path to the location an
+#'     object will be copied or moved from.
+#'
+#' @param value An *R* object to be translated into JSON and used during
+#'     add, replace, or test.
+#'
+#' @details
+#'
+#' The `j_patch_op()` function takes care to ensure that `op`, `path`,
+#' and `from` arguments are 'unboxed' (represented as JSON scalars
+#' rather than arrays). The user must ensure that `value` is
+#' represented correctly by applying `jsonlite::unbox()` to individual
+#' elements or adding `auto_unbox = TRUE` to `...`. Examples
+#' illustrate these different scenarios.
+#'
+#' @examples
+#' ## helper for constructing patch operations from R objects
+#' j_patch_op(
+#'     "add", path = "/biscuits/1", value = list(name = "Ginger Nut"),
+#'     ## 'Ginger Nut' is a JSON scalar, so auto-unbox the 'value' argument
+#'     auto_unbox = TRUE
+#' )
+#' j_patch_op("remove", "/biscuits/0")
+#' j_patch_op(
+#'     "replace", "/biscuits/0/name",
+#'     ## also possible to unbox arguments explicitly
+#'     value = jsonlite::unbox("Chocolate Digestive")
+#' )
+#' j_patch_op("copy", "/best_biscuit", from = "/biscuits/0")
+#' j_patch_op("move", "/cookies", from = "/biscuits")
+#' j_patch_op(
+#'     "test", "/best_biscuit/name", value = "Choco Leibniz",
+#'     auto_unbox = TRUE
+#' )
+#'
+#' ## several operations
+#' value <- list(name = jsonlite::unbox("Ginger Nut"))
+#' ops <- c(
+#'     j_patch_op("add", "/biscuits/1", value = value),
+#'     j_patch_op("copy", path = "/best_biscuit", from = "/biscuits/0")
+#' )
+#' ops
+#'
+#' ops <-
+#'     j_patch_op("add", "/biscuits/1", value = value) |>
+#'     j_patch_op("copy", path = "/best_biscuit", from = "/biscuits/0")
+#' ops
+#'
+#' @export
+j_patch_op <-
+    function(op, path, ...)
+{
+    UseMethod("j_patch_op")
+}
+
+#' @rdname patch
+#'
+#' @export
+j_patch_op.default <-
+    function(op, path, ..., from = NULL, value = NULL)
+{
+    op <- match.arg(op, J_PATCH_OP)
+    stopifnot(
+        ## all ops require 'path'
+        !missing(path),
+        identical(j_path_type(path), "JSONpointer")
+    )
+    patch <- list(op = jsonlite::unbox(op), path = jsonlite::unbox(path))
+
+    ## 'remove' requires only 'op' and 'path'; other ops require...
+    switch(op, add =, replace =, test = {
+        stopifnot(!is.null(value))
+        patch[["value"]] <- value # user-specified 'auto_unbox' in '...'
+    }, copy =, move = {
+        stopifnot(.is_scalar_character(from))
+        patch[["from"]] <- jsonlite::unbox(from)
+    })
+
+    patch <- j_query(patch, ...)
+    structure(patch, class = "j_patch_op")
+}
+
+#' @rdname patch
+#'
+#' @export
+j_patch_op.j_patch_op <-
+    function(op, ...)
+{
+    c(op, j_patch_op(...))
+}
+
+#' @rdname patch
+#'
+#' @param recursive Ignored.
+#'
+#' @export
+c.j_patch_op <-
+    function(..., recursive = FALSE)
+{
+    structure(NextMethod("c"), class = "j_patch_op")
+}
+
+#' @rdname patch
+#'
+#' @param x An object produced by `j_patch_op()`.
+#'
+#' @export
+as.character.j_patch_op <-
+    function(x, ...)
+{
+    paste0("[", paste(x, collapse = ","), "]")
+}
+
+#' @rdname patch
+#'
+#' @export
+print.j_patch_op <-
+    function(x, ...)
+{
+    cat(
+        "[",
+        if (length(x)) "\n    ",
+        if (length(x)) paste(x, collapse = "\n    "),
+        if (length(x)) "\n",
+        "]\n",
+        sep = ""
+    )
 }

@@ -3,33 +3,71 @@
 \name{j_patch_apply}
 \alias{j_patch_apply}
 \alias{j_patch_from}
+\alias{j_patch_op}
+\alias{j_patch_op.default}
+\alias{j_patch_op.j_patch_op}
+\alias{c.j_patch_op}
+\alias{as.character.j_patch_op}
+\alias{print.j_patch_op}
 \title{Patch or compute the difference between two JSON documents}
 \usage{
 j_patch_apply(data, patch, as = "string", ...)
 
 j_patch_from(data_x, data_y, as = "string", ...)
+
+j_patch_op(op, path, ...)
+
+\method{j_patch_op}{default}(op, path, ..., from = NULL, value = NULL)
+
+\method{j_patch_op}{j_patch_op}(op, ...)
+
+\method{c}{j_patch_op}(..., recursive = FALSE)
+
+\method{as.character}{j_patch_op}(x, ...)
+
+\method{print}{j_patch_op}(x, ...)
 }
 \arguments{
 \item{data}{JSON character vector, file, URL, or an \emph{R} object to
 be converted to JSON using \code{jsonline::fromJSON(data, ...)}.}
 
-\item{patch}{JSON 'patch' as character vector, file, URL, or \emph{R}
-object.}
+\item{patch}{JSON 'patch' as character vector, file, URL, \emph{R}
+object, or the result of \code{j_patch_op()}.}
 
 \item{as}{character(1) return type; \code{"string"} returns a JSON
 string, \code{"R"} returns an \emph{R} object using the rules in
 \code{as_r()}.}
 
-\item{...}{passed to \code{jsonlite::toJSON} when \code{data}, \code{patch},
-\code{data_x}, and / or \code{data_y} is an \emph{R} object.  Usually, it is
-appropriate to add the \code{jsonlite::toJSON()} argument
-\code{auto_unbox = TRUE} when \code{patch} is an \emph{R} object (because the
-elements of the patch objects are scalar-valued, not arrays of
-length 1).}
+\item{...}{For \code{j_patch_apply()} and \code{j_patch_diff()}, arguments passed to
+\code{jsonlite::toJSON} when \code{data}, \code{patch}, \code{data_x}, and / or
+\code{data_y} is an \emph{R} object.  It is appropriate to add the
+\code{jsonlite::toJSON()} argument \code{auto_unbox = TRUE} when \code{patch} is
+an \emph{R} object and any 'value' fields are JSON scalars; for more
+complicated scenarios 'value' fields should be marked with
+\code{jsonlite::unbox()} before being passsed to \verb{j_patch_*()}.
+
+For \code{j_patch_op()} the \code{...} are additional arguments to the patch
+operation, e.g., \verb{path = ', }value = '.}
 
 \item{data_x}{As for \code{data}.}
 
 \item{data_y}{As for \code{data}.}
+
+\item{op}{A patch operation (\code{"add"}, \code{"remove"}, \code{"replace"},
+\code{"copy"}, \code{"move"}, \code{"test"}), or when 'piping' an object
+created by \code{j_patch_op()}.}
+
+\item{path}{A character(1) JSONPointer path to the location being patched.}
+
+\item{from}{A character(1) JSONPointer path to the location an
+object will be copied or moved from.}
+
+\item{value}{An \emph{R} object to be translated into JSON and used during
+add, replace, or test.}
+
+\item{recursive}{Ignored.}
+
+\item{x}{An object produced by \code{j_patch_op()}.}
 }
 \value{
 \code{j_patch_apply()} returns a JSON string or \emph{R} object
@@ -44,7 +82,11 @@ representing the difference between 'data_x' and 'data_y'.
 rules in JSON 'patch'.
 
 \code{j_patch_from()} computes a JSON patch describing the
-difference between to JSON documents.
+difference between two JSON documents.
+
+\code{j_patch_op()} translates \emph{R} arguments to the JSON
+representation of a patch, validating and 'unboxing' arguments
+as necessary.
 }
 \details{
 For \code{j_patch_apply()}, 'patch' is a JSON array of objects. Each
@@ -70,11 +112,11 @@ operation is a JSON pointer; remember that JSON arrays are 0-based.
 }\if{html}{\out{</div>}}
 \item \code{copy} -- copy a path to another location.
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "copy", "from": "/biscuits/0", "path": "/best_biscuit"\}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"\}
 }\if{html}{\out{</div>}}
 \item \code{move} -- move a path to another location.
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "move", "from": "/biscuits", "path": "/cookies"\}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\{"op": "move", "path": "/cookies", "from": "/biscuits"\}
 }\if{html}{\out{</div>}}
 \item \code{test} -- test for the existence of a path; if the path does not
 exist, do not apply any of the patch.
@@ -87,9 +129,17 @@ The examples below illustrate a patch with one (a JSON array with a
 single object) or several (a JSON array with several arguments)
 operations. \code{j_patch_apply()} fits naturally into a pipeline
 composed with \verb{|>} to transform JSON between representations.
+
+The \code{j_patch_op()} function takes care to ensure that \code{op}, \code{path},
+and \code{from} arguments are 'unboxed' (represented as JSON scalars
+rather than arrays). The user must ensure that \code{value} is
+represented correctly by applying \code{jsonlite::unbox()} to individual
+elements or adding \code{auto_unbox = TRUE} to \code{...}. Examples
+illustrate these different scenarios.
 }
 \examples{
-data_file <- system.file(package = "rjsoncons", "extdata", "patch_data.json")
+data_file <-
+    system.file(package = "rjsoncons", "extdata", "patch_data.json")
 
 ## add a biscuit
 patch <- '[
@@ -100,11 +150,43 @@ j_patch_apply(data_file, patch, as = "R") |> str()
 ## add a biscuit and choose a favorite
 patch <- '[
     {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}},
-    {"op": "copy", "from": "/biscuits/2", "path": "/best_biscuit"}
+    {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/2"}
 ]'
 biscuits <- j_patch_apply(data_file, patch)
 as_r(biscuits) |> str()
 
 j_patch_from(biscuits, data_file, as = "R") |> str()
+
+## helper for constructing patch operations from R objects
+j_patch_op(
+    "add", path = "/biscuits/1", value = list(name = "Ginger Nut"),
+    ## 'Ginger Nut' is a JSON scalar, so auto-unbox the 'value' argument
+    auto_unbox = TRUE
+)
+j_patch_op("remove", "/biscuits/0")
+j_patch_op(
+    "replace", "/biscuits/0/name",
+    ## also possible to unbox arguments explicitly
+    value = jsonlite::unbox("Chocolate Digestive")
+)
+j_patch_op("copy", "/best_biscuit", from = "/biscuits/0")
+j_patch_op("move", "/cookies", from = "/biscuits")
+j_patch_op(
+    "test", "/best_biscuit/name", value = "Choco Leibniz",
+    auto_unbox = TRUE
+)
+
+## several operations
+value <- list(name = jsonlite::unbox("Ginger Nut"))
+ops <- c(
+    j_patch_op("add", "/biscuits/1", value = value),
+    j_patch_op("copy", path = "/best_biscuit", from = "/biscuits/0")
+)
+ops
+
+ops <-
+    j_patch_op("add", "/biscuits/1", value = value) |>
+    j_patch_op("copy", path = "/best_biscuit", from = "/biscuits/0")
+ops
 
 }
