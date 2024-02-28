@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9502</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9503</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -349,7 +349,7 @@ e.g.,</p>
 <code class="sourceCode R"><span><span class="va">value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Ginger Nut"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/patch.html">j_patch_op</a></span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="va">value</span><span class="op">)</span></span>
 <span><span class="co">## [</span></span>
-<span><span class="co">##     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span></span>
+<span><span class="co">##   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}</span></span>
 <span><span class="co">## ]</span></span></code></pre></div>
 <p>From the <a href="https://jsonpatch.com/" class="external-link">JSON patch</a> web site,
 available operations and example JSON are:</p>
@@ -393,24 +393,8 @@ operation is involved.</p>
 <p>The <code><a href="../reference/patch.html">j_patch_from()</a></code> function constructs a patch from the
 difference between two documents</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/patch.html">j_patch_from</a></span><span class="op">(</span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span>, <span class="va">json</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/prettify.html" class="external-link">prettify</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">## [</span></span>
-<span><span class="co">##     {</span></span>
-<span><span class="co">##         "op": "replace",</span></span>
-<span><span class="co">##         "path": "/biscuits/1/name",</span></span>
-<span><span class="co">##         "value": "Choco Leibniz"</span></span>
-<span><span class="co">##     },</span></span>
-<span><span class="co">##     {</span></span>
-<span><span class="co">##         "op": "remove",</span></span>
-<span><span class="co">##         "path": "/biscuits/2"</span></span>
-<span><span class="co">##     },</span></span>
-<span><span class="co">##     {</span></span>
-<span><span class="co">##         "op": "remove",</span></span>
-<span><span class="co">##         "path": "/best_biscuit"</span></span>
-<span><span class="co">##     }</span></span>
-<span><span class="co">## ]</span></span>
-<span><span class="co">## </span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/patch.html">j_patch_from</a></span><span class="op">(</span><span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">patch</span><span class="op">)</span>, <span class="va">json</span><span class="op">)</span></span>
+<span><span class="co">## [1] "[{\"op\":\"replace\",\"path\":\"/biscuits/1/name\",\"value\":\"Choco Leibniz\"},{\"op\":\"remove\",\"path\":\"/biscuits/2\"},{\"op\":\"remove\",\"path\":\"/best_biscuit\"}]"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -568,7 +552,7 @@ library.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] rjsoncons_1.2.0.9502 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] rjsoncons_1.2.0.9503 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.45         </span></span>

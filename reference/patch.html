@@ -24,7 +24,7 @@ as necessary."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9502</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9503</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,9 +94,6 @@ as necessary.</p>
 <span></span>
 <span><span class="co"># S3 method for j_patch_op</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">...</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for j_patch_op</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for j_patch_op</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -270,35 +267,35 @@ illustrate these different scenarios.</p>
 <span class="r-in"><span>    auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"remove"</span>, <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"remove","path":"/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "remove", "path": "/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="st">"replace"</span>, <span class="st">"/biscuits/0/name"</span>,</span></span>
 <span class="r-in"><span>    <span class="co">## also possible to unbox arguments explicitly</span></span></span>
 <span class="r-in"><span>    value <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Chocolate Digestive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"replace","path":"/biscuits/0/name","value":"Chocolate Digestive"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "replace", "path": "/biscuits/0/name", "value": "Chocolate Digestive"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"copy","path":"/best_biscuit","from":"/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"move"</span>, <span class="st">"/cookies"</span>, from <span class="op">=</span> <span class="st">"/biscuits"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"move","path":"/cookies","from":"/biscuits"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "move", "path": "/cookies", "from": "/biscuits"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="st">"test"</span>, <span class="st">"/best_biscuit/name"</span>, value <span class="op">=</span> <span class="st">"Choco Leibniz"</span>,</span></span>
 <span class="r-in"><span>    auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"test","path":"/best_biscuit/name","value":"Choco Leibniz"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "test", "path": "/best_biscuit/name", "value": "Choco Leibniz"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## several operations</span></span></span>
 <span class="r-in"><span><span class="va">value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Ginger Nut"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -308,18 +305,18 @@ illustrate these different scenarios.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ops</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"copy","path":"/best_biscuit","from":"/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">ops</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="va">value</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, path <span class="op">=</span> <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ops</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     {"op":"copy","path":"/best_biscuit","from":"/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
