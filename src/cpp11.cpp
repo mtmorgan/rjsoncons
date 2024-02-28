@@ -19,6 +19,13 @@ extern "C" SEXP _rjsoncons_cpp_j_patch_from(SEXP data_x, SEXP data_type_x, SEXP 
     return cpp11::as_sexp(cpp_j_patch_from(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_x), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type_x), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_y), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type_y), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as)));
   END_CPP11
 }
+// patch.cpp
+std::string cpp_j_patch_print(const std::string& patch, const int indent, const int width);
+extern "C" SEXP _rjsoncons_cpp_j_patch_print(SEXP patch, SEXP indent, SEXP width) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_j_patch_print(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(patch), cpp11::as_cpp<cpp11::decay_t<const int>>(indent), cpp11::as_cpp<cpp11::decay_t<const int>>(width)));
+  END_CPP11
+}
 // rjsoncons.cpp
 std::string cpp_version();
 extern "C" SEXP _rjsoncons_cpp_version() {
@@ -75,6 +82,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rjsoncons_cpp_as_r_con",      (DL_FUNC) &_rjsoncons_cpp_as_r_con,      5},
     {"_rjsoncons_cpp_j_patch_apply", (DL_FUNC) &_rjsoncons_cpp_j_patch_apply, 4},
     {"_rjsoncons_cpp_j_patch_from",  (DL_FUNC) &_rjsoncons_cpp_j_patch_from,  5},
+    {"_rjsoncons_cpp_j_patch_print", (DL_FUNC) &_rjsoncons_cpp_j_patch_print, 3},
     {"_rjsoncons_cpp_j_pivot",       (DL_FUNC) &_rjsoncons_cpp_j_pivot,       6},
     {"_rjsoncons_cpp_j_pivot_con",   (DL_FUNC) &_rjsoncons_cpp_j_pivot_con,   8},
     {"_rjsoncons_cpp_j_query",       (DL_FUNC) &_rjsoncons_cpp_j_query,       6},

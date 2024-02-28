@@ -1,6 +1,6 @@
 # rjsoncons 1.3.0
 
-- (1.2.0.9502) add JSON patch support with `j_patch_apply()`,
+- (1.2.0.9503) add JSON patch support with `j_patch_apply()`,
   `j_patch_from()`, and `j_patch_op()`.
 - (1.2.0.9401) internal C++ code cleanup and refactoring.
 - (1.2.0.9300) add 'Examples' web-only vignette.

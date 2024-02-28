@@ -30,3 +30,21 @@ sexp cpp_j_patch_from(
     auto patch = jsonpatch::from_diff(data_x_, data_y_);
     return j_as(patch, enum_index(as_map, as));
 }
+
+[[cpp11::register]]
+std::string cpp_j_patch_print(
+    const std::string& patch,
+    const int indent, const int width)
+{
+    auto j = ojson::parse(patch);
+    std::string result;
+
+    json_options options;
+    options.indent_size(indent);
+    options.line_length_limit(width);
+    options.array_object_line_splits(line_split_kind::new_line);
+    options.object_object_line_splits(line_split_kind::new_line);
+    j.dump(result, options, indenting::indent);
+
+    return result;
+}

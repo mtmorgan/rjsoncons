@@ -8,6 +8,10 @@ cpp_j_patch_from <- function(data_x, data_type_x, data_y, data_type_y, as) {
   .Call(`_rjsoncons_cpp_j_patch_from`, data_x, data_type_x, data_y, data_type_y, as)
 }
 
+cpp_j_patch_print <- function(patch, indent, width) {
+  .Call(`_rjsoncons_cpp_j_patch_print`, patch, indent, width)
+}
+
 cpp_version <- function() {
   .Call(`_rjsoncons_cpp_version`)
 }

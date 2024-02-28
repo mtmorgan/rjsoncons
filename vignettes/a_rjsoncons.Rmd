@@ -337,8 +337,7 @@ The `j_patch_from()` function constructs a patch from the difference
 between two documents
 
 ```{r}
-j_patch_from(j_patch_apply(json, patch), json) |>
-    jsonlite::prettify()
+j_patch_from(j_patch_apply(json, patch), json)
 ```
 
 [JSON Patch]: https://jsonpatch.com/

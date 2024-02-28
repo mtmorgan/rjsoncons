@@ -61,42 +61,61 @@ value1 <- list(name = jsonlite::unbox("Ginger Nut"))
 path <- "/biscuits/1"
 
 expect_identical(
-    as.character(j_patch_op("add", path, value = value0)),
-    '[{"op":"add","path":"/biscuits/1","value":{"name":["Ginger Nut"]}}]'
+    unclass(j_patch_op("add", path, value = value0)),
+    c('[',
+      '{"op":"add","path":"/biscuits/1","value":{"name":["Ginger Nut"]}}',
+      ']')
 )
 expect_identical(
-    as.character(j_patch_op("add", path, value = value1)),
-    '[{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
+    unclass(j_patch_op("add", path, value = value1)),
+    c('[',
+      '{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}',
+      ']')
 )
 expect_identical(
-    as.character(j_patch_op("add", path, value = value0, auto_unbox = TRUE)),
-    '[{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
+    unclass(j_patch_op("add", path, value = value0, auto_unbox = TRUE)),
+    c('[',
+      '{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}',
+      ']')
+)
+expect_identical(
+    unclass(j_patch_op("remove", path)),
+    c('[', '{"op":"remove","path":"/biscuits/1"}', ']')
+)
+expect_identical(
+    unclass(j_patch_op("replace", path, value = value1)),
+    c('[',
+      '{"op":"replace","path":"/biscuits/1","value":{"name":"Ginger Nut"}}',
+      ']')
+)
+expect_identical(
+    unclass(j_patch_op("copy", path, from = path)),
+    c('[', '{"op":"copy","path":"/biscuits/1","from":"/biscuits/1"}', ']')
+)
+expect_identical(
+    unclass(j_patch_op("move", path, from = path)),
+    c('[', '{"op":"move","path":"/biscuits/1","from":"/biscuits/1"}', ']')
+)
+expect_identical(
+    unclass(j_patch_op("test", path, value = value1)),
+    c('[',
+      '{"op":"test","path":"/biscuits/1","value":{"name":"Ginger Nut"}}',
+      ']')
 )
 
-expect_identical(
-    as.character(j_patch_op("remove", path)),
-    '[{"op":"remove","path":"/biscuits/1"}]'
+## concatenation and piping
+patch <- j_patch_op("add", path, value = value1)
+expected <- c(
+    '[',
+    '{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}',
+    ',',
+    '{"op":"add","path":"/biscuits/1","value":{"name":"Ginger Nut"}}',
+    ']'
 )
+expect_identical(unclass(c(patch, patch)), expected)
 
-expect_identical(
-    as.character(j_patch_op("replace", path, value = value1)),
-    '[{"op":"replace","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
-)
-
-expect_identical(
-    as.character(j_patch_op("copy", path, from = path)),
-    '[{"op":"copy","path":"/biscuits/1","from":"/biscuits/1"}]'
-)
-
-expect_identical(
-    as.character(j_patch_op("move", path, from = path)),
-    '[{"op":"move","path":"/biscuits/1","from":"/biscuits/1"}]'
-)
-
-expect_identical(
-    as.character(j_patch_op("test", path, value = value1)),
-    '[{"op":"test","path":"/biscuits/1","value":{"name":"Ginger Nut"}}]'
-)
+patch1 <- patch |> j_patch_op("add", path, value = value1)
+expect_identical(unclass(patch1), expected)
 
 expect_error(j_patch_op())
 expect_error(j_patch_op("add"))           # no 'path'

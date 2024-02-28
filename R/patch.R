@@ -311,16 +311,19 @@ j_patch_op.default <-
     })
 
     patch <- j_query(patch, ...)
-    structure(patch, class = "j_patch_op")
+    structure(c("[", patch, "]"), class = "j_patch_op")
 }
 
 #' @rdname patch
+#'
+#' @importFrom utils head tail
 #'
 #' @export
 j_patch_op.j_patch_op <-
     function(op, ...)
 {
-    c(op, j_patch_op(...))
+    patch <- c(head(op, -1), ",", tail(j_patch_op(...), -1))
+    structure(patch, class = "j_patch_op")
 }
 
 #' @rdname patch
@@ -331,7 +334,15 @@ j_patch_op.j_patch_op <-
 c.j_patch_op <-
     function(..., recursive = FALSE)
 {
-    structure(NextMethod("c"), class = "j_patch_op")
+    args <- list(...)
+    args[-1] <- lapply(args[-1], tail, -1L)
+    args[-length(args)] <- lapply(args[-length(args)], \(x) {
+        x[length(x)] = ","
+        x
+    })
+    args <- lapply(args, unclass)
+    result <- do.call("c", args)
+    structure(result, class = "j_patch_op")
 }
 
 #' @rdname patch
@@ -339,24 +350,12 @@ c.j_patch_op <-
 #' @param x An object produced by `j_patch_op()`.
 #'
 #' @export
-as.character.j_patch_op <-
-    function(x, ...)
-{
-    paste0("[", paste(x, collapse = ","), "]")
-}
-
-#' @rdname patch
-#'
-#' @export
 print.j_patch_op <-
     function(x, ...)
 {
-    cat(
-        "[",
-        if (length(x)) "\n    ",
-        if (length(x)) paste(x, collapse = "\n    "),
-        if (length(x)) "\n",
-        "]\n",
-        sep = ""
-    )
+    width <- as.integer(getOption("width"))
+    indent <- 2L
+    stopifnot(.is_scalar_numeric(width))
+    patch <- paste(x, collapse = "\n")
+    cat(cpp_j_patch_print(patch, indent, width), "\n")
 }

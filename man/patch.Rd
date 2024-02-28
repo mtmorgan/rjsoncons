@@ -7,7 +7,6 @@
 \alias{j_patch_op.default}
 \alias{j_patch_op.j_patch_op}
 \alias{c.j_patch_op}
-\alias{as.character.j_patch_op}
 \alias{print.j_patch_op}
 \title{Patch or compute the difference between two JSON documents}
 \usage{
@@ -22,8 +21,6 @@ j_patch_op(op, path, ...)
 \method{j_patch_op}{j_patch_op}(op, ...)
 
 \method{c}{j_patch_op}(..., recursive = FALSE)
-
-\method{as.character}{j_patch_op}(x, ...)
 
 \method{print}{j_patch_op}(x, ...)
 }
