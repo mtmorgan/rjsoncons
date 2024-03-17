@@ -1,6 +1,6 @@
 Package: rjsoncons
 Title: 'C++' Header-Only 'jsoncons' Library for 'JSON' Queries
-Version: 1.2.0.9503
+Version: 1.2.0.9504
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),

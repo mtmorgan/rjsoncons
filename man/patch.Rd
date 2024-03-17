@@ -72,6 +72,9 @@ representing 'data' patched according to 'patch'.
 
 \code{j_patch_from()} returns a JSON string or \emph{R} object
 representing the difference between 'data_x' and 'data_y'.
+
+\code{j_patch_op()} returns a character vector subclass that can
+be used in \code{j_patch_apply()}.
 }
 \description{
 \code{j_patch_apply()} uses JSON Patch

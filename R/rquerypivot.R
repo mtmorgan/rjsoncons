@@ -70,10 +70,8 @@ j_query <-
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
-    .j_valid(
-        data_type, object_names, path, path_type, n_records, verbose,
-        as %in% c("string", "R")
-    )
+    .j_valid(data_type, object_names, path, path_type, n_records, verbose)
+    stopifnot(as %in% c("string", "R"))
 
     data <- .as_json_string(data, data_type, ...)
     result <- do_cpp(
@@ -137,10 +135,8 @@ j_pivot <-
         data_type = j_data_type(data), path_type = j_path_type(path)
     )
 {
-    .j_valid(
-        data_type, object_names, path, path_type, n_records, verbose,
-        as %in% c("string", "R", "data.frame", "tibble")
-    )
+    .j_valid(data_type, object_names, path, path_type, n_records, verbose)
+    stopifnot(as %in% c("string", "R", "data.frame", "tibble"))
 
     data <- .as_json_string(data, data_type, ...)
     as0 <- ifelse(identical(as, "string"), "string", "R")

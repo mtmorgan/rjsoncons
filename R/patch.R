@@ -247,6 +247,9 @@ j_patch_from <-
 #' elements or adding `auto_unbox = TRUE` to `...`. Examples
 #' illustrate these different scenarios.
 #'
+#' @return `j_patch_op()` returns a character vector subclass that can
+#'     be used in `j_patch_apply()`.
+#'
 #' @examples
 #' ## helper for constructing patch operations from R objects
 #' j_patch_op(
