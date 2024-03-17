@@ -7,6 +7,14 @@
 using namespace jsoncons;
 using namespace rjsoncons;
 
+#include <cpp11/list.hpp>
+#include <cpp11/logicals.hpp>
+#include <cpp11/integers.hpp>
+#include <cpp11/doubles.hpp>
+#include <cpp11/strings.hpp>
+
+using namespace cpp11;
+
 enum class r_type : uint8_t
 {
     null_value,

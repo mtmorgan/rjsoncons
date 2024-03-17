@@ -1,5 +1,3 @@
-#include <cpp11/declarations.hpp>
-
 #include <jsoncons/config/version.hpp>
 #include <jsoncons/json.hpp>
 
@@ -8,7 +6,6 @@
 #include "rquerypivot.h"
 
 using namespace jsoncons;        // convenience
-using namespace cpp11::literals; // _nm
 
 function readbinbuf::read_bin = cpp11::package("base")["readBin"];
 

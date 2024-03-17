@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include <cpp11/protect.hpp>
+
 namespace rjsoncons {           // enums
 
     enum data_type { json_data_type, ndjson_data_type };
