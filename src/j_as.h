@@ -3,7 +3,6 @@
 
 #include <numeric>
 #include <jsoncons/json.hpp>
-#include <cpp11.hpp>
 
 using namespace jsoncons;
 using namespace rjsoncons;

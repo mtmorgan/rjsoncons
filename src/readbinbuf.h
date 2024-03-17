@@ -2,7 +2,6 @@
 #define READBINBUF_H
 
 #include <streambuf>
-#include <cpp11.hpp>
 
 // wrap an R connection as a std::streambuf filled with readBin()
 //

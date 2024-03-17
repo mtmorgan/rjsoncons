@@ -2,7 +2,6 @@
 #define RJSONCONS_PROGRESSBAR_H
 
 #include <string>
-#include <cpp11.hpp>
 #include <cli/progress.h>
 
 class progressbar {

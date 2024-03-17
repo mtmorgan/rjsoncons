@@ -5,7 +5,6 @@
 #include <jsoncons_ext/jmespath/jmespath.hpp>
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <cpp11.hpp>
 
 #include "enum_index.h"
 #include "readbinbuf.h"
