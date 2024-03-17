@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9503</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9504</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -192,16 +192,16 @@ data to use while developing the query.</p>
 <span><span class="st">}'</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 2</span></span></span>
-<span><span class="co">#&gt;   homeTeam   awayTeam </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Sea Eagles Rabbitohs</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Roosters   Broncos  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Knights    Raiders  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Warriors   Sharks   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Storm      Panthers </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Eels       Bulldogs </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Titans     Dragons  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> Dolphins   Cowboys</span></span></code></pre></div>
+<span><span class="co">#&gt;   homeTeam   awayTeam    </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Broncos    Rabbitohs   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Sharks     Bulldogs    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Panthers   Eels        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Raiders    Wests Tigers</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Cowboys    Knights     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Storm      Warriors    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Sea Eagles Roosters    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> Dolphins   Dragons</span></span></code></pre></div>
 <p>The easiest path to a more general answer (extract all members of
 ‘homeTeam’ and ‘awayTeam’ as a tibble) might, like the posted answer,
 combine JSON extraction and <a href="https://CRAN.R-project.org/package=tidyr" class="external-link">tidyr</a>.</p>
@@ -209,20 +209,19 @@ combine JSON extraction and <a href="https://CRAN.R-project.org/package=tidyr" c
 <code class="sourceCode R"><span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">'fixtures[].{ homeTeam: homeTeam, awayTeam: awayTeam }'</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest_wider.html" class="external-link">unnest_wider</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"homeTeam"</span>, <span class="st">"awayTeam"</span><span class="op">)</span>, names_sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 10</span></span></span>
-<span><span class="co">#&gt;   homeTeam_teamId homeTeam_nickName homeTeam_odds homeTeam_teamPosition</span></span>
-<span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>002 Sea Eagles        2.10          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>001 Roosters          2.41          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>003 Knights           1.42          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>032 Warriors          1.60          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>021 Storm             2.15          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          <span style="text-decoration: underline;">500</span>031 Eels              1.47          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>          <span style="text-decoration: underline;">500</span>004 Titans            1.49          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="text-decoration: underline;">500</span>723 Dolphins          2.76          0                    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: homeTeam_theme &lt;list&gt;, awayTeam_teamId &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_nickName &lt;chr&gt;, awayTeam_odds &lt;chr&gt;, awayTeam_teamPosition &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_theme &lt;list&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 8</span></span></span>
+<span><span class="co">#&gt;   homeTeam_teamId homeTeam_nickName homeTeam_score homeTeam_theme  </span></span>
+<span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>011 Broncos                       28 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>028 Sharks                        25 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>014 Panthers                      26 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>013 Raiders                       32 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>012 Cowboys                       21 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          <span style="text-decoration: underline;">500</span>021 Storm                         30 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>          <span style="text-decoration: underline;">500</span>002 Sea Eagles                    21 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="text-decoration: underline;">500</span>723 Dolphins                      38 <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: awayTeam_teamId &lt;int&gt;, awayTeam_nickName &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_score &lt;int&gt;, awayTeam_theme &lt;list&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="deeply-nested-objects">Deeply nested objects<a class="anchor" aria-label="anchor" href="#deeply-nested-objects"></a>
@@ -374,7 +373,7 @@ documentation, the patch is a single ‘move’ operation from
 </h2>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.3.2 (2023-10-31)</span></span>
+<span><span class="co">#&gt; R version 4.3.3 (2024-02-29)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
 <span><span class="co">#&gt; Running under: Ubuntu 22.04.4 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -395,20 +394,19 @@ documentation, the patch is a single ‘move’ operation from
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dplyr_1.1.4          rjsoncons_1.2.0.9503</span></span>
+<span><span class="co">#&gt; [1] dplyr_1.1.4          rjsoncons_1.2.0.9504</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] jsonlite_1.8.8    compiler_4.3.2    tidyselect_1.2.0  stringr_1.5.1    </span></span>
-<span><span class="co">#&gt;  [5] tidyr_1.3.1       jquerylib_0.1.4   systemfonts_1.0.5 textshaping_0.3.7</span></span>
-<span><span class="co">#&gt;  [9] yaml_2.3.8        fastmap_1.1.1     R6_2.5.1          generics_0.1.3   </span></span>
-<span><span class="co">#&gt; [13] knitr_1.45        tibble_3.2.1      desc_1.4.3        bslib_0.6.1      </span></span>
-<span><span class="co">#&gt; [17] pillar_1.9.0      rlang_1.1.3       utf8_1.2.4        cachem_1.0.8     </span></span>
-<span><span class="co">#&gt; [21] stringi_1.8.3     xfun_0.42         fs_1.6.3          sass_0.4.8       </span></span>
-<span><span class="co">#&gt; [25] memoise_2.0.1     cli_3.6.2         pkgdown_2.0.7     withr_3.0.0      </span></span>
-<span><span class="co">#&gt; [29] magrittr_2.0.3    digest_0.6.34     lifecycle_1.0.4   vctrs_0.6.5      </span></span>
-<span><span class="co">#&gt; [33] evaluate_0.23     glue_1.7.0        ragg_1.2.7        fansi_1.0.6      </span></span>
-<span><span class="co">#&gt; [37] rmarkdown_2.25    purrr_1.0.2       tools_4.3.2       pkgconfig_2.0.3  </span></span>
-<span><span class="co">#&gt; [41] htmltools_0.5.7</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] vctrs_0.6.5       cli_3.6.2         knitr_1.45        rlang_1.1.3      </span></span>
+<span><span class="co">#&gt;  [5] xfun_0.42         purrr_1.0.2       generics_0.1.3    textshaping_0.3.7</span></span>
+<span><span class="co">#&gt;  [9] jsonlite_1.8.8    glue_1.7.0        htmltools_0.5.7   ragg_1.3.0       </span></span>
+<span><span class="co">#&gt; [13] sass_0.4.9        fansi_1.0.6       rmarkdown_2.26    tibble_3.2.1     </span></span>
+<span><span class="co">#&gt; [17] evaluate_0.23     jquerylib_0.1.4   fastmap_1.1.1     yaml_2.3.8       </span></span>
+<span><span class="co">#&gt; [21] lifecycle_1.0.4   memoise_2.0.1     compiler_4.3.3    fs_1.6.3         </span></span>
+<span><span class="co">#&gt; [25] pkgconfig_2.0.3   tidyr_1.3.1       systemfonts_1.0.6 digest_0.6.35    </span></span>
+<span><span class="co">#&gt; [29] R6_2.5.1          tidyselect_1.2.1  utf8_1.2.4        pillar_1.9.0     </span></span>
+<span><span class="co">#&gt; [33] magrittr_2.0.3    bslib_0.6.1       withr_3.0.0       tools_4.3.3      </span></span>
+<span><span class="co">#&gt; [37] pkgdown_2.0.7     cachem_1.0.8      desc_1.4.3</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
