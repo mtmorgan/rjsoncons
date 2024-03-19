@@ -177,6 +177,11 @@ class rquerypivot
             pivot_append_result(p);
         }
 
+    void flatten_transform(Json j)
+        {
+            result_.push_back(jsonpointer::flatten(j));
+        }
+
     // do_strings() / do_connection()
     sexp do_strings(
         const std::vector<std::string>& data,
@@ -295,6 +300,19 @@ public:
     sexp pivot(const sexp& con, double n_records)
         {
             return do_connection(con, n_records, &rquerypivot::pivot_transform);
+        }
+
+    // flatten
+
+    sexp flatten(const std::vector<std::string>& data)
+        {
+            return do_strings(data, &rquerypivot::flatten_transform);
+        }
+
+    sexp flatten(const sexp& con, double n_records)
+        {
+            return
+                do_connection(con, n_records, &rquerypivot::flatten_transform);
         }
 
     // as

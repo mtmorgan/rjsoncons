@@ -5,6 +5,20 @@
 #include "cpp11/declarations.hpp"
 #include <R_ext/Visibility.h>
 
+// flatten.cpp
+sexp cpp_j_flatten(const std::vector<std::string>& data, const std::string& data_type, const std::string& object_names, const std::string& as, const std::string& path, const std::string& path_type);
+extern "C" SEXP _rjsoncons_cpp_j_flatten(SEXP data, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_j_flatten(cpp11::as_cpp<cpp11::decay_t<const std::vector<std::string>&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type)));
+  END_CPP11
+}
+// flatten.cpp
+sexp cpp_j_flatten_con(const sexp& con, const std::string& data_type, const std::string& object_names, const std::string& as, const std::string& path, const std::string& path_type, const double n_records, const bool verbose);
+extern "C" SEXP _rjsoncons_cpp_j_flatten_con(SEXP con, SEXP data_type, SEXP object_names, SEXP as, SEXP path, SEXP path_type, SEXP n_records, SEXP verbose) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(cpp_j_flatten_con(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(con), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data_type), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(object_names), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(path_type), cpp11::as_cpp<cpp11::decay_t<const double>>(n_records), cpp11::as_cpp<cpp11::decay_t<const bool>>(verbose)));
+  END_CPP11
+}
 // patch.cpp
 sexp cpp_j_patch_apply(const std::string& data, const std::string& data_type, const std::string& patch, const std::string& as);
 extern "C" SEXP _rjsoncons_cpp_j_patch_apply(SEXP data, SEXP data_type, SEXP patch, SEXP as) {
@@ -80,6 +94,8 @@ extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_rjsoncons_cpp_as_r",          (DL_FUNC) &_rjsoncons_cpp_as_r,          3},
     {"_rjsoncons_cpp_as_r_con",      (DL_FUNC) &_rjsoncons_cpp_as_r_con,      5},
+    {"_rjsoncons_cpp_j_flatten",     (DL_FUNC) &_rjsoncons_cpp_j_flatten,     6},
+    {"_rjsoncons_cpp_j_flatten_con", (DL_FUNC) &_rjsoncons_cpp_j_flatten_con, 8},
     {"_rjsoncons_cpp_j_patch_apply", (DL_FUNC) &_rjsoncons_cpp_j_patch_apply, 4},
     {"_rjsoncons_cpp_j_patch_from",  (DL_FUNC) &_rjsoncons_cpp_j_patch_from,  5},
     {"_rjsoncons_cpp_j_patch_print", (DL_FUNC) &_rjsoncons_cpp_j_patch_print, 3},
