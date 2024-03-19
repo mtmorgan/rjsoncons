@@ -10,7 +10,7 @@
 #'
 #' @param as character(1) describing the return type.  For
 #'     `j_flatten()`, either "string" or "R". For other functions on
-#'     this page, one of "list", "data.frame", or "tibble".
+#'     this page, one of "R", "data.frame", or "tibble".
 #'
 #' @details
 #'
@@ -67,10 +67,10 @@ j_flatten <-
     result
 }
 
-j_find_format <-
+.j_find_format <-
     function(flattened, as)
 {
-    if (identical(as, "list")) {
+    if (identical(as, "R")) {
         flattened
     } else {
         keys <- names(flattened)
@@ -108,20 +108,18 @@ j_find_format <-
 #' @export
 j_find_values <-
     function(
-        data, values, object_names = "asis", as = "list",
+        data, values, object_names = "asis", as = "R",
         data_type = j_data_type(data)
     )
 {
-    types <- unique(vapply(values, typeof, character(1)))
     stopifnot(
-        length(types) == 1L,
-        .is_scalar_character(as), as %in% c("list", "data.frame", "tibble")
+        .is_scalar_character(as), as %in% c("R", "data.frame", "tibble")
     )
 
     flattened0 <- j_flatten(data, object_names, "R")
     flattened <- Filter(\(x) x %in% values, flattened0)
 
-    j_find_format(flattened, as)
+    .j_find_format(flattened, as)
 }
 
 #' @rdname flatten
@@ -141,20 +139,20 @@ j_find_values <-
 #' @export
 j_find_values_grep <-
     function(
-        data, pattern, ..., object_names = "asis", as = "list",
+        data, pattern, ..., object_names = "asis", as = "R",
         data_type = j_data_type(data)
     )
 {
     stopifnot(
         .is_scalar_character(pattern),
-        .is_scalar_character(as), as %in% c("list", "data.frame", "tibble")
+        .is_scalar_character(as), as %in% c("R", "data.frame", "tibble")
     )
 
     flattened <- j_flatten(data, object_names, "R")
     values <- unlist(flattened, use.names = FALSE)
     idx <- grepl(pattern, values, ...)
 
-    j_find_format(flattened[idx], as)
+    .j_find_format(flattened[idx], as)
 }
 
 #' @rdname flatten
@@ -181,13 +179,13 @@ j_find_values_grep <-
 #' @export
 j_find_keys <-
     function(
-        data, keys, object_names = "asis", as = "list",
+        data, keys, object_names = "asis", as = "R",
         data_type = j_data_type(data)
     )
 {
     stopifnot(
         is.character(keys), !anyNA(keys),
-        .is_scalar_character(as), as %in% c("list", "data.frame", "tibble")
+        .is_scalar_character(as), as %in% c("R", "data.frame", "tibble")
     )
 
     flattened <- j_flatten(data, object_names, "R")
@@ -196,7 +194,7 @@ j_find_keys <-
     idx1 <- unlist(keys1) %in% keys
     idx <- unique(rep(seq_along(keys1), lengths(keys1))[idx1])
 
-    j_find_format(flattened[idx], as)
+    .j_find_format(flattened[idx], as)
 }
 
 #' @rdname flatten
@@ -217,17 +215,17 @@ j_find_keys <-
 #' @export
 j_find_keys_grep <-
     function(
-        data, pattern, ..., object_names = "asis", as = "list",
+        data, pattern, ..., object_names = "asis", as = "R",
         data_type = j_data_type(data)
     )
 {
     stopifnot(
         .is_scalar_character(pattern),
-        .is_scalar_character(as), as %in% c("list", "data.frame", "tibble")
+        .is_scalar_character(as), as %in% c("R", "data.frame", "tibble")
     )
 
     flattened <- j_flatten(data, object_names, "R")
     idx <- grepl(pattern, names(flattened), ...)
 
-    j_find_format(flattened[idx], as)
+    .j_find_format(flattened[idx], as)
 }

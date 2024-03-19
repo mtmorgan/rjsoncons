@@ -1,3 +1,4 @@
+ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
 json_file <- system.file(package = "rjsoncons", "extdata", "flatten_data.json")
 json <- paste0(trimws(readLines(json_file, warn = FALSE)), collapse = "")
 ojson <- paste0(
@@ -54,6 +55,8 @@ expect_identical(j_flatten(json_file, "asis", as = "R"), flat_r)
 expect_identical(j_flatten(ojson), oflat)
 expect_identical(j_flatten(ojson, "sort"), flat)
 
+expect_identical(length(j_flatten(ndjson_file)), 4L)
+expect_identical(length(j_flatten(ndjson_file, n_records = 2)), 2L)
 
 ## j_find_values
 
@@ -85,6 +88,8 @@ expect_identical( # as = "tibble"
     ),
     info = "as = 'tibble'"
 )
+
+j_find_values(ndjson_file, "WA") |> str()
 
 expect_identical(j_find_values(json, "foo"), named_list)
 
