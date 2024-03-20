@@ -6,7 +6,8 @@
 \alias{j_find_values_grep}
 \alias{j_find_keys}
 \alias{j_find_keys_grep}
-\title{Flatten and find keys or values}
+\alias{flatten_NDJSON}
+\title{Flatten and find keys or values in JSON or NDJSON documents}
 \usage{
 j_flatten(
   data,
@@ -22,34 +23,46 @@ j_find_values(
   data,
   values,
   object_names = "asis",
-  as = "list",
+  as = "R",
+  ...,
+  n_records = Inf,
+  verbose = FALSE,
   data_type = j_data_type(data)
 )
 
 j_find_values_grep(
   data,
   pattern,
-  ...,
   object_names = "asis",
-  as = "list",
-  data_type = j_data_type(data)
+  as = "R",
+  ...,
+  n_records = Inf,
+  verbose = FALSE,
+  data_type = j_data_type(data),
+  grep_args = list()
 )
 
 j_find_keys(
   data,
   keys,
   object_names = "asis",
-  as = "list",
+  as = "R",
+  ...,
+  n_records = Inf,
+  verbose = FALSE,
   data_type = j_data_type(data)
 )
 
 j_find_keys_grep(
   data,
   pattern,
-  ...,
   object_names = "asis",
-  as = "list",
-  data_type = j_data_type(data)
+  as = "R",
+  ...,
+  n_records = Inf,
+  verbose = FALSE,
+  data_type = j_data_type(data),
+  grep_args = list()
 )
 }
 \arguments{
@@ -62,10 +75,9 @@ object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 
 \item{as}{character(1) describing the return type.  For
 \code{j_flatten()}, either "string" or "R". For other functions on
-this page, one of "list", "data.frame", or "tibble".}
+this page, one of "R", "data.frame", or "tibble".}
 
-\item{...}{for \code{j_find_values_grep()} and \code{j_find_keys_grep()},
-additional arguments passed to \code{grepl()}.}
+\item{...}{passed to \code{jsonlite::toJSON} when \code{data} is an \emph{R} object.}
 
 \item{n_records}{numeric(1) maximum number of NDJSON records parsed.}
 
@@ -75,17 +87,25 @@ files.}
 \item{data_type}{character(1) type of \code{data}; one of \code{"json"},
 \code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
 
-\item{values}{vector of one or more values, all of the same type
-(e.g., double, integer, character).}
+\item{values}{vector of one or more values to be matched exactly to
+values in the JSON document.}
 
 \item{pattern}{character(1) regular expression to match values or
 keys.}
+
+\item{grep_args}{list() additional arguments passed to \code{grepl()}
+when searching on values or paths.}
 
 \item{keys}{character() vector of one or more keys to be matched
 exactly to path elements.}
 }
 \value{
-\code{j_flatten()} returns a named list, where \code{names()} are the
+\code{j_flatten(as = "string")} (default) returns a JSON string
+representation of the flattened document, i.e., an object with keys
+the JSONpointer paths and values the values at the corresponding
+path in the original document.
+
+\code{j_flatten(as = "R")} returns a named list, where \code{names()} are the
 JSONpointer paths to each element in the JSON document and list
 elements are the corresponding values.
 
@@ -98,6 +118,10 @@ values, or a \code{data.frame} or \code{tibble} with columns \code{path} and
 \code{j_find_keys()} and \code{j_find_keys_grep()} returns a list,
 data.frame, or tibble similar to \code{j_find_values()} and
 \code{j_find_values_grep()}.
+
+For NDJSON documents, the result is a vector paralleling
+the NDJSON document, with \code{j_flatten()} applied to each element
+of the NDJSON document.
 }
 \description{
 \code{j_flatten()} transforms a JSON document into a list
@@ -114,16 +138,22 @@ a regular expression.
 
 \code{j_find_keys_grep()} finds paths to keys matching a
 regular expression.
+
+For NDJSON documents, the result is either a character
+vector (for \code{as = "string"}) or list of \emph{R} objects, one
+element for each NDJSON record.
 }
 \details{
-Functions documented on this page expand \code{data} into all key /
-value pairs. This is not suitable for very large JSON documents.
+Functions documented on this page expand \code{data} into all
+key / value pairs. This is not suitable for very large JSON
+documents.
 
-For \code{j_find_keys()}, the \code{key} must exactly match one or more
-consecutive keys in the JSONpointer path returned by \code{j_flatten()}.
+For \code{j_find_keys()}, the \code{key} must exactly match one or
+more consecutive keys in the JSONpointer path returned by
+\code{j_flatten()}.
 
-For \code{j_find_keys_grep()}, the \code{key} can define a pattern that spans
-across JSONpointer path elements.
+For \code{j_find_keys_grep()}, the \code{key} can define a pattern
+that spans across JSONpointer path elements.
 }
 \examples{
 json <- '{
@@ -159,4 +189,12 @@ j_find_keys_grep(json, "discard", as = "tibble")
 j_find_keys_grep(json, "1", as = "tibble")
 j_find_keys_grep(json, "car.*/101", as = "tibble")
 
+## NDJSON
+
+ndjson_file <-
+    system.file(package = "rjsoncons", "extdata", "example.ndjson")
+j_flatten(ndjson_file) |>
+    noquote()
+j_find_values_grep(ndjson_file, "e") |>
+    str()
 }
