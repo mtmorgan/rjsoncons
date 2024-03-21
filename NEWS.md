@@ -1,5 +1,7 @@
 # rjsoncons 1.3.0
 
+- (1.2.0.9602) compile on Ubuntu 18.04
+  <https://github.com/mtmorgan/rjsoncons/issues/3>
 - (1.2.0.9503) add JSON patch support with `j_patch_apply()`,
   `j_patch_from()`, and `j_patch_op()`.
 - (1.2.0.9401) internal C++ code cleanup and refactoring.

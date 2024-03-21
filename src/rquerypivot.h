@@ -5,14 +5,17 @@
 #include <jsoncons_ext/jmespath/jmespath.hpp>
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <cpp11.hpp>
 
 #include "enum_index.h"
 #include "readbinbuf.h"
 #include "progressbar.h"
 #include "j_as.h"
 
-using namespace cpp11;
+#include <cpp11/sexp.hpp>
+#include <cpp11/list.hpp>
+#include <cpp11/protect.hpp>    // 'stop'
+#include <cpp11/function.hpp>   // 'package'
+
 using namespace jsoncons;
 using namespace rjsoncons;
 

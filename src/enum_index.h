@@ -3,7 +3,8 @@
 
 #include <string>
 #include <map>
-#include <cpp11.hpp>
+
+#include <cpp11/protect.hpp>
 
 namespace rjsoncons {           // enums
 

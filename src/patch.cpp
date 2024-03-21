@@ -1,12 +1,12 @@
-#include <cpp11/declarations.hpp>
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpatch/jsonpatch.hpp>
 
 #include "enum_index.h"
 #include "j_as.h"
 
+#include <cpp11/sexp.hpp>
+
 using namespace jsoncons;
-using namespace cpp11;
 
 [[cpp11::register]]
 sexp cpp_j_patch_apply(

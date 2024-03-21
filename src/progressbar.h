@@ -2,8 +2,11 @@
 #define RJSONCONS_PROGRESSBAR_H
 
 #include <string>
-#include <cpp11.hpp>
 #include <cli/progress.h>
+
+#include <cpp11/sexp.hpp>
+
+using namespace cpp11;
 
 class progressbar {
     sexp bar_;
