@@ -1,9 +1,11 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 
-#include <cpp11/declarations.hpp>
 #include "enum_index.h"
 #include "rquerypivot.h"
+
+#include <cpp11/sexp.hpp>
+#include <cpp11/protect.hpp> // 'stop'
 
 using namespace jsoncons;
 
