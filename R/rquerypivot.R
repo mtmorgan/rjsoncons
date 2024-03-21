@@ -71,7 +71,7 @@ j_query <-
     )
 {
     .j_valid(data_type, object_names, path, path_type, n_records, verbose)
-    stopifnot(as %in% c("string", "R"))
+    stopifnot(.is_scalar_character(as), as %in% c("string", "R"))
 
     data <- .as_json_string(data, data_type, ...)
     result <- do_cpp(

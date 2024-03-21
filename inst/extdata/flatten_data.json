@@ -1,0 +1,12 @@
+{
+    "discards": {
+        "1000": "Record does not exist",
+        "1004": "Queue limit exceeded",
+        "1010": "Discarding timed-out partial msg"
+    },
+    "warnings": {
+        "0": "Phone number missing country code",
+        "1": "State code missing",
+        "2": "Zip code missing"
+    }
+}
