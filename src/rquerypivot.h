@@ -6,12 +6,15 @@
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 
-#include <cpp11/list.hpp>
-
 #include "enum_index.h"
 #include "readbinbuf.h"
 #include "progressbar.h"
 #include "j_as.h"
+
+#include <cpp11/sexp.hpp>
+#include <cpp11/list.hpp>
+#include <cpp11/protect.hpp>    // 'stop'
+#include <cpp11/function.hpp>   // 'package'
 
 using namespace jsoncons;
 using namespace rjsoncons;

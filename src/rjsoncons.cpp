@@ -5,7 +5,11 @@
 #include "readbinbuf.h"
 #include "rquerypivot.h"
 
-using namespace jsoncons;        // convenience
+#include <cpp11/function.hpp>   // includes 'package'
+#include <cpp11/sexp.hpp>
+#include <cpp11/protect.hpp>    // 'stop'
+
+using namespace jsoncons;       // convenience
 
 function readbinbuf::read_bin = cpp11::package("base")["readBin"];
 

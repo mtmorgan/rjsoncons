@@ -5,6 +5,7 @@
 #include <cli/progress.h>
 
 #include <cpp11/sexp.hpp>
+
 using namespace cpp11;
 
 class progressbar {

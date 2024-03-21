@@ -12,6 +12,7 @@ using namespace rjsoncons;
 #include <cpp11/integers.hpp>
 #include <cpp11/doubles.hpp>
 #include <cpp11/strings.hpp>
+#include <cpp11/protect.hpp>    // stop
 
 using namespace cpp11;
 

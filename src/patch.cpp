@@ -1,9 +1,10 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpatch/jsonpatch.hpp>
 
-#include <cpp11/sexp.hpp>
 #include "enum_index.h"
 #include "j_as.h"
+
+#include <cpp11/sexp.hpp>
 
 using namespace jsoncons;
 
