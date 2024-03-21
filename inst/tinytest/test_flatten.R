@@ -72,7 +72,7 @@ expect_identical(
         as = "data.frame"
     ),
     data.frame(
-        key = names(flat_r[c(2, 5)]),
+        path = names(flat_r[c(2, 5)]),
         value = unlist(flat_r[c(2, 5)], use.names = FALSE)
     ),
     info = "as = 'data.frame'"
@@ -83,7 +83,7 @@ expect_identical( # as = "tibble"
         as = "tibble"
     ),
     tibble::tibble(
-        key = names(flat_r[c(2, 5)]),
+        path = names(flat_r[c(2, 5)]),
         value = unlist(flat_r[c(2, 5)], use.names = FALSE)
     ),
     info = "as = 'tibble'"

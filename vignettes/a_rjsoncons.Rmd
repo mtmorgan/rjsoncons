@@ -400,8 +400,7 @@ j_find_keys_grep(codes, "card.*/100", as = "tibble") # span key delimiters
 ```
 
 Keys are always character vectors, but values can be of different
-type; `j_find_values()` supports searches on these, provided the
-search values are of the same type.
+type; `j_find_values()` supports searches on these.
 
 ```{r}
 j <- '{"x":[1,[2, 3]],"y":{"a":4}}'
@@ -415,7 +414,7 @@ contained.
 
 ```{r}
 j_find_values(j, 3, as = "tibble")
-## path to '3' is '/x/1/1', so containing object is at 'x/1'
+## path to '3' is '/x/1/1', so containing object is at '/x/1'
 j_query(j, "/x/1")
 j_query(j, "/x/1", as = "R")
 ```

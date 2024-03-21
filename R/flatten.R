@@ -41,12 +41,12 @@
         if (identical(as, "R")) {
             json_record
         } else {
-            keys <- names(json_record)
+            paths <- names(json_record)
             values <- unlist(json_record, use.names = FALSE)
             switch(
                 as,
-                data.frame = data.frame(key = keys, value = values),
-                tibble = tibble::tibble(key = keys, value = values)
+                data.frame = data.frame(path = paths, value = values),
+                tibble = tibble::tibble(path = paths, value = values)
             )
         }
     }, as)
@@ -62,7 +62,7 @@
 #' @title Flatten and find keys or values in JSON or NDJSON documents
 #'
 #' @description `j_flatten()` transforms a JSON document into a list
-#'     where names are JSONpointer 'keys' and elements are the
+#'     where names are JSONpointer 'paths' and elements are the
 #'     corresponding 'values' from the JSON document.
 #'
 #' @inheritParams j_query
@@ -72,14 +72,14 @@
 #'     this page, one of "R", "data.frame", or "tibble".
 #'
 #' @details Functions documented on this page expand `data` into all
-#'     key / value pairs. This is not suitable for very large JSON
+#'     path / value pairs. This is not suitable for very large JSON
 #'     documents.
 #'
 #' @return
 #'
 #' `j_flatten(as = "string")` (default) returns a JSON string
 #' representation of the flattened document, i.e., an object with keys
-#' the JSONpointer paths and values the values at the corresponding
+#' the JSONpointer paths and values the value at the corresponding
 #' path in the original document.
 #'
 #' `j_flatten(as = "R")` returns a named list, where `names()` are the
@@ -171,7 +171,7 @@ j_find_values <-
 #'     a regular expression.
 #'
 #' @param pattern character(1) regular expression to match values or
-#'     keys.
+#'     paths.
 #'
 #' @param grep_args list() additional arguments passed to `grepl()`
 #'     when searching on values or paths.
@@ -243,10 +243,10 @@ j_find_keys <-
         n_records = n_records, verbose = verbose, data_type = data_type
     )
     flattened <- lapply(result, function(json_record) {
-        keys0 <- names(json_record)
-        keys1 <- strsplit(keys0, "/")
-        idx1 <- unlist(keys1) %in% keys
-        idx <- unique(rep(seq_along(keys1), lengths(keys1))[idx1])
+        paths <- names(json_record)
+        keys0 <- strsplit(paths, "/")
+        idx0 <- unlist(keys0) %in% keys
+        idx <- unique(rep(seq_along(keys0), lengths(keys0))[idx0])
         json_record[idx]
     })
 
