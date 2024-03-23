@@ -16,7 +16,8 @@ j_flatten(
   ...,
   n_records = Inf,
   verbose = FALSE,
-  data_type = j_data_type(data)
+  data_type = j_data_type(data),
+  path_type = "JSONpointer"
 )
 
 j_find_values(
@@ -27,7 +28,8 @@ j_find_values(
   ...,
   n_records = Inf,
   verbose = FALSE,
-  data_type = j_data_type(data)
+  data_type = j_data_type(data),
+  path_type = "JSONpointer"
 )
 
 j_find_values_grep(
@@ -36,10 +38,11 @@ j_find_values_grep(
   object_names = "asis",
   as = "R",
   ...,
+  grep_args = list(),
   n_records = Inf,
   verbose = FALSE,
   data_type = j_data_type(data),
-  grep_args = list()
+  path_type = "JSONpointer"
 )
 
 j_find_keys(
@@ -50,7 +53,8 @@ j_find_keys(
   ...,
   n_records = Inf,
   verbose = FALSE,
-  data_type = j_data_type(data)
+  data_type = j_data_type(data),
+  path_type = "JSONpointer"
 )
 
 j_find_keys_grep(
@@ -59,10 +63,11 @@ j_find_keys_grep(
   object_names = "asis",
   as = "R",
   ...,
+  grep_args = list(),
   n_records = Inf,
   verbose = FALSE,
   data_type = j_data_type(data),
-  grep_args = list()
+  path_type = "JSONpointer"
 )
 }
 \arguments{
@@ -87,11 +92,14 @@ files.}
 \item{data_type}{character(1) type of \code{data}; one of \code{"json"},
 \code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
 
+\item{path_type}{character(1) type of 'path' to be returned; one of
+'"JSONpointer"', '"JSONpath"'; '"JMESpath"' is not supported.}
+
 \item{values}{vector of one or more values to be matched exactly to
 values in the JSON document.}
 
 \item{pattern}{character(1) regular expression to match values or
-keys.}
+paths.}
 
 \item{grep_args}{list() additional arguments passed to \code{grepl()}
 when searching on values or paths.}
@@ -102,7 +110,7 @@ exactly to path elements.}
 \value{
 \code{j_flatten(as = "string")} (default) returns a JSON string
 representation of the flattened document, i.e., an object with keys
-the JSONpointer paths and values the values at the corresponding
+the JSONpointer paths and values the value at the corresponding
 path in the original document.
 
 \code{j_flatten(as = "R")} returns a named list, where \code{names()} are the
@@ -125,7 +133,7 @@ of the NDJSON document.
 }
 \description{
 \code{j_flatten()} transforms a JSON document into a list
-where names are JSONpointer 'keys' and elements are the
+where names are JSONpointer 'paths' and elements are the
 corresponding 'values' from the JSON document.
 
 \code{j_find_values()} finds paths to exactly matching
@@ -145,7 +153,7 @@ element for each NDJSON record.
 }
 \details{
 Functions documented on this page expand \code{data} into all
-key / value pairs. This is not suitable for very large JSON
+path / value pairs. This is not suitable for very large JSON
 documents.
 
 For \code{j_find_keys()}, the \code{key} must exactly match one or
@@ -153,7 +161,7 @@ more consecutive keys in the JSONpointer path returned by
 \code{j_flatten()}.
 
 For \code{j_find_keys_grep()}, the \code{key} can define a pattern
-that spans across JSONpointer path elements.
+that spans across JSONpointer or JSONpath elements.
 }
 \examples{
 json <- '{
@@ -169,7 +177,12 @@ json <- '{
     }
 }'
 
+## JSONpointer
 j_flatten(json) |>
+    cat("\n")
+
+## JSONpath
+j_flatten(json, as = "R", path_type = "JSONpath") |>
     str()
 
 j_find_values(json, "Zip code missing", as = "tibble")
@@ -181,13 +194,22 @@ j_find_values(
 
 j_find_values_grep(json, "missing", as = "tibble")
 
+## JSONpath
+j_find_values_grep(json, "missing", as = "tibble", path_type = "JSONpath")
+
 j_find_keys(json, "discards", as = "tibble")
 j_find_keys(json, "1", as = "tibble")
 j_find_keys(json, c("discards", "warnings"), as = "tibble")
 
+## JSONpath
+j_find_keys(json, "discards", as = "tibble", path_type = "JSONpath")
+
 j_find_keys_grep(json, "discard", as = "tibble")
 j_find_keys_grep(json, "1", as = "tibble")
 j_find_keys_grep(json, "car.*/101", as = "tibble")
+
+## JSONpath
+j_find_keys_grep(json, "car.*\\\\['101", as = "tibble", path_type = "JSONpath")
 
 ## NDJSON
 

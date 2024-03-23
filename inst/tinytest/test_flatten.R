@@ -47,6 +47,34 @@ flat_r <- list(
 )
 named_list <- structure(list(), names = character(0))
 
+## .j_find_keys_from_path
+
+.j_find_keys_from_path <- rjsoncons:::.j_find_keys_from_path
+
+expect_identical(.j_find_keys_from_path("/", "JSONpointer"), list(character()))
+expect_identical(.j_find_keys_from_path("/a", "JSONpointer"), list("a"))
+expect_identical(
+    .j_find_keys_from_path("/a/b", "JSONpointer"),
+    list(c("a", "b"))
+)
+expect_identical(
+    .j_find_keys_from_path("/a/1", "JSONpointer"),
+    list(c("a", "1"))
+)
+
+expect_identical(.j_find_keys_from_path("$", "JSONpath"), list(character()))
+expect_identical(.j_find_keys_from_path("$['a']", "JSONpath"), list("a"))
+expect_identical(
+    .j_find_keys_from_path("$['a']['b']", "JSONpath"),
+    list(c("a", "b"))
+)
+expect_identical(
+    .j_find_keys_from_path("$['a'][1]", "JSONpath"),
+    list(c("a", "1"))
+)
+
+expect_error(.j_find_keys_from_path("@", "JMESpath"))
+
 ## j_flatten
 
 expect_identical(j_flatten(json), flat)

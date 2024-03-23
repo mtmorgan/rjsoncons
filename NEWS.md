@@ -1,6 +1,7 @@
 # rjsoncons 1.3.0
 
-- (1.2.0.9703) add key and value search with `j_flatten()`, `j_find_*()`
+- (1.2.0.9704) add key and value search with `j_flatten()`,
+  `j_find_*()` supporting JSONpointer and JSONpath.
 - (1.2.0.9602) compile on Ubuntu 18.04
   <https://github.com/mtmorgan/rjsoncons/issues/3>
 - (1.2.0.9503) add JSON patch support with `j_patch_apply()`,

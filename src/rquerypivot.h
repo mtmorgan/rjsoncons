@@ -158,6 +158,17 @@ class rquerypivot
             }
         }
 
+    // flatten
+
+    Json flatten(Json j)
+        {
+            switch(path_type_) {
+            case path_type::JSONpointer: return jsonpointer::flatten(j);
+            case path_type::JSONpath: return jsonpath::flatten(j);
+            default: cpp11::stop("`j_flatten()` unsupported 'path_type'");
+            }
+        }
+
     // transformers for use in do_strings() / do_connection()
     void identity_transform(Json j)
         {
@@ -179,7 +190,7 @@ class rquerypivot
 
     void flatten_transform(Json j)
         {
-            result_.push_back(jsonpointer::flatten(j));
+            result_.push_back(flatten(j));
         }
 
     // do_strings() / do_connection()

@@ -1,11 +1,15 @@
 ## internal implementation of .j_flatten, always returns a list to
 ## simplify j_find_*() processing of both JSON & NDJSON
 .j_flatten <-
-    function(data, object_names, as, ..., n_records, verbose, data_type)
+    function(
+        data, object_names, as, ..., n_records, verbose,
+        data_type, path_type)
 {
     ## initialize constants to enable code re-use
-    path <- ""
-    path_type <- j_path_type(path)
+    path <- switch(
+        path_type, JSONpointer = "", JSONpath = "$",
+        stop("unsupported path_type '", path_type, "'", call. = FALSE)
+    )
 
     ## validity
     .j_valid(data_type, object_names, path, path_type, n_records, verbose)
@@ -31,6 +35,27 @@
     )
     args <- c(list(pattern = pattern, x = x), grep_args)
     do.call(grepl, args)
+}
+
+## internal function to find keys from JSONpointer or JSONpath paths
+.j_find_keys_from_path <-
+    function(path, path_type)
+{
+    if (identical(path_type, "JSONpointer")) {
+        path <- sub("^/", "", path)
+        strsplit(path, "/")
+    } else if (identical(path_type, "JSONpath")) {
+        ## FIXME: the path needs to be parsed propertly, not via
+        ## regex. Also, paths contain enough information to
+        ## distinguish between string and integer keys, but all keys
+        ## are treated as integers
+        path <- sub("^\\$", "", path)
+        path <- sub("^\\[(.*)\\]$", "\\1", path)
+        keys0 <- strsplit(path, "][", fixed = TRUE)
+        lapply(keys0, sub, pattern = "^'(.*)'$", replacement = "\\1")
+    } else {
+        stop("unsupported path_type '", path_type, "'", call. = FALSE)
+    }
 }
 
 ## internal function to format j_find_*() result
@@ -71,6 +96,9 @@
 #'     `j_flatten()`, either "string" or "R". For other functions on
 #'     this page, one of "R", "data.frame", or "tibble".
 #'
+#' @param path_type character(1) type of 'path' to be returned; one of
+#'     '"JSONpointer"', '"JSONpath"'; '"JMESpath"' is not supported.
+#'
 #' @details Functions documented on this page expand `data` into all
 #'     path / value pairs. This is not suitable for very large JSON
 #'     documents.
@@ -100,20 +128,26 @@
 #'     }
 #' }'
 #'
+#' ## JSONpointer
 #' j_flatten(json) |>
+#'     cat("\n")
+#'
+#' ## JSONpath
+#' j_flatten(json, as = "R", path_type = "JSONpath") |>
 #'     str()
 #'
 #' @export
 j_flatten <-
     function(
         data, object_names = "asis", as = "string", ...,
-        n_records = Inf, verbose = FALSE, data_type = j_data_type(data)
+        n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data), path_type = "JSONpointer"
     )
 {
     stopifnot(.is_scalar_character(as), as %in% c("string", "R"))
     result <- .j_flatten(
-        data, object_names, as, ...,
-        n_records = n_records, verbose = verbose, data_type = data_type
+        data, object_names, as, ..., n_records = n_records, verbose = verbose,
+        data_type = data_type, path_type = path_type
     )
     if (data_type[[1]] %in% c("json", "R"))
         result <- result[[1]]
@@ -147,7 +181,8 @@ j_flatten <-
 j_find_values <-
     function(
         data, values, object_names = "asis", as = "R", ...,
-        n_records = Inf, verbose = FALSE, data_type = j_data_type(data)
+        n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data), path_type = "JSONpointer"
     )
 {
     stopifnot(
@@ -155,8 +190,8 @@ j_find_values <-
     )
 
     result <- .j_flatten(
-        data, object_names, "R", ...,
-        n_records = n_records, verbose = verbose, data_type = data_type
+        data, object_names, "R", ..., n_records = n_records, verbose = verbose,
+        data_type = data_type, path_type = path_type
     )
     flattened <- lapply(result, function(json_record) {
         Filter(\(x) x %in% values, json_record)
@@ -179,12 +214,15 @@ j_find_values <-
 #' @examples
 #' j_find_values_grep(json, "missing", as = "tibble")
 #'
+#' ## JSONpath
+#' j_find_values_grep(json, "missing", as = "tibble", path_type = "JSONpath")
+#'
 #' @export
 j_find_values_grep <-
     function(
         data, pattern, object_names = "asis", as = "R", ...,
-        n_records = Inf, verbose = FALSE, data_type = j_data_type(data),
-        grep_args = list()
+        grep_args = list(), n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data), path_type = "JSONpointer"
     )
 {
     stopifnot(
@@ -194,8 +232,8 @@ j_find_values_grep <-
     )
 
     result <- .j_flatten(
-        data, object_names, "R", ...,
-        n_records = n_records, verbose = verbose, data_type = data_type
+        data, object_names, "R", ..., n_records = n_records, verbose = verbose,
+        data_type = data_type, path_type = path_type
     )
     flattened <- lapply(result, function(json_record, grep_args) {
         values <- unlist(json_record, use.names = FALSE)
@@ -226,11 +264,15 @@ j_find_values_grep <-
 #' j_find_keys(json, "1", as = "tibble")
 #' j_find_keys(json, c("discards", "warnings"), as = "tibble")
 #'
+#' ## JSONpath
+#' j_find_keys(json, "discards", as = "tibble", path_type = "JSONpath")
+#'
 #' @export
 j_find_keys <-
     function(
         data, keys, object_names = "asis", as = "R", ...,
-        n_records = Inf, verbose = FALSE, data_type = j_data_type(data)
+        n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data), path_type = "JSONpointer"
     )
 {
     stopifnot(
@@ -239,12 +281,11 @@ j_find_keys <-
     )
 
     result <- .j_flatten(
-        data, object_names, "R", ...,
-        n_records = n_records, verbose = verbose, data_type = data_type
+        data, object_names, "R", ..., n_records = n_records, verbose = verbose,
+        data_type = data_type, path_type = path_type
     )
     flattened <- lapply(result, function(json_record) {
-        paths <- names(json_record)
-        keys0 <- strsplit(paths, "/")
+        keys0 <- .j_find_keys_from_path(names(json_record), path_type)
         idx0 <- unlist(keys0) %in% keys
         idx <- unique(rep(seq_along(keys0), lengths(keys0))[idx0])
         json_record[idx]
@@ -259,19 +300,22 @@ j_find_keys <-
 #'     regular expression.
 #'
 #' @details For `j_find_keys_grep()`, the `key` can define a pattern
-#'     that spans across JSONpointer path elements.
+#'     that spans across JSONpointer or JSONpath elements.
 #'
 #' @examples
 #' j_find_keys_grep(json, "discard", as = "tibble")
 #' j_find_keys_grep(json, "1", as = "tibble")
 #' j_find_keys_grep(json, "car.*/101", as = "tibble")
 #'
+#' ## JSONpath
+#' j_find_keys_grep(json, "car.*\\['101", as = "tibble", path_type = "JSONpath")
+#'
 #' @export
 j_find_keys_grep <-
     function(
         data, pattern, object_names = "asis", as = "R", ...,
-        n_records = Inf, verbose = FALSE, data_type = j_data_type(data),
-        grep_args = list()
+        grep_args = list(), n_records = Inf, verbose = FALSE,
+        data_type = j_data_type(data), path_type = "JSONpointer"
     )
 {
     stopifnot(
@@ -280,8 +324,8 @@ j_find_keys_grep <-
     )
 
     result <- .j_flatten(
-        data, object_names, "R", ...,
-        n_records = n_records, verbose = verbose, data_type = data_type
+        data, object_names, "R", ..., n_records = n_records, verbose = verbose,
+        data_type = data_type, path_type = path_type
     )
     flattened <- lapply(result, function(json_record, grep_args) {
         idx <- .j_find_grepl(pattern, names(json_record), grep_args)

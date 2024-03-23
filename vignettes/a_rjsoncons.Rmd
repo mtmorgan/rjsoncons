@@ -374,8 +374,8 @@ j_flatten(codes, as = "R") |>
     str()
 ```
 
-The names of the list are JSONpointer paths, so can be used in
-`j_query()` and `j_pivot()` as appropriate
+The names of the list are JSONpointer (default) or JSONpath, so can be
+used in `j_query()` and `j_pivot()` as appropriate
 
 ```{r}
 j_query(codes, "/discards/1010")
@@ -419,9 +419,28 @@ j_query(j, "/x/1")
 j_query(j, "/x/1", as = "R")
 ```
 
-The first argument to `j_find_*()` can be a JSON object, file, or
-URL. NDJSON files are flattened into character vector, with each
-element the flattened version of the corresponding NDJSON record.
+Both JSONpointer and JSONpath are supported; an advantage of the
+latter is that the path distinguishes between integer-valued
+(unquoted) and string-valued (quoted) keys
+
+```{r}
+j_find_values(j, 3, as = "tibble", path_type = "JSONpath")
+```
+
+The first argument to `j_find_*()` can be an *R* object, JSON or
+NDJSON string, file, or URL. Using `j_find_values()` with an *R*
+object and JSONpath `path_type` leads to a path that is easily
+converted into an *R* index: double the `[` and `]` in the path and
+increment each numerical index by 1:
+
+```{r}
+l <- j |> as_r()
+j_find_values(l, 3, auto_unbox = TRUE, path_type = "JSONpath", as = "tibble")
+l[['x']][[2]] # siblings
+```
+
+NDJSON files are flattened into character vectors, with
+each element the flattened version of the corresponding NDJSON record.
 
 # The JSON parser
 
