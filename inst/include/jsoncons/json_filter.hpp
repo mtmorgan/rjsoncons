@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -22,18 +22,11 @@ public:
 private:
     basic_json_visitor<char_type>* destination_;
 
-    // noncopyable 
-    basic_json_filter(const basic_json_filter&) = delete;
-    basic_json_filter& operator=(const basic_json_filter&) = delete;
 public:
     basic_json_filter(basic_json_visitor<char_type>& visitor)
         : destination_(std::addressof(visitor))
     {
     }
-
-    // moveable
-    basic_json_filter(basic_json_filter&&) = default;
-    basic_json_filter& operator=(basic_json_filter&&) = default;
 
     basic_json_visitor<char_type>& destination()
     {

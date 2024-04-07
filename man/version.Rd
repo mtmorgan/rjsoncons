@@ -8,7 +8,8 @@ version()
 }
 \value{
 \code{version()} returns a character(1) major.minor.patch
-version string .
+version string, possibly with git hash for between-release
+version.
 }
 \description{
 \code{version()} reports the version of the C++ jsoncons

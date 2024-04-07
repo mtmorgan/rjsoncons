@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  
@@ -218,7 +218,7 @@ public:
     void read_to(basic_json_visitor<CharT>& visitor,
                 std::error_code& ec) override
     {
-        if (send_json_event(cursor_visitor_.event(), visitor, *this, ec))
+        if (cursor_visitor_.event().send_json_event(visitor, *this, ec))
         {
             read_next(visitor, ec);
         }
@@ -349,8 +349,10 @@ using csv_string_cursor = basic_csv_cursor<char,jsoncons::string_source<char>>;
 using wcsv_stream_cursor = basic_csv_cursor<wchar_t,jsoncons::stream_source<wchar_t>>;
 using wcsv_string_cursor = basic_csv_cursor<wchar_t,jsoncons::string_source<wchar_t>>;
 
-using csv_cursor = basic_csv_cursor<char>;
-using wcsv_cursor = basic_csv_cursor<wchar_t>;
+#if !defined(JSONCONS_NO_DEPRECATED)
+JSONCONS_DEPRECATED_MSG("Instead, use csv_stream_cursor") typedef csv_stream_cursor csv_cursor;
+JSONCONS_DEPRECATED_MSG("Instead, use wcsv_stream_cursor") typedef wcsv_stream_cursor wcsv_cursor;
+#endif
 
 }}
 

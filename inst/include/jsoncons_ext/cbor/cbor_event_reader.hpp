@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -18,7 +18,7 @@
 #include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/item_event_visitor.hpp>
 #include <jsoncons/json_exception.hpp>
-#include <jsoncons/item_event_reader.hpp>
+#include <jsoncons/staj_event_reader.hpp>
 #include <jsoncons/source.hpp>
 #include <jsoncons_ext/cbor/cbor_parser.hpp>
 
@@ -26,7 +26,7 @@ namespace jsoncons {
 namespace cbor {
 
     template<class Source=jsoncons::binary_stream_source,class Allocator=std::allocator<char>>
-    class cbor_event_reader : public basic_item_event_reader<char>, private virtual ser_context
+    class cbor_event_reader : public basic_staj_event_reader<char>, private virtual ser_context
     {
     public:
         using source_type = Source;
@@ -152,7 +152,7 @@ namespace cbor {
             return event_receiver_.is_typed_array();
         }
 
-        const basic_item_event<char_type>& current() const override
+        const basic_staj_event<char_type>& current() const override
         {
             return event_receiver_.event();
         }

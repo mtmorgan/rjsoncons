@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -165,7 +165,7 @@ public:
     void read_to(basic_json_visitor<char_type>& visitor,
                 std::error_code& ec) override
     {
-        if (send_json_event(cursor_visitor_.event(), visitor, *this, ec))
+        if (cursor_visitor_.event().send_json_event(visitor, *this, ec))
         {
             read_next(visitor, ec);
         }

@@ -9,10 +9,13 @@ NULL
 #'     library in use.
 #'
 #' @return `version()` returns a character(1) major.minor.patch
-#'     version string .
+#'     version string, possibly with git hash for between-release
+#'     version.
 #'
 #' @examples
 #' version()
 #'
 #' @export
-version <- cpp_version
+version <- function() {
+    paste(cpp_version(), "[+57967655d]")
+}

@@ -47,3 +47,11 @@ cpp_j_pivot <- function(data, data_type, object_names, as, path, path_type) {
 cpp_j_pivot_con <- function(con, data_type, object_names, as, path, path_type, n_records, verbose) {
   .Call(`_rjsoncons_cpp_j_pivot_con`, con, data_type, object_names, as, path, path_type, n_records, verbose)
 }
+
+cpp_j_is_valid <- function(data, schema) {
+  .Call(`_rjsoncons_cpp_j_is_valid`, data, schema)
+}
+
+cpp_j_validate <- function(data, schema) {
+  .Call(`_rjsoncons_cpp_j_validate`, data, schema)
+}

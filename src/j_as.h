@@ -5,6 +5,8 @@
 #include <jsoncons/json.hpp>
 
 using namespace jsoncons;
+
+#include "enum_index.h"
 using namespace rjsoncons;
 
 #include <cpp11/list.hpp>

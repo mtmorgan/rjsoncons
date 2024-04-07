@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -36,7 +36,7 @@ enum class csv_mapping_kind : uint8_t
 };
 
 #if !defined(JSONCONS_NO_DEPRECATED)
-using mapping_kind = csv_mapping_kind;
+JSONCONS_DEPRECATED_MSG("Instead, use csv_mapping_kind") typedef csv_mapping_kind  mapping_kind;
 JSONCONS_DEPRECATED_MSG("Instead, use quote_style_kind") typedef quote_style_kind quote_styles;
 JSONCONS_DEPRECATED_MSG("Instead, use quote_style_kind") typedef quote_style_kind quote_style_type;
 JSONCONS_DEPRECATED_MSG("Instead, use csv_mapping_kind") typedef csv_mapping_kind mapping_type;
@@ -593,6 +593,7 @@ public:
     }
 
 #if !defined(JSONCONS_NO_DEPRECATED)
+    JSONCONS_DEPRECATED_MSG("Instead, use mapping_kind")
     csv_mapping_kind mapping() const 
     {
         return mapping_kind();
@@ -876,6 +877,7 @@ public:
     }
 
 //#if !defined(JSONCONS_NO_DEPRECATED)
+    JSONCONS_DEPRECATED_MSG("Instead, use mapping_kind")
     basic_csv_options& mapping(csv_mapping_kind value)
     {
         this->mapping_ = value;

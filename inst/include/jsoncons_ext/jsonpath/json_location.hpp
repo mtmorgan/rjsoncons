@@ -1,4 +1,4 @@
-﻿// Copyright 2013-2023 Daniel Parker
+﻿// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -859,6 +859,78 @@ namespace jsonpath {
         }
 
         return buffer;
+    }
+
+    template<class Json>
+    std::pair<Json*,bool> replace(Json& root_value, const basic_json_location<typename Json::char_type>& location, const Json& value,
+        bool create_if_missing=false)
+    {
+        Json* p_current = std::addressof(root_value);
+        bool found = false;
+
+        std::size_t last = location.size() == 0 ? 0 : location.size() - 1;
+        for (std::size_t i = 0; i < location.size(); ++i)
+        {
+            const auto& element = location[i];
+            if (element.has_name() && p_current->is_object())
+            {
+                auto it = p_current->find(element.name());
+                if (it != p_current->object_range().end())
+                {
+                    p_current = std::addressof(it->value());
+                    if (i == last)
+                    {
+                        *p_current = std::move(value);
+                        found = true;
+                    }
+                }
+                else
+                {
+                    if (create_if_missing)
+                    {
+                        if (i == last)
+                        {
+                            auto result = p_current->try_emplace(element.name(), value);
+                            p_current = std::addressof(result.first->value());
+                            found = true;
+                        }
+                        else
+                        {
+                            auto result = p_current->try_emplace(element.name(), Json{});
+                            p_current = std::addressof(result.first->value());
+                        }
+                    }
+                }
+            }
+            else if (element.has_index() && p_current->is_array())
+            {
+                if (element.index() < p_current->size())
+                {
+                    p_current = std::addressof(p_current->at(element.index()));
+                    if (i == last)
+                    {
+                        *p_current = value;
+                        found = true;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (found)
+        {
+            return std::make_pair(p_current,true);
+        }
+        else
+        {
+            return std::make_pair(p_current, false);
+        }
     }
 
     using json_location = basic_json_location<char>;
