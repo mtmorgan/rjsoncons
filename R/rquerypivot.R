@@ -37,7 +37,7 @@
 #'     files.
 #'
 #' @param data_type character(1) type of `data`; one of `"json"`,
-#'     `"ndjson"`. Inferred from `data` using `j_data_type()`.
+#'     `"ndjson"`, or a value returned by `j_data_type()`.
 #' 
 #' @param path_type character(1) type of `path`; one of
 #'     `"JSONpointer"`, `"JSONpath"`, `"JMESpath"`. Inferred from

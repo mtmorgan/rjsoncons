@@ -21,16 +21,19 @@ knitr::opts_chunk$set(
 
 # Introduction & installation
 
-This package provides the header-only '[jsoncons][]' library for
-manipulating JSON objects. Use [rjsoncons][] for querying JSON or R
-objects using [JMESpath][], [JSONpath][], or [JSONpointer][]. Link to
-the package for direct access to the 'jsoncons' C++ library.
+Use [rjsoncons][] for querying JSON, NDJSON, or R objects using
+[JMESpath][], [JSONpath][], or [JSONpointer][]. [rjsoncons][] supports
+[JSON patch][] for document editing, and [JSON schema][]
+validation. Link to the package for direct access to additional
+features in the '[jsoncons][]' C++ library.
 
 [jsoncons]: https://github.com/danielaparker/jsoncons/
 [rjsoncons]: https://mtmorgan.github.io/rjsoncons/
 [JSONpath]: https://goessner.net/articles/JsonPath/
 [JMESpath]: https://jmespath.org/
 [JSONpointer]: https://datatracker.ietf.org/doc/html/rfc6901
+[JSON patch]: https://jsonpatch.com/
+[JSON schema]: https://json-schema.org/
 
 Install the released package version from CRAN
 
@@ -136,6 +139,7 @@ installed.
 [tidyr]: https://CRAN.R-project.org/package=tidyr
 [r4ds]: https://r4ds.hadley.nz/
 [hierarchical data]: https://r4ds.hadley.nz/rectangling
+
 ## NDJSON support
 
 [rjsoncons][] supports [NDJSON][] (new-line delimited JSON). NDJSON
@@ -342,6 +346,76 @@ j_patch_from(j_patch_apply(json, patch), json)
 
 [JSON Patch]: https://jsonpatch.com/
 [RFC6902]: https://datatracker.ietf.org/doc/html/rfc6902/#section-4
+
+# Schema validation
+
+[JSON schema][] provides structure to JSON
+documents. `j_schema_is_valid()` checks that a JSON document is valid
+against a specified schema, and `j_schema_validate()` tries to
+illustrate how a document deviates from the schema.
+
+As an example consider `j_patch_op()`, where the operation is supposed
+to conform to the [JSON patch][] schema. For convenience, a copy of
+this schema is available in [rjsoncons][].
+
+```{r}
+## alternatively: schema <- "https://json.schemastore.org/json-patch"
+schema <- system.file(package = "rjsoncons", "extdata", "json-patch.json")
+cat(readLines(schema), sep = "\n")
+```
+
+The well-formed 'op' is valid, and `j_schema_validate()` produces no output
+
+```{r valid-schema}
+op <- '[{
+    "op": "add", "path": "/biscuits/1",
+    "value": { "name": "Ginger Nut" }
+}]'
+j_schema_is_valid(op, schema)
+j_schema_validate(op, schema)
+```
+
+Introduce an invalid 'op', `"op": "invalid_op"`, and the schema is no
+longer valid.
+
+```{r invalid-schema}
+op <- '[{
+    "op": "invalid_op", "path": "/biscuits/1",
+    "value": { "name": "Ginger Nut" }
+}]'
+j_schema_is_valid(op, schema)
+```
+
+The reason can be understood from (careful!) consideration of the
+output of `j_schema_validate()`, with reference to the schema itself.
+
+```{r invalid-schema-tibble}
+j_schema_validate(op, schema, as = "tibble") |>
+    tibble::glimpse()
+```
+
+The validation indicates that the schema `evaluationPath`
+'/items/oneOf' is not satisfied, becuases of the `error` 'No schema
+[i.e., 'oneOf' elements] matched, ...'.
+
+The 'details' column summarizes why each of the 3 elements of
+`/items/oneOf` fails the schema specification; use `as = "details"` to
+extract this directly
+
+```{r invalid-schema-details}
+j_schema_validate(op, schema, as = "details") |>
+    tibble::glimpse()
+```
+
+This indicates that the first item in the schema is rejected because
+'invalid_op' is not a valid enum
+
+```{r invalid-schema-0}
+j_query(schema, "/items/oneOf/0/properties/op/enum") |>
+    noquote()
+```
+
+Reasons for rejecting other items can be explored using similar steps.
 
 # Flatten and find
 

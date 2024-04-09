@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -28,10 +28,6 @@ namespace jsoncons {
         using char_traits_type = std::char_traits<char_type>;
 
         using string_view_type = jsoncons::basic_string_view<char_type,char_traits_type>;
-
-        basic_json_visitor(basic_json_visitor&&) = default;
-
-        basic_json_visitor& operator=(basic_json_visitor&&) = default;
 
         basic_json_visitor() = default;
 

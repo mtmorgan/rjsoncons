@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,7 +11,7 @@
 #include <jsoncons/uri.hpp>
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <jsoncons_ext/jsonschema/json_schema.hpp>
+#include <jsoncons_ext/jsonschema/common/validator.hpp>
 #include <cassert>
 #include <set>
 #include <sstream>
@@ -384,7 +384,7 @@ namespace jsonschema {
                 {
                     switch (c)
                     {
-                        case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9':
+                        case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8': case '9':
                             state = state_t::decbyte;
                             decbyte_count = 0;
                             digit_count = 1;
@@ -394,7 +394,7 @@ namespace jsonschema {
                             state = state_t::bindig;
                             digit_count = 0;
                             break;
-                        case 'o':
+                        case '0':
                             state = state_t::octdig;
                             digit_count = 0;
                             break;
@@ -618,7 +618,14 @@ namespace jsonschema {
         std::size_t year = 0;
         std::size_t month = 0;
         std::size_t mday = 0;
-        std::size_t value = 0;
+        int hour = 0;
+        int minute = 0;
+        int second = 0;
+        int secfrac = 0;
+        int offset_signum = 0;
+        int offset_hour = 0;
+        int offset_minute = 0;      
+        
         state_t state = (type == date_time_type::time) ? state_t::hour : state_t::fullyear;
 
         for (char c : s)
@@ -684,12 +691,11 @@ namespace jsonschema {
                     if (piece_length < 2 && (c >= '0' && c <= '9'))
                     {
                         piece_length++;
-                        value = value*10 + static_cast<std::size_t>(c - '0');
+                        hour = hour*10 + static_cast<std::size_t>(c - '0');
                     }
-                    else if (c == ':' && piece_length == 2 && (/*value >=0 && */ value <= 23))
+                    else if (c == ':' && piece_length == 2 && (/*hour >=0 && */ hour <= 23))
                     {
                         state = state_t::minute;
-                        value = 0;
                         piece_length = 0;
                     }
                     else
@@ -703,12 +709,11 @@ namespace jsonschema {
                     if (piece_length < 2 && (c >= '0' && c <= '9'))
                     {
                         piece_length++;
-                        value = value*10 + static_cast<std::size_t>(c - '0');
+                        minute = minute*10 + static_cast<std::size_t>(c - '0');
                     }
-                    else if (c == ':' && piece_length == 2 && (/*value >=0 && */value <= 59))
+                    else if (c == ':' && piece_length == 2 && (/*minute >=0 && */minute <= 59))
                     {
                         state = state_t::second;
-                        value = 0;
                         piece_length = 0;
                     }
                     else
@@ -722,19 +727,22 @@ namespace jsonschema {
                     if (piece_length < 2 && (c >= '0' && c <= '9'))
                     {
                         piece_length++;
-                        value = value*10 + static_cast<std::size_t>(c - '0');
+                        second = second*10 + static_cast<std::size_t>(c - '0');
                     }
-                    else if (piece_length == 2 && (/*value >=0 && */value <= 60)) // 00-58, 00-59, 00-60 based on leap second rules
+                    else if (piece_length == 2 && second <= 60) // 00-58, 00-59, 00-60 based on leap second rules
                     {
                         switch (c)
                         {
                             case '.':
-                                value = 0;
                                 state = state_t::secfrac;
                                 break;
                             case '+':
+                                offset_signum = 1;
+                                piece_length = 0;
+                                state = state_t::offset_hour;
+                                break;
                             case '-':
-                                value = 0;
+                                offset_signum = -1;
                                 piece_length = 0;
                                 state = state_t::offset_hour;
                                 break;
@@ -746,25 +754,25 @@ namespace jsonschema {
                                 return false;
                         }
                     }
-                    else
-                    {
-                        return false;
-                    }
                     break;
                 }
                 case state_t::secfrac:
                 {
                     if (c >= '0' && c <= '9')
                     {
-                        value = value*10 + static_cast<std::size_t>(c - '0');
+                        secfrac = secfrac*10 + static_cast<std::size_t>(c - '0');
                     }
                     else
                     {
                         switch (c)
                         {
                             case '+':
+                                offset_signum = 1;
+                                piece_length = 0;
+                                state = state_t::offset_hour;
+                                break;
                             case '-':
-                                value = 0;
+                                offset_signum = -1;
                                 piece_length = 0;
                                 state = state_t::offset_hour;
                                 break;
@@ -783,11 +791,10 @@ namespace jsonschema {
                     if (piece_length < 2 && (c >= '0' && c <= '9'))
                     {
                         piece_length++;
-                        value = value*10 + static_cast<std::size_t>(c - '0');
+                        offset_hour = offset_hour*10 + static_cast<std::size_t>(c - '0');
                     }
-                    else if (c == ':' && piece_length == 2 && (/*value >=0 && */value <= 23))
+                    else if (c == ':' && piece_length == 2 && (/*offset_hour >=0 && */offset_hour <= 23))
                     {
-                        value = 0;
                         piece_length = 0;
                         state = state_t::offset_minute;
                     }
@@ -802,11 +809,10 @@ namespace jsonschema {
                     if (piece_length < 2 && (c >= '0' && c <= '9'))
                     {
                         piece_length++;
-                        value = value*10 + static_cast<std::size_t>(c - '0');
+                        offset_minute = offset_minute*10 + static_cast<std::size_t>(c - '0');
                     }
-                    else if (c == ':' && piece_length == 2 && (/*value >=0 && */value <= 59))
+                    else if (c == ':' && piece_length == 2 && (/*offset_minute >=0 && */offset_minute <= 59))
                     {
-                        value = 0;
                         piece_length = 0;
                     }
                     else
@@ -816,7 +822,54 @@ namespace jsonschema {
                     break;
                 }
                 case state_t::z:
+                    return false; // Nothing follows z
+                default:
                     return false;
+            }
+        }
+        
+        switch (state)
+        {
+            case state_t::hour:
+            case state_t::minute:
+            case state_t::second:
+            case state_t::secfrac:
+                return false;
+            default:
+                break;
+        }
+        
+        if (offset_hour < 0 || offset_hour > 23)
+        {
+            return false;
+        }
+        if (offset_minute < 0 || offset_minute > 59)
+        {
+            return false;
+        }
+        if (offset_signum == -1)
+        {
+            offset_hour = -offset_hour;
+            offset_minute = -offset_minute;
+        }
+        auto day_minutes = hour * 60 + minute - (offset_hour * 60 + offset_minute);
+        if (day_minutes < 0)
+            day_minutes += 60 * 24;
+        hour = day_minutes % 24;
+        minute = day_minutes / 24;
+        
+        if (hour == 23 && minute == 59)
+        {
+            if (second < 0 || second > 60)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (second < 0 || second > 59)
+            {
+                return false;
             }
         }
 
@@ -831,118 +884,163 @@ namespace jsonschema {
     }
 
     // format checkers
-    using format_checker = std::function<void(const std::string& schema_path,
-                                              const jsonpointer::json_pointer& instance_location, 
-                                              const std::string&, 
-                                              error_reporter& reporter)>;
+    using format_checker = std::function<void(const jsonpointer::json_pointer& eval_path, 
+        const uri& schema_location,
+        const jsonpointer::json_pointer& instance_location, 
+        const std::string&, 
+        error_reporter& reporter)>;
 
     inline
-    void rfc3339_date_check(const std::string& schema_path,
+    void uri_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
+        const jsonpointer::json_pointer& instance_location, 
+        const std::string& str,
+        error_reporter& reporter)
+    {
+        std::error_code ec;
+        uri::parse(str, ec);
+        if (ec)
+        {
+            reporter.error(validation_message("uri",
+                eval_path,
+                schema_location, 
+                instance_location, 
+                "'" + str + "' is not a valid URI."));
+        }
+    }
+
+    inline
+    void jsonpointer_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
+        const jsonpointer::json_pointer& instance_location, 
+        const std::string& str,
+        error_reporter& reporter)
+    {
+        std::error_code ec;
+        jsonpointer::json_pointer::parse(str, ec);
+        if (ec)
+        {
+            reporter.error(validation_message("json-pointer",
+                eval_path,
+                schema_location, 
+                instance_location, 
+                "'" + str + "' is not a valid JSONPointer."));
+        }
+    }
+
+    
+    inline
+    void rfc3339_date_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                             const jsonpointer::json_pointer& instance_location, 
                             const std::string& value,
                             error_reporter& reporter)
     {
         if (!validate_date_time_rfc3339(value,date_time_type::date))
         {
-            reporter.error(validation_output("date", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a RFC 3339 date string"));
+            reporter.error(validation_message("date",
+                eval_path,
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a RFC 3339 date string."));
         }
     }
 
     inline
-    void rfc3339_time_check(const std::string& schema_path,
+    void rfc3339_time_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                             const jsonpointer::json_pointer& instance_location, 
                             const std::string &value,
                             error_reporter& reporter)
     {
         if (!validate_date_time_rfc3339(value, date_time_type::time))        
         {
-            reporter.error(validation_output("time", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a RFC 3339 time string"));
+            reporter.error(validation_message("time", 
+                eval_path,
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a RFC 3339 time string."));
         }
     }
 
     inline
-    void rfc3339_date_time_check(const std::string& schema_path,
+    void rfc3339_date_time_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                                  const jsonpointer::json_pointer& instance_location, 
                                  const std::string &value,
                                  error_reporter& reporter)
     {
         if (!validate_date_time_rfc3339(value, date_time_type::date_time))        
         {
-            reporter.error(validation_output("date-time",  
-                                             schema_path,
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a RFC 3339 date-time string"));
+            reporter.error(validation_message("date-time", 
+                eval_path,  
+                schema_location,
+                instance_location, 
+                "'" + value + "' is not a RFC 3339 date-time string."));
         }
     }
 
     inline
-    void email_check(const std::string& schema_path,
+    void email_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                      const jsonpointer::json_pointer& instance_location, 
                      const std::string& value,
                      error_reporter& reporter) 
     {
         if (!validate_email_rfc5322(value))        
         {
-            reporter.error(validation_output("email", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a valid email address as defined by RFC 5322"));
+            reporter.error(validation_message("email", 
+                eval_path, 
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a valid email address as defined by RFC 5322."));
         }
     } 
 
     inline
-    void hostname_check(const std::string& schema_path,
+    void hostname_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                         const jsonpointer::json_pointer& instance_location, 
                         const std::string& value,
                         error_reporter& reporter) 
     {
         if (!validate_hostname_rfc1034(value))
         {
-            reporter.error(validation_output("hostname", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a valid hostname as defined by RFC 3986 Appendix A"));
+            reporter.error(validation_message("hostname", 
+                eval_path, 
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a valid hostname as defined by RFC 3986 Appendix A."));
         }
     } 
 
     inline
-    void ipv4_check(const std::string& schema_path,
+    void ipv4_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                     const jsonpointer::json_pointer& instance_location, 
                     const std::string& value,
                     error_reporter& reporter) 
     {
         if (!validate_ipv4_rfc2673(value))
         {
-            reporter.error(validation_output("ipv4", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a valid IPv4 address as defined by RFC 2673"));
+            reporter.error(validation_message("ipv4", 
+                eval_path, 
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a valid IPv4 address as defined by RFC 2673."));
         }
     } 
 
     inline
-    void ipv6_check(const std::string& schema_path,
+    void ipv6_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                     const jsonpointer::json_pointer& instance_location, 
                     const std::string& value,
                     error_reporter& reporter) 
     {
         if (!validate_ipv6_rfc2373(value))
         {
-            reporter.error(validation_output("ipv6", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a valid IPv6 address as defined by RFC 2373"));
+            reporter.error(validation_message("ipv6", 
+                eval_path, 
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a valid IPv6 address as defined by RFC 2373."));
         }
     } 
 
     inline
-    void regex_check(const std::string& schema_path,
+    void regex_check(const jsonpointer::json_pointer& eval_path, const uri& schema_location,
                      const jsonpointer::json_pointer& instance_location, 
                      const std::string& value,
                      error_reporter& reporter) 
@@ -954,10 +1052,11 @@ namespace jsonschema {
         } 
         catch (const std::exception& e) 
         {
-            reporter.error(validation_output("pattern", 
-                                             schema_path, 
-                                             instance_location.to_uri_fragment(), 
-                                             "\"" + value + "\" is not a valid ECMAScript regular expression. " + e.what()));
+            reporter.error(validation_message("pattern", 
+                eval_path, 
+                schema_location, 
+                instance_location, 
+                "'" + value + "' is not a valid ECMAScript regular expression. " + e.what()));
         }
 #endif
     } 

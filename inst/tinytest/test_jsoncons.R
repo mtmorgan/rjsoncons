@@ -11,7 +11,7 @@ datalist <- jsonlite::fromJSON(json, simplifyVector = FALSE)
 
 ## version
 
-expect_identical(version(), "0.173.2")
+expect_identical(version(), "0.173.4 [+57967655d]")
 
 ## jsonpath
 

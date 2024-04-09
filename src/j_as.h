@@ -5,6 +5,8 @@
 #include <jsoncons/json.hpp>
 
 using namespace jsoncons;
+
+#include "enum_index.h"
 using namespace rjsoncons;
 
 #include <cpp11/list.hpp>
@@ -229,6 +231,12 @@ sexp j_as(Json j, rjsoncons::as as)
     case as::R: return j_as_r<Json>(j);
     default: cpp11::stop("`as_r()` unknown `as = `");
     }
+}
+
+template<class Json>
+sexp j_as(Json j, const std::string& as)
+{
+    return j_as(j, enum_index(as_map, as));
 }
 
 #endif

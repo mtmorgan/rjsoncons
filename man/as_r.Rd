@@ -29,7 +29,7 @@ object parsed to a JSON string using \code{jsonlite::toJSON()}.}
 files.}
 
 \item{data_type}{character(1) type of \code{data}; one of \code{"json"},
-\code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
+\code{"ndjson"}, or a value returned by \code{j_data_type()}.}
 }
 \value{
 \code{as_r()} returns an \emph{R} object.

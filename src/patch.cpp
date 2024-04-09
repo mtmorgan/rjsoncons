@@ -1,7 +1,6 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonpatch/jsonpatch.hpp>
 
-#include "enum_index.h"
 #include "j_as.h"
 
 #include <cpp11/sexp.hpp>
@@ -16,7 +15,7 @@ sexp cpp_j_patch_apply(
     ojson data_ = ojson::parse(data);
     ojson patch_ = ojson::parse(patch);
     jsonpatch::apply_patch(data_, patch_);
-    return j_as(data_, enum_index(as_map, as));
+    return j_as(data_, as);
 }
 
 [[cpp11::register]]
@@ -28,7 +27,7 @@ sexp cpp_j_patch_from(
     ojson data_x_ = ojson::parse(data_x);
     ojson data_y_ = ojson::parse(data_y);
     auto patch = jsonpatch::from_diff(data_x_, data_y_);
-    return j_as(patch, enum_index(as_map, as));
+    return j_as(patch, as);
 }
 
 [[cpp11::register]]

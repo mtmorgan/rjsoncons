@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -26,10 +26,7 @@ JSONCONS_DEPRECATED_MSG("Instead, use float_chars_format") typedef float_chars_f
 
 enum class indenting : uint8_t {no_indent = 0, indent = 1};
 
-// legacy
-using indenting = indenting;
-
-enum class line_split_kind  : uint8_t {same_line,new_line,multi_line};
+enum class line_split_kind  : uint8_t {same_line=1, new_line, multi_line};
 
 enum class bigint_chars_format : uint8_t {number, base10, base64, base64url
 #if !defined(JSONCONS_NO_DEPRECATED)
@@ -415,6 +412,7 @@ private:
     float_chars_format float_format_;
     byte_string_chars_format byte_string_format_;
     bigint_chars_format bigint_format_;
+    line_split_kind line_splits_;
     line_split_kind object_object_line_splits_;
     line_split_kind object_array_line_splits_;
     line_split_kind array_array_line_splits_;
@@ -434,10 +432,11 @@ public:
           float_format_(float_chars_format::general),
           byte_string_format_(byte_string_chars_format::none),
           bigint_format_(bigint_chars_format::base10),
-          object_object_line_splits_(line_split_kind::multi_line),
-          object_array_line_splits_(line_split_kind::same_line),
-          array_array_line_splits_(line_split_kind::new_line),
-          array_object_line_splits_(line_split_kind::multi_line),
+          line_splits_(line_split_kind::multi_line),
+          object_object_line_splits_(line_split_kind{}),
+          object_array_line_splits_(line_split_kind{}),
+          array_array_line_splits_(line_split_kind{}),
+          array_object_line_splits_(line_split_kind{}),
           spaces_around_colon_(spaces_option::space_after),
           spaces_around_comma_(spaces_option::space_after),
           precision_(0),
@@ -458,6 +457,7 @@ public:
           float_format_(other.float_format_),
           byte_string_format_(other.byte_string_format_),
           bigint_format_(other.bigint_format_),
+          line_splits_(other.line_splits_),
           object_object_line_splits_(other.object_object_line_splits_),
           object_array_line_splits_(other.object_array_line_splits_),
           array_array_line_splits_(other.array_array_line_splits_),
@@ -477,13 +477,15 @@ public:
 
     bigint_chars_format bigint_format() const  {return bigint_format_;}
 
-    line_split_kind object_object_line_splits() const  {return object_object_line_splits_;}
+    line_split_kind line_splits() const  {return line_splits_;}
 
-    line_split_kind array_object_line_splits() const  {return array_object_line_splits_;}
+    line_split_kind object_object_line_splits() const  {return object_object_line_splits_ == line_split_kind{} ? line_splits_ : object_object_line_splits_;}
 
-    line_split_kind object_array_line_splits() const  {return object_array_line_splits_;}
+    line_split_kind array_object_line_splits() const  {return array_object_line_splits_ == line_split_kind{} ? line_splits_ : array_object_line_splits_;}
 
-    line_split_kind array_array_line_splits() const  {return array_array_line_splits_;}
+    line_split_kind object_array_line_splits() const  {return object_array_line_splits_ == line_split_kind{} ? line_splits_ : object_array_line_splits_;}
+
+    line_split_kind array_array_line_splits() const  {return array_array_line_splits_ == line_split_kind{} ? line_splits_ : array_array_line_splits_;}
 
     uint8_t indent_size() const 
     {
@@ -589,6 +591,7 @@ public:
 
     using basic_json_encode_options<CharT>::byte_string_format;
     using basic_json_encode_options<CharT>::bigint_format;
+    using basic_json_encode_options<CharT>::line_splits;
     using basic_json_encode_options<CharT>::object_object_line_splits;
     using basic_json_encode_options<CharT>::array_object_line_splits;
     using basic_json_encode_options<CharT>::object_array_line_splits;
@@ -716,6 +719,8 @@ public:
     basic_json_options&  byte_string_format(byte_string_chars_format value) {this->byte_string_format_ = value; return *this;}
 
     basic_json_options&  bigint_format(bigint_chars_format value) {this->bigint_format_ = value; return *this;}
+
+    basic_json_options& line_splits(line_split_kind value) {this->line_splits_ = value; return *this;}
 
     basic_json_options& object_object_line_splits(line_split_kind value) {this->object_object_line_splits_ = value; return *this;}
 

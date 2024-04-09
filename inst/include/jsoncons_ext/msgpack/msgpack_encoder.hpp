@@ -1,4 +1,4 @@
-// Copyright 2013-2023 Daniel Parker
+// Copyright 2013-2024 Daniel Parker
 // Distributed under the Boost license, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -147,7 +147,7 @@ namespace msgpack {
                 binary::native_to_big(static_cast<uint16_t>(length), 
                                       std::back_inserter(sink_));
             }
-            else if (length <= 4294967295)
+            else if (length <= (std::numeric_limits<uint32_t>::max)())
             {
                 // map 32
                 sink_.push_back(jsoncons::msgpack::msgpack_type::map32_type);
