@@ -90,7 +90,7 @@ this page, one of "R", "data.frame", or "tibble".}
 files.}
 
 \item{data_type}{character(1) type of \code{data}; one of \code{"json"},
-\code{"ndjson"}. Inferred from \code{data} using \code{j_data_type()}.}
+\code{"ndjson"}, or a value returned by \code{j_data_type()}.}
 
 \item{path_type}{character(1) type of 'path' to be returned; one of
 '"JSONpointer"', '"JSONpath"'; '"JMESpath"' is not supported.}

@@ -233,4 +233,10 @@ sexp j_as(Json j, rjsoncons::as as)
     }
 }
 
+template<class Json>
+sexp j_as(Json j, const std::string& as)
+{
+    return j_as(j, enum_index(as_map, as));
+}
+
 #endif

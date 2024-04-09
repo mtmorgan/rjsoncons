@@ -6,7 +6,6 @@
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
 
-#include "enum_index.h"
 #include "readbinbuf.h"
 #include "progressbar.h"
 #include "j_as.h"
