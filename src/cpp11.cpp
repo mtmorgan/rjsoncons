@@ -90,36 +90,36 @@ extern "C" SEXP _rjsoncons_cpp_j_pivot_con(SEXP con, SEXP data_type, SEXP object
   END_CPP11
 }
 // schema.cpp
-bool cpp_j_is_valid(const std::string& data, const std::string& schema);
-extern "C" SEXP _rjsoncons_cpp_j_is_valid(SEXP data, SEXP schema) {
+bool cpp_j_schema_is_valid(const sexp& data, const sexp& schema);
+extern "C" SEXP _rjsoncons_cpp_j_schema_is_valid(SEXP data, SEXP schema) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_is_valid(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(schema)));
+    return cpp11::as_sexp(cpp_j_schema_is_valid(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(data), cpp11::as_cpp<cpp11::decay_t<const sexp&>>(schema)));
   END_CPP11
 }
 // schema.cpp
-sexp cpp_j_validate(const std::string& data, const std::string& schema);
-extern "C" SEXP _rjsoncons_cpp_j_validate(SEXP data, SEXP schema) {
+sexp cpp_j_schema_validate(const sexp& data, const sexp& schema, const std::string& as);
+extern "C" SEXP _rjsoncons_cpp_j_schema_validate(SEXP data, SEXP schema, SEXP as) {
   BEGIN_CPP11
-    return cpp11::as_sexp(cpp_j_validate(cpp11::as_cpp<cpp11::decay_t<const std::string&>>(data), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(schema)));
+    return cpp11::as_sexp(cpp_j_schema_validate(cpp11::as_cpp<cpp11::decay_t<const sexp&>>(data), cpp11::as_cpp<cpp11::decay_t<const sexp&>>(schema), cpp11::as_cpp<cpp11::decay_t<const std::string&>>(as)));
   END_CPP11
 }
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_rjsoncons_cpp_as_r",          (DL_FUNC) &_rjsoncons_cpp_as_r,          3},
-    {"_rjsoncons_cpp_as_r_con",      (DL_FUNC) &_rjsoncons_cpp_as_r_con,      5},
-    {"_rjsoncons_cpp_j_flatten",     (DL_FUNC) &_rjsoncons_cpp_j_flatten,     6},
-    {"_rjsoncons_cpp_j_flatten_con", (DL_FUNC) &_rjsoncons_cpp_j_flatten_con, 8},
-    {"_rjsoncons_cpp_j_is_valid",    (DL_FUNC) &_rjsoncons_cpp_j_is_valid,    2},
-    {"_rjsoncons_cpp_j_patch_apply", (DL_FUNC) &_rjsoncons_cpp_j_patch_apply, 4},
-    {"_rjsoncons_cpp_j_patch_from",  (DL_FUNC) &_rjsoncons_cpp_j_patch_from,  5},
-    {"_rjsoncons_cpp_j_patch_print", (DL_FUNC) &_rjsoncons_cpp_j_patch_print, 3},
-    {"_rjsoncons_cpp_j_pivot",       (DL_FUNC) &_rjsoncons_cpp_j_pivot,       6},
-    {"_rjsoncons_cpp_j_pivot_con",   (DL_FUNC) &_rjsoncons_cpp_j_pivot_con,   8},
-    {"_rjsoncons_cpp_j_query",       (DL_FUNC) &_rjsoncons_cpp_j_query,       6},
-    {"_rjsoncons_cpp_j_query_con",   (DL_FUNC) &_rjsoncons_cpp_j_query_con,   8},
-    {"_rjsoncons_cpp_j_validate",    (DL_FUNC) &_rjsoncons_cpp_j_validate,    2},
-    {"_rjsoncons_cpp_version",       (DL_FUNC) &_rjsoncons_cpp_version,       0},
+    {"_rjsoncons_cpp_as_r",              (DL_FUNC) &_rjsoncons_cpp_as_r,              3},
+    {"_rjsoncons_cpp_as_r_con",          (DL_FUNC) &_rjsoncons_cpp_as_r_con,          5},
+    {"_rjsoncons_cpp_j_flatten",         (DL_FUNC) &_rjsoncons_cpp_j_flatten,         6},
+    {"_rjsoncons_cpp_j_flatten_con",     (DL_FUNC) &_rjsoncons_cpp_j_flatten_con,     8},
+    {"_rjsoncons_cpp_j_patch_apply",     (DL_FUNC) &_rjsoncons_cpp_j_patch_apply,     4},
+    {"_rjsoncons_cpp_j_patch_from",      (DL_FUNC) &_rjsoncons_cpp_j_patch_from,      5},
+    {"_rjsoncons_cpp_j_patch_print",     (DL_FUNC) &_rjsoncons_cpp_j_patch_print,     3},
+    {"_rjsoncons_cpp_j_pivot",           (DL_FUNC) &_rjsoncons_cpp_j_pivot,           6},
+    {"_rjsoncons_cpp_j_pivot_con",       (DL_FUNC) &_rjsoncons_cpp_j_pivot_con,       8},
+    {"_rjsoncons_cpp_j_query",           (DL_FUNC) &_rjsoncons_cpp_j_query,           6},
+    {"_rjsoncons_cpp_j_query_con",       (DL_FUNC) &_rjsoncons_cpp_j_query_con,       8},
+    {"_rjsoncons_cpp_j_schema_is_valid", (DL_FUNC) &_rjsoncons_cpp_j_schema_is_valid, 2},
+    {"_rjsoncons_cpp_j_schema_validate", (DL_FUNC) &_rjsoncons_cpp_j_schema_validate, 3},
+    {"_rjsoncons_cpp_version",           (DL_FUNC) &_rjsoncons_cpp_version,           0},
     {NULL, NULL, 0}
 };
 }

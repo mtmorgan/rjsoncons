@@ -25,9 +25,9 @@ Description: The 'jsoncons'
     object-of-arrays, for easy import into 'R') 'JSON' or 'NDJSON'
     strings or files using 'JSONpointer', 'JSONpath' or 'JMESpath'
     expressions. The package also supports 'JSON' patch for
-    conveniently editing JSON documents. The 'jsoncons' library is
-    easily linked to other packages for direct access to 'C++'
-    functionality.
+    conveniently editing JSON documents, and 'JSON' schema for
+    validation. The 'jsoncons' library is easily linked to other
+    packages for direct access to 'C++' functionality.
 Imports: cli
 Suggests: jsonlite, tibble, tinytest, BiocStyle, knitr, rmarkdown
 LinkingTo: cpp11, cli
