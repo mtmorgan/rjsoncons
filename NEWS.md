@@ -1,5 +1,7 @@
 # rjsoncons 1.3.0
 
+- (1.2.0.9800) add JSON schema support with `j_schema_is_valid()`,
+  `j_schema_validate()`.
 - (1.2.0.9704) add key and value search with `j_flatten()`,
   `j_find_*()` supporting JSONpointer and JSONpath.
 - (1.2.0.9602) compile on Ubuntu 18.04
