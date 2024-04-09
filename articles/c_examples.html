@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9704</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9800</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -192,16 +192,16 @@ data to use while developing the query.</p>
 <span><span class="st">}'</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 2</span></span></span>
-<span><span class="co">#&gt;   homeTeam   awayTeam    </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Storm      Broncos     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Bulldogs   Roosters    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Knights    Dragons     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Rabbitohs  Warriors    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Sea Eagles Panthers    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Dolphins   Wests Tigers</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Cowboys    Titans      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> Raiders    Eels</span></span></code></pre></div>
+<span><span class="co">#&gt;   homeTeam     awayTeam  </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Knights      Roosters  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Storm        Bulldogs  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Broncos      Dolphins  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Warriors     Sea Eagles</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Eels         Cowboys   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Rabbitohs    Sharks    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Wests Tigers Dragons   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> Raiders      Titans</span></span></code></pre></div>
 <p>The easiest path to a more general answer (extract all members of
 ‘homeTeam’ and ‘awayTeam’ as a tibble) might, like the posted answer,
 combine JSON extraction and <a href="https://CRAN.R-project.org/package=tidyr" class="external-link">tidyr</a>.</p>
@@ -212,14 +212,14 @@ combine JSON extraction and <a href="https://CRAN.R-project.org/package=tidyr" c
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 8</span></span></span>
 <span><span class="co">#&gt;   homeTeam_teamId homeTeam_nickName homeTeam_teamPosition homeTeam_theme  </span></span>
 <span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>021 Storm             5th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>010 Bulldogs          14th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>003 Knights           15th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>005 Rabbitohs         16th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>002 Sea Eagles        11th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          <span style="text-decoration: underline;">500</span>723 Dolphins          1st                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>          <span style="text-decoration: underline;">500</span>012 Cowboys           3rd                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="text-decoration: underline;">500</span>013 Raiders           8th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>003 Knights           12th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>021 Storm             3rd                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>011 Broncos           11th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>032 Warriors          6th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>031 Eels              14th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          <span style="text-decoration: underline;">500</span>005 Rabbitohs         17th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>          <span style="text-decoration: underline;">500</span>023 Wests Tigers      9th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="text-decoration: underline;">500</span>013 Raiders           5th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: awayTeam_teamId &lt;int&gt;, awayTeam_nickName &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_teamPosition &lt;chr&gt;, awayTeam_theme &lt;list&gt;</span></span></span></code></pre></div>
 </div>
@@ -394,12 +394,12 @@ documentation, the patch is a single ‘move’ operation from
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dplyr_1.1.4          rjsoncons_1.2.0.9704</span></span>
+<span><span class="co">#&gt; [1] dplyr_1.1.4          rjsoncons_1.2.0.9800</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] vctrs_0.6.5       cli_3.6.2         knitr_1.45        rlang_1.1.3      </span></span>
+<span><span class="co">#&gt;  [1] vctrs_0.6.5       cli_3.6.2         knitr_1.46        rlang_1.1.3      </span></span>
 <span><span class="co">#&gt;  [5] xfun_0.43         purrr_1.0.2       generics_0.1.3    textshaping_0.3.7</span></span>
-<span><span class="co">#&gt;  [9] jsonlite_1.8.8    glue_1.7.0        htmltools_0.5.8   ragg_1.3.0       </span></span>
+<span><span class="co">#&gt;  [9] jsonlite_1.8.8    glue_1.7.0        htmltools_0.5.8.1 ragg_1.3.0       </span></span>
 <span><span class="co">#&gt; [13] sass_0.4.9        fansi_1.0.6       rmarkdown_2.26    tibble_3.2.1     </span></span>
 <span><span class="co">#&gt; [17] evaluate_0.23     jquerylib_0.1.4   fastmap_1.1.1     yaml_2.3.8       </span></span>
 <span><span class="co">#&gt; [21] lifecycle_1.0.4   memoise_2.0.1     compiler_4.3.3    fs_1.6.3         </span></span>
