@@ -1,5 +1,7 @@
 # rjsoncons 1.3.0
 
+- (1.2.0.9900) better support `j_pivot()` when keys differ between
+  objects.
 - (1.2.0.9800) add JSON schema support with `j_schema_is_valid()`,
   `j_schema_validate()`.
 - (1.2.0.9704) add key and value search with `j_flatten()`,

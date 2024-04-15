@@ -1,6 +1,8 @@
 #ifndef RJSONCONS_R_JSON_HPP
 #define RJSONCONS_R_JSON_HPP
 
+#include <algorithm>
+
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jmespath/jmespath.hpp>
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
@@ -134,7 +136,6 @@ class rquerypivot
                     j[key].swap(ja);
                 }
             }
-            // FIXME: check intersection of keys in result_[0], j
 
             if (result_.size() == 0) {
                 // first pivot - insert (even '{}') & exit
@@ -149,11 +150,67 @@ class rquerypivot
                 return;
             }
 
-            // insert j.member after result_[0].member
-            for (auto& member : result_[0].object_range()) {
-                auto j_range = j[member.key()].array_range();
-                auto& m = member.value();
-                m.insert(m.array_range().end(), j_range.begin(), j_range.end());
+            // insert j.member after result_[0].member. three cases:
+            // result_[0] & j both have key, key only in result_[0],
+            // key only in j
+
+            // use unordered_set to keep track of key status in result_[0], j
+            // fill j_keys; trim as each key from j is added to result_[0]
+            std::unordered_set<std::string> j_keys;
+            std::size_t n_j = 0;
+            for (const auto& j_elt : j.object_range()) {
+                n_j = std::max(n_j, j_elt.value().size());
+                j_keys.insert(j_elt.key());
+            }
+
+            // fill r_keys as each element discovered 'missing' from j
+            std::unordered_set<std::string> r_keys;
+            std::size_t n_r = 0; // # of elements in result_[0] before update
+            for (auto& r_elt : result_[0].object_range()) {
+                n_r = std::max(n_r, r_elt.value().size());
+                // j contains result_[0].key...
+                if (j_keys.find(r_elt.key()) == j_keys.end()) {
+                    r_keys.insert(r_elt.key());
+                    continue;
+                }
+                // insert j[r_elt.key()] after r_elt.value()
+                const auto& j_elt = j[r_elt.key()];
+                r_elt.value().insert(
+                    r_elt.value().array_range().end(),
+                    j_elt.array_range().begin(),
+                    j_elt.array_range().end());
+                // remove key from 'j', leaving keys not in r
+                j_keys.erase(r_elt.key());
+            }
+
+            // key only in result_[0]
+            if (r_keys.size()) {
+                // construct array of n_j 'null' to pad each key
+                Json pad(json_array_arg);
+                pad.reserve(n_j);
+                for (int i = 0; i < n_j; ++i)
+                    pad.push_back(Json::null());
+                for (auto& r_key : r_keys) {
+                    result_[0][r_key].insert(
+                        result_[0][r_key].array_range().end(),
+                        pad.array_range().begin(), pad.array_range().end());
+                }
+            }
+
+            // key only in j
+            if (j_keys.size()) {
+                // construct array of n_r 'null' to pad each key
+                Json pad(json_array_arg);
+                pad.reserve(n_r);
+                for (int i = 0; i < n_r; ++i)
+                    pad.push_back(Json::null());
+                for (auto& j_key : j_keys) {
+                    result_[0][j_key] = pad;
+                    result_[0][j_key].insert(
+                        result_[0][j_key].array_range().end(),
+                        j[j_key].array_range().begin(),
+                        j[j_key].array_range().end());
+                }
             }
         }
 
