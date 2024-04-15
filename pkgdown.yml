@@ -1,11 +1,11 @@
 pandoc: 2.19.2
-pkgdown: 2.0.7
+pkgdown: 2.0.8
 pkgdown_sha: ~
 articles:
   a_rjsoncons: a_rjsoncons.html
   b_ndjson_extended: b_ndjson_extended.html
   c_examples: c_examples.html
-last_built: 2024-04-09T17:39Z
+last_built: 2024-04-15T17:17Z
 urls:
   reference: https://mtmorgan.github.io/rjsoncons/reference
   article: https://mtmorgan.github.io/rjsoncons/articles

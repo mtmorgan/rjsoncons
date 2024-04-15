@@ -22,11 +22,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9800</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9900</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -356,12 +356,12 @@ relatively performant when processing large files. Use
 <span>        as <span class="op">=</span> <span class="st">"tibble"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">## processing 23284 records</span></span>
-<span><span class="co">## processing 58650 records</span></span>
-<span><span class="co">## processing 94374 records</span></span>
-<span><span class="co">## processing 129380 records</span></span>
+<span><span class="co">## processing 51263 records</span></span>
+<span><span class="co">## processing 87079 records</span></span>
+<span><span class="co">## processing 123962 records</span></span>
+<span><span class="co">## processing 163728 records</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  14.133   0.098  14.233</span></span>
+<span><span class="co">##  14.007   0.126  14.134</span></span>
 <span><span class="va">tbl</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 172,049 × 2</span></span></span>
 <span><span class="co">##    id          type       </span></span>
@@ -419,7 +419,7 @@ to translate the result to an <em>R</em> <code>data.frame</code>.</p>
 <span>        <span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  20.995   0.024  21.022</span></span></code></pre></div>
+<span><span class="co">##  20.844   0.028  20.873</span></span></code></pre></div>
 <p>The use case outlined here compares very favorably to the performance
 of the <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a>
 CRAN package, which took more than 600s to complete the task above. <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a> reads the
@@ -494,7 +494,7 @@ support queries or NDJSON at time of writing (18 February, 2024).</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9800 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9900 BiocStyle_2.30.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] jsonlite_1.8.8      compiler_4.3.3      BiocManager_1.30.22</span></span>
@@ -506,7 +506,7 @@ support queries or NDJSON at time of writing (18 February, 2024).</p>
 <span><span class="co">## [19] rlang_1.1.3         utf8_1.2.4          cachem_1.0.8       </span></span>
 <span><span class="co">## [22] xfun_0.43           fs_1.6.3            sass_0.4.9         </span></span>
 <span><span class="co">## [25] lazyeval_0.2.2      memoise_2.0.1       cli_3.6.2          </span></span>
-<span><span class="co">## [28] pkgdown_2.0.7       withr_3.0.0         magrittr_2.0.3     </span></span>
+<span><span class="co">## [28] pkgdown_2.0.8       withr_3.0.0         magrittr_2.0.3     </span></span>
 <span><span class="co">## [31] digest_0.6.35       lifecycle_1.0.4     jqr_1.3.3          </span></span>
 <span><span class="co">## [34] vctrs_0.6.5         evaluate_0.23       glue_1.7.0         </span></span>
 <span><span class="co">## [37] ragg_1.3.0          fansi_1.0.6         rmarkdown_2.26     </span></span>
@@ -526,7 +526,7 @@ support queries or NDJSON at time of writing (18 February, 2024).</p>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
 </div>
 
     </footer>
