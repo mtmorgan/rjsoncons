@@ -24,10 +24,10 @@ j_schema_validate(
 }
 \arguments{
 \item{data}{JSON character vector, file, or URL defining document
-to be valdiated. NDJSON data and schema are not supported.}
+to be validated. NDJSON data and schema are not supported.}
 
 \item{schema}{JSON character vector, file, or URL defining the
-schema aganist which \code{data} will be validated.}
+schema against which \code{data} will be validated.}
 
 \item{...}{passed to \code{jsonlite::toJSON} when \code{data} is not
 character-valued.}

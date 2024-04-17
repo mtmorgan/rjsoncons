@@ -62,7 +62,7 @@ J_PATCH_OP <- c("add", "remove", "replace", "copy", "move", "test")
 #' `jsonlite::toJSON()` argument `auto_unbox = TRUE` when `patch` is
 #' an *R* object and any 'value' fields are JSON scalars; for more
 #' complicated scenarios 'value' fields should be marked with
-#' `jsonlite::unbox()` before being passsed to `j_patch_*()`.
+#' `jsonlite::unbox()` before being passed to `j_patch_*()`.
 #'
 #' For `j_patch_op()` the `...` are additional arguments to the patch
 #' operation, e.g., `path = ', `value = '.

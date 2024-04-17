@@ -23,10 +23,10 @@ do_j_schema <-
 #'     'schema'.
 #'
 #' @param data JSON character vector, file, or URL defining document
-#'     to be valdiated. NDJSON data and schema are not supported.
+#'     to be validated. NDJSON data and schema are not supported.
 #'
 #' @param schema JSON character vector, file, or URL defining the
-#'     schema aganist which `data` will be validated.
+#'     schema against which `data` will be validated.
 #'
 #' @param ... passed to `jsonlite::toJSON` when `data` is not
 #'     character-valued.
