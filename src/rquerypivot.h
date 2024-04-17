@@ -188,7 +188,7 @@ class rquerypivot
                 // construct array of n_j 'null' to pad each key
                 Json pad(json_array_arg);
                 pad.reserve(n_j);
-                for (int i = 0; i < n_j; ++i)
+                for (std::size_t i = 0; i < n_j; ++i)
                     pad.push_back(Json::null());
                 for (auto& r_key : r_keys) {
                     result_[0][r_key].insert(
@@ -202,7 +202,7 @@ class rquerypivot
                 // construct array of n_r 'null' to pad each key
                 Json pad(json_array_arg);
                 pad.reserve(n_r);
-                for (int i = 0; i < n_r; ++i)
+                for (std::size_t i = 0; i < n_r; ++i)
                     pad.push_back(Json::null());
                 for (auto& j_key : j_keys) {
                     result_[0][j_key] = pad;

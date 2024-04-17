@@ -25,7 +25,7 @@ class readbinbuf : public std::streambuf {
         buf_ = new char[n_bytes_];
     }
 
-    ~readbinbuf() { delete buf_; }
+    ~readbinbuf() { delete[] buf_; }
 
     int underflow() {
         if (gptr() == egptr()) {

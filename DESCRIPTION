@@ -18,8 +18,8 @@ Authors@R: c(
     ))
 Description: Functions to query (filter or transform), pivot (convert
     from array-of-objects to object-of-arrays, for easy import as 'R'
-    data frame), search, patch (edit), and validate (against 'JSON
-    Schema') 'JSON' and 'NDJSON' strings, files, or URLs. Query and
+    data frame), search, patch (edit), and validate (against 'JSON Schema')
+    'JSON' and 'NDJSON' strings, files, or URLs. Query and
     pivot support 'JSONpointer', 'JSONpath' or 'JMESpath'
     expressions. The implementation uses the 'jsoncons'
     <https://danielaparker.github.io/jsoncons/> header-only library;
