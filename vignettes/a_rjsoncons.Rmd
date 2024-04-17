@@ -1,5 +1,5 @@
 ---
-title: "Using 'jsoncons' in R"
+title: "Transform and Validate JSON and NDJSON"
 author:
 - name: Martin Morgan
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY, US
@@ -8,7 +8,7 @@ author:
 output:
   BiocStyle::html_document
 vignette: |
-  %\VignetteIndexEntry{Using the 'jsoncons' Library in R}
+  %\VignetteIndexEntry{Transform and Validate JSON and NDJSON}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,11 +21,11 @@ knitr::opts_chunk$set(
 
 # Introduction & installation
 
-Use [rjsoncons][] for querying JSON, NDJSON, or R objects using
-[JMESpath][], [JSONpath][], or [JSONpointer][]. [rjsoncons][] supports
-[JSON patch][] for document editing, and [JSON schema][]
-validation. Link to the package for direct access to additional
-features in the '[jsoncons][]' C++ library.
+Use [rjsoncons][] for querying, transforming, and searching JSON,
+NDJSON, or R objects using [JMESpath][], [JSONpath][], or
+[JSONpointer][]. [rjsoncons][] supports [JSON patch][] for document
+editing, and [JSON schema][] validation. Link to the package for
+direct access to additional features in the [jsoncons][] C++ library.
 
 [jsoncons]: https://github.com/danielaparker/jsoncons/
 [rjsoncons]: https://mtmorgan.github.io/rjsoncons/
@@ -395,7 +395,7 @@ j_schema_validate(op, schema, as = "tibble") |>
 ```
 
 The validation indicates that the schema `evaluationPath`
-'/items/oneOf' is not satisfied, becuases of the `error` 'No schema
+'/items/oneOf' is not satisfied, because of the `error` 'No schema
 [i.e., 'oneOf' elements] matched, ...'.
 
 The 'details' column summarizes why each of the 3 elements of
@@ -615,6 +615,14 @@ the query as a JSON string, e.g., using the `fromJSON()` in the
 [jsonlite][] package.
 
 ```{r jsonlite_fromJSON}
+json <- '{
+  "locations": [
+    {"name": "Seattle", "state": "WA"},
+    {"name": "New York", "state": "NY"},
+    {"name": "Bellevue", "state": "WA"},
+    {"name": "Olympia", "state": "WA"}
+  ]
+}'
 j_query(json, "locations[?state == 'WA']") |>
     ## `fromJSON()` simplifies list-of-objects to data.frame
     jsonlite::fromJSON()

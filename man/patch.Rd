@@ -41,7 +41,7 @@ string, \code{"R"} returns an \emph{R} object using the rules in
 \code{jsonlite::toJSON()} argument \code{auto_unbox = TRUE} when \code{patch} is
 an \emph{R} object and any 'value' fields are JSON scalars; for more
 complicated scenarios 'value' fields should be marked with
-\code{jsonlite::unbox()} before being passsed to \verb{j_patch_*()}.
+\code{jsonlite::unbox()} before being passed to \verb{j_patch_*()}.
 
 For \code{j_patch_op()} the \code{...} are additional arguments to the patch
 operation, e.g., \verb{path = ', }value = '.}

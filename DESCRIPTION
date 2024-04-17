@@ -1,5 +1,5 @@
 Package: rjsoncons
-Title: 'C++' Header-Only 'jsoncons' Library for 'JSON' Queries
+Title: Query, Pivot, Patch, and Validate 'JSON' and 'NDJSON'
 Version: 1.2.0.9900
 Authors@R: c(
     person(
@@ -16,18 +16,15 @@ Authors@R: c(
         email = "danielaparker@yahoo.com",
         comment = "jsoncons C++ library maintainer"
     ))
-Description: The 'jsoncons'
-    <https://danielaparker.github.io/jsoncons/> 'C++' header-only
-    library constructs representations from a 'JSON' character vector,
-    and provides extensions for flexible queries and other operations
-    on 'JSON' objects. This package provides 'R' functions to query
-    (filter or transform) and pivot (convert from array-of-objects to
-    object-of-arrays, for easy import into 'R') 'JSON' or 'NDJSON'
-    strings or files using 'JSONpointer', 'JSONpath' or 'JMESpath'
-    expressions. The package also supports 'JSON' patch for
-    conveniently editing JSON documents, and 'JSON' schema for
-    validation. The 'jsoncons' library is easily linked to other
-    packages for direct access to 'C++' functionality.
+Description: Functions to query (filter or transform), pivot (convert
+    from array-of-objects to object-of-arrays, for easy import as 'R'
+    data frame), search, patch (edit), and validate (against 'JSON
+    Schema') 'JSON' and 'NDJSON' strings, files, or URLs. Query and
+    pivot support 'JSONpointer', 'JSONpath' or 'JMESpath'
+    expressions. The implementation uses the 'jsoncons'
+    <https://danielaparker.github.io/jsoncons/> header-only library;
+    the library is easily linked to other packages for direct access
+    to 'C++' functionality not implemented here.
 Imports: cli
 Suggests: jsonlite, tibble, tinytest, BiocStyle, knitr, rmarkdown
 LinkingTo: cpp11, cli
