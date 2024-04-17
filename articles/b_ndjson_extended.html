@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9900</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,7 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/a_rjsoncons.html">Using 'jsoncons' in R</a>
+    <a class="dropdown-item" href="../articles/a_rjsoncons.html">Transform and Validate JSON and NDJSON</a>
     <a class="dropdown-item" href="../articles/b_ndjson_extended.html">Processing NDJSON</a>
     <a class="dropdown-item" href="../articles/c_examples.html">Examples</a>
   </div>
@@ -356,12 +356,12 @@ relatively performant when processing large files. Use
 <span>        as <span class="op">=</span> <span class="st">"tibble"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">## processing 51263 records</span></span>
-<span><span class="co">## processing 87079 records</span></span>
-<span><span class="co">## processing 123962 records</span></span>
-<span><span class="co">## processing 163728 records</span></span>
+<span><span class="co">## processing 39903 records</span></span>
+<span><span class="co">## processing 74762 records</span></span>
+<span><span class="co">## processing 111866 records</span></span>
+<span><span class="co">## processing 147641 records</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  14.007   0.126  14.134</span></span>
+<span><span class="co">##  14.155   0.116  14.270</span></span>
 <span><span class="va">tbl</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 172,049 × 2</span></span></span>
 <span><span class="co">##    id          type       </span></span>
@@ -419,7 +419,7 @@ to translate the result to an <em>R</em> <code>data.frame</code>.</p>
 <span>        <span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  20.844   0.028  20.873</span></span></code></pre></div>
+<span><span class="co">##  21.321   0.032  21.355</span></span></code></pre></div>
 <p>The use case outlined here compares very favorably to the performance
 of the <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a>
 CRAN package, which took more than 600s to complete the task above. <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a> reads the
@@ -494,14 +494,14 @@ support queries or NDJSON at time of writing (18 February, 2024).</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] dplyr_1.1.4          rjsoncons_1.2.0.9900 BiocStyle_2.30.0    </span></span>
+<span><span class="co">## [1] dplyr_1.1.4      rjsoncons_1.3.0  BiocStyle_2.30.0</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] jsonlite_1.8.8      compiler_4.3.3      BiocManager_1.30.22</span></span>
 <span><span class="co">##  [4] tidyselect_1.2.1    tidyr_1.3.1         jquerylib_0.1.4    </span></span>
 <span><span class="co">##  [7] systemfonts_1.0.6   textshaping_0.3.7   yaml_2.3.8         </span></span>
 <span><span class="co">## [10] fastmap_1.1.1       R6_2.5.1            generics_0.1.3     </span></span>
-<span><span class="co">## [13] knitr_1.46          tibble_3.2.1        bookdown_0.38      </span></span>
+<span><span class="co">## [13] knitr_1.46          tibble_3.2.1        bookdown_0.39      </span></span>
 <span><span class="co">## [16] desc_1.4.3          bslib_0.7.0         pillar_1.9.0       </span></span>
 <span><span class="co">## [19] rlang_1.1.3         utf8_1.2.4          cachem_1.0.8       </span></span>
 <span><span class="co">## [22] xfun_0.43           fs_1.6.3            sass_0.4.9         </span></span>
