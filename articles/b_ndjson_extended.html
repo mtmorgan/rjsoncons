@@ -356,12 +356,12 @@ relatively performant when processing large files. Use
 <span>        as <span class="op">=</span> <span class="st">"tibble"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">## processing 55193 records</span></span>
-<span><span class="co">## processing 91139 records</span></span>
-<span><span class="co">## processing 127355 records</span></span>
-<span><span class="co">## processing 168678 records</span></span>
+<span><span class="co">## processing 54245 records</span></span>
+<span><span class="co">## processing 89911 records</span></span>
+<span><span class="co">## processing 125541 records</span></span>
+<span><span class="co">## processing 164954 records</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  13.979   0.109  14.090</span></span>
+<span><span class="co">##  14.154   0.103  14.258</span></span>
 <span><span class="va">tbl</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 172,049 × 2</span></span></span>
 <span><span class="co">##    id          type       </span></span>
@@ -419,7 +419,7 @@ to translate the result to an <em>R</em> <code>data.frame</code>.</p>
 <span>        <span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span>as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##  20.995   0.013  21.010</span></span></code></pre></div>
+<span><span class="co">##  21.227   0.031  21.269</span></span></code></pre></div>
 <p>The use case outlined here compares very favorably to the performance
 of the <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a>
 CRAN package, which took more than 600s to complete the task above. <a href="https://CRAN.R-project.org/package=ndjson" class="external-link">ndjson</a> reads the
