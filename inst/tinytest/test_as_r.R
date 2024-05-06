@@ -151,4 +151,5 @@ expect_identical(as_r(ndjson_file), json$locations)
 
 expect_identical(as_r(readLines(ndjson_file)), json$locations)
 
-expect_identical(as_r(json), json) # R -> R
+if (has_jsonlite)
+    expect_identical(as_r(json), json) # R -> R

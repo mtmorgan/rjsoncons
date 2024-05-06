@@ -25,7 +25,8 @@ ndjson_file <- system.file(package = "rjsoncons", "extdata", "example.ndjson")
 
 ## j_query
 
-expect_identical(j_query(""), '[""]') # JSONpointer
+if (has_jsonlite)
+    expect_identical(j_query(""), '[""]') # JSONpointer
 expect_identical(j_query('""'), '')
 expect_identical(j_query('[]'), '[]')
 expect_identical(j_query('{}'), '{}')

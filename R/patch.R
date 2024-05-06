@@ -251,6 +251,7 @@ j_patch_from <-
 #'     be used in `j_patch_apply()`.
 #'
 #' @examples
+#' if (requireNamespace("jsonlite", quietly = TRUE)) {
 #' ## helper for constructing patch operations from R objects
 #' j_patch_op(
 #'     "add", path = "/biscuits/1", value = list(name = "Ginger Nut"),
@@ -282,7 +283,7 @@ j_patch_from <-
 #'     j_patch_op("add", "/biscuits/1", value = value) |>
 #'     j_patch_op("copy", path = "/best_biscuit", from = "/biscuits/0")
 #' ops
-#'
+#' }
 #' @export
 j_patch_op <-
     function(op, path, ...)

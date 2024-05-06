@@ -76,21 +76,23 @@ jsonpath(json, "$..name") |>
 jsonpath(json, "$..name", as = "R")
 
 ## create a list with state and name as scalar vectors
-lst <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+lst <- as_r(json)
 
+if (requireNamespace("jsonlite", quietly = TRUE)) {
 ## objects other than scalar character vectors are automatically
 ## coerced to JSON; use `auto_unbox = TRUE` to represent R scalar
 ## vectors in the object as JSON scalar vectors
 jsonpath(lst, "$..name", auto_unbox = TRUE) |>
     cat("\n")
 
+## use I("Seattle") to coerce to a JSON object ["Seattle"]
+jsonpath(I("Seattle"), "$[0]")      |> cat("\n")
+}
+
 ## a scalar character vector like "Seattle" is not valid JSON...
 try(jsonpath("Seattle", "$"))
 ## ...but a double-quoted string is
 jsonpath('"Seattle"', "$")
-
-## use I("Seattle") to coerce to a JSON object ["Seattle"]
-jsonpath(I("Seattle"), "$[0]")      |> cat("\n")
 
 ## different ordering of object names -- 'asis' (default) or 'sort'
 json_obj <- '{"b": "1", "a": "2"}'
@@ -103,6 +105,7 @@ path <- "locations[?state == 'WA'].name | sort(@)"
 jmespath(json, path) |>
     cat("\n")
 
+if (requireNamespace("jsonlite", quietly = TRUE)) {
 ## original filter always fails, e.g., '["WA"] != 'WA'
 jmespath(lst, path)  # empty result set, '[]'
 
@@ -113,6 +116,7 @@ jmespath(lst, "locations[?state[0] == 'WA'].name[0] | sort(@)") |>
 ## automatically unbox scalar values when creating the JSON string
 jmespath(lst, path, auto_unbox = TRUE) |>
     cat("\n")
+}
 
 ## jsonpointer 0-based arrays
 jsonpointer(json, "/locations/0/name")
