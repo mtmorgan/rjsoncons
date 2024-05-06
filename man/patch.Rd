@@ -157,6 +157,7 @@ as_r(biscuits) |> str()
 
 j_patch_from(biscuits, data_file, as = "R") |> str()
 
+if (requireNamespace("jsonlite", quietly = TRUE)) {
 ## helper for constructing patch operations from R objects
 j_patch_op(
     "add", path = "/biscuits/1", value = list(name = "Ginger Nut"),
@@ -188,5 +189,5 @@ ops <-
     j_patch_op("add", "/biscuits/1", value = value) |>
     j_patch_op("copy", path = "/best_biscuit", from = "/biscuits/0")
 ops
-
+}
 }

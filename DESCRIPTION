@@ -25,8 +25,8 @@ Description: Functions to query (filter or transform), pivot (convert
     <https://danielaparker.github.io/jsoncons/> header-only library;
     the library is easily linked to other packages for direct access
     to 'C++' functionality not implemented here.
-Imports: cli
-Suggests: jsonlite, tibble, tinytest, BiocStyle, knitr, rmarkdown
+Imports: cli, tibble
+Suggests: jsonlite, tinytest, BiocStyle, knitr, rmarkdown
 LinkingTo: cpp11, cli
 License: BSL-1.0
 NeedsCompilation: yes
