@@ -6,7 +6,7 @@ j_patch_from() computes a JSON patch describing the
 difference between two JSON documents.
 j_patch_op() translates R arguments to the JSON
 representation of a patch, validating and 'unboxing' arguments
-as necessary."><title>Patch or compute the difference between two JSON documents — j_patch_apply • rjsoncons</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Patch or compute the difference between two JSON documents — j_patch_apply"><meta property="og:description" content="j_patch_apply() uses JSON Patch
+as necessary."><title>Patch or compute the difference between two JSON documents — j_patch_apply • rjsoncons</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Patch or compute the difference between two JSON documents — j_patch_apply"><meta property="og:description" content="j_patch_apply() uses JSON Patch
 https://jsonpatch.com to transform JSON 'data' according the
 rules in JSON 'patch'.
 j_patch_from() computes a JSON patch describing the
@@ -264,42 +264,25 @@ illustrate these different scenarios.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ op  : chr "remove"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ path: chr "/best_biscuit"</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"jsonlite"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="co">## helper for constructing patch operations from R objects</span></span></span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="st">"add"</span>, path <span class="op">=</span> <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Ginger Nut"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    <span class="co">## 'Ginger Nut' is a JSON scalar, so auto-unbox the 'value' argument</span></span></span>
 <span class="r-in"><span>    auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"remove"</span>, <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "remove", "path": "/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="st">"replace"</span>, <span class="st">"/biscuits/0/name"</span>,</span></span>
 <span class="r-in"><span>    <span class="co">## also possible to unbox arguments explicitly</span></span></span>
 <span class="r-in"><span>    value <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Chocolate Digestive"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "replace", "path": "/biscuits/0/name", "value": "Chocolate Digestive"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"move"</span>, <span class="st">"/cookies"</span>, from <span class="op">=</span> <span class="st">"/biscuits"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "move", "path": "/cookies", "from": "/biscuits"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span><span class="fu">j_patch_op</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="st">"test"</span>, <span class="st">"/best_biscuit/name"</span>, value <span class="op">=</span> <span class="st">"Choco Leibniz"</span>,</span></span>
 <span class="r-in"><span>    auto_unbox <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "test", "path": "/best_biscuit/name", "value": "Choco Leibniz"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## several operations</span></span></span>
 <span class="r-in"><span><span class="va">value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/unbox.html" class="external-link">unbox</a></span><span class="op">(</span><span class="st">"Ginger Nut"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -308,20 +291,16 @@ illustrate these different scenarios.</p>
 <span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, path <span class="op">=</span> <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ops</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">ops</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"/biscuits/1"</span>, value <span class="op">=</span> <span class="va">value</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu">j_patch_op</span><span class="op">(</span><span class="st">"copy"</span>, path <span class="op">=</span> <span class="st">"/best_biscuit"</span>, from <span class="op">=</span> <span class="st">"/biscuits/0"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ops</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "add", "path": "/biscuits/1", "value": {"name": "Ginger Nut"}}, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   {"op": "copy", "path": "/best_biscuit", "from": "/biscuits/0"}</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ] </span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -329,11 +308,11 @@ illustrate these different scenarios.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Martin Morgan, Marcel Ramos, Daniel Parker.</p>
+  <p>Developed by Martin Morgan, Marcel Ramos, Daniel Parker.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
     </footer></div>
