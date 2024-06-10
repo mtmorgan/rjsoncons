@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0.9100</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -488,12 +488,13 @@ produces no output</p>
 <span><span class="st">    "value": { "name": "Ginger Nut" }</span></span>
 <span><span class="st">}]'</span></span>
 <span><span class="fu"><a href="../reference/schema.html">j_schema_is_valid</a></span><span class="op">(</span><span class="va">op</span>, <span class="va">schema</span><span class="op">)</span></span>
-<span><span class="co">## [1] TRUE</span></span>
-<span><span class="fu"><a href="../reference/schema.html">j_schema_validate</a></span><span class="op">(</span><span class="va">op</span>, <span class="va">schema</span><span class="op">)</span></span>
+<span><span class="co">## [1] TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/schema.html">j_schema_validate</a></span><span class="op">(</span><span class="va">op</span>, <span class="va">schema</span><span class="op">)</span></span>
 <span><span class="co">## [1] "[]"</span></span></code></pre></div>
 <p>Introduce an invalid ‘op’, <code>"op": "invalid_op"</code>, and the
 schema is no longer valid.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="st">'[{</span></span>
 <span><span class="st">    "op": "invalid_op", "path": "/biscuits/1",</span></span>
 <span><span class="st">    "value": { "name": "Ginger Nut" }</span></span>
@@ -503,7 +504,7 @@ schema is no longer valid.</p>
 <p>The reason can be understood from (careful!) consideration of the
 output of <code><a href="../reference/schema.html">j_schema_validate()</a></code>, with reference to the schema
 itself.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/schema.html">j_schema_validate</a></span><span class="op">(</span><span class="va">op</span>, <span class="va">schema</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## Rows: 1</span></span>
@@ -520,7 +521,7 @@ schema [i.e., ’oneOf’ elements] matched, …’.</p>
 <p>The ‘details’ column summarizes why each of the 3 elements of
 <code>/items/oneOf</code> fails the schema specification; use
 <code>as = "details"</code> to extract this directly</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/schema.html">j_schema_validate</a></span><span class="op">(</span><span class="va">op</span>, <span class="va">schema</span>, as <span class="op">=</span> <span class="st">"details"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## Rows: 6</span></span>
@@ -532,7 +533,7 @@ schema [i.e., ’oneOf’ elements] matched, …’.</p>
 <span><span class="co">## $ error            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "'invalid_op' is not a valid enum value.", "'invalid_…</span></span></code></pre></div>
 <p>This indicates that the first item in the schema is rejected because
 ‘invalid_op’ is not a valid enum</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">schema</span>, <span class="st">"/items/oneOf/0/properties/op/enum"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/noquote.html" class="external-link">noquote</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## [1] ["add","replace","test"]</span></span></code></pre></div>
@@ -547,7 +548,7 @@ the JSON to an object of path / value pairs, where the path is the <a href="http
 path to the corresponding value. It is then straight-forward to search
 this flattened object for, e.g., the path to a known field or value. As
 an example, consider the object</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">codes</span> <span class="op">&lt;-</span> <span class="st">'{</span></span>
 <span><span class="st">    "discards": {</span></span>
 <span><span class="st">        "1000": "Record does not exist",</span></span>
@@ -562,7 +563,7 @@ an example, consider the object</p>
 <span><span class="st">}'</span></span></code></pre></div>
 <p>The ‘flat’ JSON of this can be represented as named list (using
 <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> to provide a compact visual representation)</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_flatten</a></span><span class="op">(</span><span class="va">codes</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 6</span></span>
@@ -575,12 +576,12 @@ an example, consider the object</p>
 <p>The names of the list are JSONpointer (default) or JSONpath, so can
 be used in <code><a href="../reference/rquerypivot.html">j_query()</a></code> and <code><a href="../reference/rquerypivot.html">j_pivot()</a></code> as
 appropriate</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">codes</span>, <span class="st">"/discards/1010"</span><span class="op">)</span></span>
 <span><span class="co">## [1] "Discarding timed-out partial msg"</span></span></code></pre></div>
 <p>There are two ways to find known keys and values. The first is to use
 exact matching to one or more keys or values, e.g.,</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_values</a></span><span class="op">(</span></span>
 <span>    <span class="va">codes</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Record does not exist"</span>, <span class="st">"State code missing"</span><span class="op">)</span>,</span>
 <span>    as <span class="op">=</span> <span class="st">"tibble"</span></span>
@@ -589,8 +590,9 @@ exact matching to one or more keys or values, e.g.,</p>
 <span><span class="co">##   path           value                </span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> /discards/1000 Record does not exist</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> /warnings/1    State code missing</span></span>
-<span><span class="fu"><a href="../reference/flatten.html">j_find_keys</a></span><span class="op">(</span><span class="va">codes</span>, <span class="st">"warnings"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> /warnings/1    State code missing</span></span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_keys</a></span><span class="op">(</span><span class="va">codes</span>, <span class="st">"warnings"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">##   path        value                            </span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                            </span></span>
@@ -598,15 +600,16 @@ exact matching to one or more keys or values, e.g.,</p>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> /warnings/1 State code missing               </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">3</span> /warnings/2 Zip code missing</span></span></code></pre></div>
 <p>It is also possible to match using a regular expression.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_values_grep</a></span><span class="op">(</span><span class="va">codes</span>, <span class="st">"missing"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">##   path        value                            </span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                            </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> /warnings/0 Phone number missing country code</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> /warnings/1 State code missing               </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> /warnings/2 Zip code missing</span></span>
-<span><span class="fu"><a href="../reference/flatten.html">j_find_keys_grep</a></span><span class="op">(</span><span class="va">codes</span>, <span class="st">"card.*/100"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span> <span class="co"># span key delimiters</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> /warnings/2 Zip code missing</span></span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_keys_grep</a></span><span class="op">(</span><span class="va">codes</span>, <span class="st">"card.*/100"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span> <span class="co"># span key delimiters</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
 <span><span class="co">##   path           value                </span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
@@ -614,15 +617,16 @@ exact matching to one or more keys or values, e.g.,</p>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> /discards/1004 Queue limit exceeded</span></span></code></pre></div>
 <p>Keys are always character vectors, but values can be of different
 type; <code><a href="../reference/flatten.html">j_find_values()</a></code> supports searches on these.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">j</span> <span class="op">&lt;-</span> <span class="st">'{"x":[1,[2, 3]],"y":{"a":4}}'</span></span>
 <span><span class="fu"><a href="../reference/flatten.html">j_flatten</a></span><span class="op">(</span><span class="va">j</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 4</span></span>
 <span><span class="co">##  $ /x/0  : int 1</span></span>
 <span><span class="co">##  $ /x/1/0: int 2</span></span>
 <span><span class="co">##  $ /x/1/1: int 3</span></span>
-<span><span class="co">##  $ /y/a  : int 4</span></span>
-<span><span class="fu"><a href="../reference/flatten.html">j_find_values</a></span><span class="op">(</span><span class="va">j</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span><span class="op">)</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
+<span><span class="co">##  $ /y/a  : int 4</span></span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_values</a></span><span class="op">(</span><span class="va">j</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span><span class="op">)</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
 <span><span class="co">##   path   value</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
@@ -631,21 +635,23 @@ type; <code><a href="../reference/flatten.html">j_find_values()</a></code> suppo
 <p>A common operation might be to find the path to a know value, and
 then to query the original JSON to find the object in which the value is
 contained.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_values</a></span><span class="op">(</span><span class="va">j</span>, <span class="fl">3</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">##   path   value</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> /x/1/1     3</span></span>
-<span><span class="co">## path to '3' is '/x/1/1', so containing object is at '/x/1'</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> /x/1/1     3</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## path to '3' is '/x/1/1', so containing object is at '/x/1'</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">j</span>, <span class="st">"/x/1"</span><span class="op">)</span></span>
-<span><span class="co">## [1] "[2,3]"</span></span>
-<span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">j</span>, <span class="st">"/x/1"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
+<span><span class="co">## [1] "[2,3]"</span></span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">j</span>, <span class="st">"/x/1"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
 <span><span class="co">## [1] 2 3</span></span></code></pre></div>
 <p>Both JSONpointer and JSONpath are supported; an advantage of the
 latter is that the path distinguishes between integer-valued (unquoted)
 and string-valued (quoted) keys</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flatten.html">j_find_values</a></span><span class="op">(</span><span class="va">j</span>, <span class="fl">3</span>, as <span class="op">=</span> <span class="st">"tibble"</span>, path_type <span class="op">=</span> <span class="st">"JSONpath"</span><span class="op">)</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">##   path         value</span></span>
@@ -657,14 +663,15 @@ object, JSON or NDJSON string, file, or URL. Using
 <code>path_type</code> leads to a path that is easily converted into an
 <em>R</em> index: double the <code>[</code> and <code>]</code> in the
 path and increment each numerical index by 1:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">l</span> <span class="op">&lt;-</span> <span class="va">j</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/flatten.html">j_find_values</a></span><span class="op">(</span><span class="va">l</span>, <span class="fl">3</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span>, path_type <span class="op">=</span> <span class="st">"JSONpath"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">##   path         value</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> $['x'][1][1]     3</span></span>
-<span><span class="va">l</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="co"># siblings</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> $['x'][1][1]     3</span></span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">l</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="co"># siblings</span></span>
 <span><span class="co">## [1] 2 3</span></span></code></pre></div>
 <p>NDJSON files are flattened into character vectors, with each element
 the flattened version of the corresponding NDJSON record.</p>
@@ -674,7 +681,7 @@ the flattened version of the corresponding NDJSON record.</p>
 </h2>
 <p>The package includes a JSON parser, used with the argument
 <code>as = "R"</code> or directly with <code><a href="../reference/as_r.html">as_r()</a></code></p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{"a": 1.0, "b": [2, 3, 4]}'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; List of 2</span></span>
@@ -683,43 +690,47 @@ the flattened version of the corresponding NDJSON record.</p>
 <p>The main rules of this transformation are outlined here. JSON arrays
 of a single type (boolean, integer, double, string) are transformed to
 <em>R</em> vectors of the same length and corresponding type.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[true, false, true]'</span><span class="op">)</span> <span class="co"># boolean -&gt; logical</span></span>
-<span><span class="co">## [1]  TRUE FALSE  TRUE</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2, 3]'</span><span class="op">)</span>           <span class="co"># integer -&gt; integer</span></span>
-<span><span class="co">## [1] 1 2 3</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1.0, 2.0, 3.0]'</span><span class="op">)</span>     <span class="co"># double  -&gt; numeric</span></span>
-<span><span class="co">## [1] 1 2 3</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'["a", "b", "c"]'</span><span class="op">)</span>     <span class="co"># string  -&gt; character</span></span>
+<span><span class="co">## [1]  TRUE FALSE  TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2, 3]'</span><span class="op">)</span>           <span class="co"># integer -&gt; integer</span></span>
+<span><span class="co">## [1] 1 2 3</span></span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1.0, 2.0, 3.0]'</span><span class="op">)</span>     <span class="co"># double  -&gt; numeric</span></span>
+<span><span class="co">## [1] 1 2 3</span></span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'["a", "b", "c"]'</span><span class="op">)</span>     <span class="co"># string  -&gt; character</span></span>
 <span><span class="co">## [1] "a" "b" "c"</span></span></code></pre></div>
 <p>JSON arrays mixing integer and double values are transformed to
 <em>R</em> numeric vectors.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2.0]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># numeric</span></span>
 <span><span class="co">## [1] "numeric"</span></span></code></pre></div>
 <p>If a JSON integer array contains a value larger than <em>R</em>’s
 32-bit integer representation, the array is transformed to an <em>R</em>
 numeric vector. NOTE that this results in loss of precision for JSON
 integer values greater than <code>2^53</code>.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[1, 2147483648]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># 64-bit integers -&gt; numeric</span></span>
 <span><span class="co">## [1] "numeric"</span></span></code></pre></div>
 <p>JSON objects are transformed to <em>R</em> named lists.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{}'</span><span class="op">)</span></span>
-<span><span class="co">## named list()</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{"a": 1.0, "b": [2, 3, 4]}'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">## named list()</span></span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'{"a": 1.0, "b": [2, 3, 4]}'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 2</span></span>
 <span><span class="co">##  $ a: num 1</span></span>
 <span><span class="co">##  $ b: int [1:3] 2 3 4</span></span></code></pre></div>
 <p>There are several additional details. A JSON scalar and a JSON vector
 of length 1 are represented in the same way in <em>R</em>.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">"3.14"</span><span class="op">)</span>, <span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">"[3.14]"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">## [1] TRUE</span></span></code></pre></div>
 <p>JSON arrays mixing types other than integer and double are
 transformed to <em>R</em> lists</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[true, 1, "a"]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 3</span></span>
 <span><span class="co">##  $ : logi TRUE</span></span>
@@ -728,13 +739,15 @@ transformed to <em>R</em> lists</p>
 <p>JSON <code>null</code> values are represented as <em>R</em>
 <code>NULL</code> values; arrays of <code>null</code> are transformed to
 lists</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'null'</span><span class="op">)</span>                  <span class="co"># NULL</span></span>
-<span><span class="co">## NULL</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[null]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span>       <span class="co"># list(NULL)</span></span>
+<span><span class="co">## NULL</span></span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[null]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span>       <span class="co"># list(NULL)</span></span>
 <span><span class="co">## List of 1</span></span>
-<span><span class="co">##  $ : NULL</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[null, null]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># list(NULL, NULL)</span></span>
+<span><span class="co">##  $ : NULL</span></span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="st">'[null, null]'</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># list(NULL, NULL)</span></span>
 <span><span class="co">## List of 2</span></span>
 <span><span class="co">##  $ : NULL</span></span>
 <span><span class="co">##  $ : NULL</span></span></code></pre></div>
@@ -742,15 +755,16 @@ lists</p>
 <code>object_names=</code> argument. The default preserves names as they
 appear in the JSON definition; use <code>"sort"</code> to sort names
 alphabetically. This argument is applied recursively.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">json</span> <span class="op">&lt;-</span> <span class="st">'{"b": 1, "a": {"d": 2, "c": 3}}'</span></span>
 <span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="va">json</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 2</span></span>
 <span><span class="co">##  $ b: int 1</span></span>
 <span><span class="co">##  $ a:List of 2</span></span>
 <span><span class="co">##   ..$ d: int 2</span></span>
-<span><span class="co">##   ..$ c: int 3</span></span>
-<span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="va">json</span>, object_names <span class="op">=</span> <span class="st">"sort"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">##   ..$ c: int 3</span></span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/as_r.html">as_r</a></span><span class="op">(</span><span class="va">json</span>, object_names <span class="op">=</span> <span class="st">"sort"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## List of 2</span></span>
 <span><span class="co">##  $ a:List of 2</span></span>
 <span><span class="co">##   ..$ c: int 3</span></span>
@@ -761,7 +775,7 @@ alphabetically. This argument is applied recursively.</p>
 <code>simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE)</code>.
 Unit tests (using the <a href="https://CRAN.R-project.org/package=tinytest" class="external-link">tinytest</a>
 framework) providing additional details are available at</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"rjsoncons"</span>, <span class="st">"tinytest"</span>, <span class="st">"test_as_r.R"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="using-jsonlitefromjson">Using <code>jsonlite::fromJSON()</code><a class="anchor" aria-label="anchor" href="#using-jsonlitefromjson"></a>
@@ -770,7 +784,7 @@ framework) providing additional details are available at</p>
 returning the query as a JSON string, e.g., using the
 <code>fromJSON()</code> in the <a href="https://CRAN.R-project.org/package=jsonlite" class="external-link">jsonlite</a>
 package.</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">json</span> <span class="op">&lt;-</span> <span class="st">'{</span></span>
 <span><span class="st">  "locations": [</span></span>
 <span><span class="st">    {"name": "Seattle", "state": "WA"},</span></span>
@@ -812,7 +826,7 @@ library.</p>
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
 <p>This vignette was compiled using the following software versions</p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">## R version 4.4.0 (2024-04-24)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu</span></span>
@@ -835,21 +849,21 @@ library.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] rjsoncons_1.3.0.9000 BiocStyle_2.32.0    </span></span>
+<span><span class="co">## [1] rjsoncons_1.3.0.9100 BiocStyle_2.32.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.46         </span></span>
-<span><span class="co">##  [4] rlang_1.1.3         xfun_0.43           purrr_1.0.2        </span></span>
-<span><span class="co">##  [7] textshaping_0.3.7   jsonlite_1.8.8      glue_1.7.0         </span></span>
-<span><span class="co">## [10] htmltools_0.5.8.1   ragg_1.3.0          sass_0.4.9         </span></span>
-<span><span class="co">## [13] fansi_1.0.6         rmarkdown_2.26      tibble_3.2.1       </span></span>
-<span><span class="co">## [16] evaluate_0.23       jquerylib_0.1.4     fastmap_1.1.1      </span></span>
+<span><span class="co">##  [1] vctrs_0.6.5         cli_3.6.2           knitr_1.47         </span></span>
+<span><span class="co">##  [4] rlang_1.1.4         xfun_0.44           purrr_1.0.2        </span></span>
+<span><span class="co">##  [7] textshaping_0.4.0   jsonlite_1.8.8      glue_1.7.0         </span></span>
+<span><span class="co">## [10] htmltools_0.5.8.1   ragg_1.3.2          sass_0.4.9         </span></span>
+<span><span class="co">## [13] fansi_1.0.6         rmarkdown_2.27      tibble_3.2.1       </span></span>
+<span><span class="co">## [16] evaluate_0.23       jquerylib_0.1.4     fastmap_1.2.0      </span></span>
 <span><span class="co">## [19] yaml_2.3.8          lifecycle_1.0.4     memoise_2.0.1      </span></span>
 <span><span class="co">## [22] bookdown_0.39       BiocManager_1.30.23 compiler_4.4.0     </span></span>
-<span><span class="co">## [25] fs_1.6.4            pkgconfig_2.0.3     systemfonts_1.0.6  </span></span>
+<span><span class="co">## [25] fs_1.6.4            pkgconfig_2.0.3     systemfonts_1.1.0  </span></span>
 <span><span class="co">## [28] digest_0.6.35       R6_2.5.1            utf8_1.2.4         </span></span>
 <span><span class="co">## [31] pillar_1.9.0        magrittr_2.0.3      bslib_0.7.0        </span></span>
-<span><span class="co">## [34] tools_4.4.0         pkgdown_2.0.9       cachem_1.0.8       </span></span>
+<span><span class="co">## [34] tools_4.4.0         pkgdown_2.0.9       cachem_1.1.0       </span></span>
 <span><span class="co">## [37] desc_1.4.3</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
