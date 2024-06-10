@@ -217,6 +217,189 @@ part.
 
 [78035500/547331]: https://stackoverflow.com/a/78035500/547331
 
+## JSONPath wildcards
+
+<https://stackoverflow.com/questions/78029215>
+
+This question retrieves a JSON representation of the hierarchy of
+departments within German reseach institutions.  The interest is
+in finding the path between two departments. 
+
+The answer posted on StackOverflow translates the JSON list-of-lists
+structure describing the hierarchy into an *R* list-of-lists and uses
+a series of complicated manipulations to form a tibble suitable for
+querying.
+
+The approach here recognizes this as a graph-based problem. The goal
+is to construct a graph from JSON, and then use graph algorithms to
+identify the shortest path between nodes.
+
+I followed @margusl to extract JSON from the web page.
+
+```{r}
+library(rvest)
+html <- read_html("https://www.gerit.org/en/institutiondetail/10282")
+
+## scrape JSON
+xpath <- '//script[contains(text(),"window.__PRELOADED_STATE__")]'
+json <- 
+  html |>
+  html_element(xpath = xpath) |>
+  html_text() |>
+  sub(pattern = "window.__PRELOADED_STATE__ = ", replacement = "", fixed = TRUE)
+```
+
+I then used [listviewer][] to explore the JSON interactively, to get a
+feel for the structure.
+
+```{r, eval = FALSE}
+listviewer::jsonedit(json)
+```
+
+[rvest]: https://rvest.tidyverse.org/
+[listviewer]: https://cran.r-project.org/package=listviewer
+
+Obtain the root of the institutional hierarchy with a simple path
+traversal, using [JSONPath][] syntax. JSONPath provides 'wild-card'
+syntax, which is convenient when querying hierarchical data
+representations.
+
+```{r, message = FALSE}
+library(rjsoncons)
+library(dplyr)
+tree <- j_query(json, "$.institutionDetail.institution.tree")
+```
+
+[rjsoncons]: https://mtmorgan.github.io/rjsoncons
+[JSONPath]: https://goessner.net/articles/JsonPath/
+
+It looks like each institution is a (directed, acyclic) graph, with
+nodes representing each division in the institution. 
+
+The nodes are easy to reconstruct. Look for keys `id`, `name.de`, and
+`name.en`using the wild-card `..`, meaning 'at any depth'. Each of
+these queries returns a vector. Use them to construct a
+tibble. Although the `id` key is an integer in the JSON, it seems
+appropriate to think of these as character-valued.
+
+```{r}
+## these are all nodes, including the query node; each node has an
+## 'id' and german ('de') and english ('en') name.
+nodes <- tibble(
+    ## all keys 'id' , 'name.de', and 'name.en', under 'tree' with
+    ## wild-card '..' matching
+    id =
+        j_query(tree, "$..id", as = "R") |>
+        as.character(),
+    de = j_query(tree, "$..name.de", as = "R"),
+    en = j_query(tree, "$..name.en", as = "R")
+)
+```
+
+There are `r NROW(nodes)` nodes in this institution.
+
+```{r}
+nodes
+```
+
+The edges are a little tricky to reconstruct from the nested structure
+in the JSON. Start with the id and number of children of each node.
+
+```{r}
+id <-
+    j_query(tree, "$..id", as = "R") |>
+    as.character()
+children_per_node <- j_query(tree, "$..children.length", as = "R")
+```
+
+I developed the `edgelist()` function (in the folded code chunk below)
+to transform `id` and `children_per_node` into a two-column matrix of
+from-to relations. In the function, `parent_id` and `n_children` are
+stacks used to capture the hierarchical structure of the data. `level`
+represents the current level in the hierarchy. The algorithm walks
+along the `id` input, records the from/to relationship implied by `n`,
+and then completes that level of the hierarchy (if `n_children[level]
+== 0`), pushes the next level onto the stack, or continues to the next
+`id`.
+
+```{r}
+edgelist <- function(id, n) {
+    stopifnot(identical(length(id), length(n)))
+    parent_id <- n_children <- integer()
+    from <- to <- integer(length(id) - 1L)
+    level <- 0L
+    for (i in seq_along(id)) {
+        if (i > 1) {
+            ## record link from parent to child
+            from[i - 1] <- tail(parent_id, 1L)
+            to[i - 1] <- id[i]
+            n_children[level] <- n_children[level] - 1L
+        }
+        if (level > 0 && n_children[level] == 0L) {
+            ## 'pop' level
+            level <- level - 1L
+            parent_id <- head(parent_id, -1L)
+            n_children <- head(n_children, -1L)
+        }
+        if (n[i] != 0) {
+            ## 'push' level
+            level <- level + 1L
+            parent_id <- c(parent_id, id[i])
+            n_children <- c(n_children, n[i])
+        }
+    }
+    tibble(from, to)
+}
+```
+
+The matrix of edges, with columns `from` and `to`, is then
+
+```{r}
+edges <- edgelist(id, children_per_node)
+edges
+```
+
+The computation is tricky, but not too inefficient. There are only two
+queries of the JSON object (for `id` and `children_per_node`) and the
+`R` iteration over elements of `id` is not too extensive.
+
+I used the [tidygraph][] package to represent the graph from the nodes
+and edges.
+
+```{r, message = FALSE}
+tg <- tidygraph::tbl_graph(nodes = nodes, edges = edges, node_key = "id")
+tg
+```
+
+I then used `convert()` to find the graph with the shortest path
+between two nodes, and extracted the tibble of nodes.
+
+```{r}
+tg |>
+    ## find the shortest path between two nodes...
+    tidygraph::convert(
+        tidygraph::to_shortest_path,
+        de == "Fakultät 1: Wirtschafts- und Sozialwissenschaftliche Fakultät",
+        de == "Professur Hölzl"
+    ) |>
+    ## extract the nodes from the resulting graph
+    as_tibble("nodes") |>
+    select(id, de)
+```
+
+This is the answer to the question posed in the StackOverflow post.
+
+It can be fun to try and visualize the graph, e.g., using [ggraph][]
+
+```{r}
+ggraph::ggraph(tg, "tree", circular = TRUE) +
+    ggraph::geom_edge_elbow()
+```
+
+[tidygraph]: https://tidygraph.data-imaginist.com
+[ggraph]: https://ggraph.data-imaginist.com
+
+
 # Patch
 
 ## Moving elements
