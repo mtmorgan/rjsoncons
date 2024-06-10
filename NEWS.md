@@ -1,3 +1,7 @@
+# rjsoncons 1.3.1
+
+- (1.3.0.9100) add JSONPath to examples article.
+
 # rjsoncons 1.3.0
 
 - (1.2.0.9900) better support `j_pivot()` when keys differ between

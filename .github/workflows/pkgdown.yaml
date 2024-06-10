@@ -37,7 +37,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2.7.2
         with:
           cache-version: 2
-          extra-packages: any::pkgdown, any::dplyr, any::tidyr, any::jqr, local::.
+          extra-packages: any::pkgdown, any::dplyr, any::tidyr, any::jqr, any::rvest, any::tidygraph, any::ggraph, local::.
           needs: website
 
       - name: Build site
