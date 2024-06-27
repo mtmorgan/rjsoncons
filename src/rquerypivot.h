@@ -128,10 +128,14 @@ class rquerypivot
                 j = Json(json_object_arg);
             }
 
-            // all members of 'j' need to be JSON array
+            // all members of 'j' need to be JSON array; NDJSON array
+            // elements need to be inserted into an array
             for (auto& member: j.object_range()) {
                 auto key = member.key();
-                if (member.value().type() != json_type::array_value) {
+                bool as_array =
+                    member.value().type() != json_type::array_value ||
+                    data_type_ == data_type::ndjson_data_type;
+                if (as_array) {
                     Json ja = Json::make_array(1, j[key]);
                     j[key].swap(ja);
                 }
