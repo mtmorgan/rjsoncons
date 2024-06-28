@@ -1,6 +1,6 @@
 Package: rjsoncons
 Title: Query, Pivot, Patch, and Validate 'JSON' and 'NDJSON'
-Version: 1.3.0.9100
+Version: 1.3.0.9200
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),

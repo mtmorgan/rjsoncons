@@ -1,5 +1,8 @@
 # rjsoncons 1.3.1
 
+- (1.3.0.9200) bug fix: NDJSON `j_pivot('{"a": [1,2]}')` now pivots as
+  `'{"a": [[1,2]]}'`. NDJSON `j_pivot()` records must *always* be
+  objects.
 - (1.3.0.9100) add JSONPath to examples article.
 
 # rjsoncons 1.3.0
