@@ -49,7 +49,7 @@ class rquerypivot
 
     // pivot implementation
 
-    std::vector<std::string> all_keys(const Json j)
+    std::vector<std::string> pivot_json_all_keys(const Json j)
         {
             // 'keys' returns keys in the order they are discoverd, 'seen' is
             // used as a filter to only insert unseen keys
@@ -73,10 +73,10 @@ class rquerypivot
             return keys;
         }
 
-    Json pivot_array_as_object(const Json j)
+    Json pivot_json_array(const Json j)
         {
             Json object(json_object_arg);
-            const std::vector<std::string> keys = all_keys(j);
+            const std::vector<std::string> keys = pivot_json_all_keys(j);
 
             // initialize
             for (const auto& key : keys) {
@@ -98,59 +98,52 @@ class rquerypivot
             return object;
         }
 
-    Json pivot(const Json j)
+    void pivot_json(Json j)
         {
-            Json value;
-
             switch(j.type()) {
             case json_type::null_value:
+                 // 'null' is treated as '{}'
+                j = Json(json_object_arg);
+                break;
             case json_type::object_value: {
-                // 'object_value' assumes j is already object-of-array
-                value = j;
+                // all members of 'j' need to be JSON array
+                for (auto& member: j.object_range()) {
+                    auto key = member.key();
+                    if (member.value().type() != json_type::array_value) {
+                        Json ja = Json::make_array(1, j[key]);
+                        j[key].swap(ja);
+                    }
+                }
                 break;
             }
             case json_type::array_value: {
-                value = pivot_array_as_object(j);
+                j = pivot_json_array(j);
                 break;
             }
             default: {
                 cpp11::stop("`j_pivot()` 'path' must yield an object or array");
             }}
 
-            // a Json object-of-arrays
-            return value;
-        }
 
-    void pivot_append_result(Json j)
+            result_.push_back(j);
+        }
+        
+    void pivot_ndjson(Json j)
         {
             if (j.type() == json_type::null_value) {
-                // 'null' is treated as '{}'
-                j = Json(json_object_arg);
-            }
-
-            // all members of 'j' need to be JSON array; NDJSON array
-            // elements need to be inserted into an array
-            for (auto& member: j.object_range()) {
-                auto key = member.key();
-                bool as_array =
-                    member.value().type() != json_type::array_value ||
-                    data_type_ == data_type::ndjson_data_type;
-                if (as_array) {
-                    Json ja = Json::make_array(1, j[key]);
-                    j[key].swap(ja);
-                }
+                // skip 'null' records
+                return;
             }
 
             if (result_.size() == 0) {
-                // first pivot - insert (even '{}') & exit
+                // result_.push_back(Json(json_object_arg));
+                for (auto& member: j.object_range()) {
+                    // all members of 'j' need to be JSON arrays
+                    auto key = member.key();
+                    Json ja = Json::make_array(1, j[key]);
+                    j[key].swap(ja);
+                }
                 result_.push_back(j);
-                return;
-            } else if (result_.size() == 1 && result_[0].size() == 0) {
-                // first pivot was '{}' -- replace with current
-                result_[0] = j;
-                return;
-            } else if (j.size() == 0) {
-                // filter empty pivots
                 return;
             }
 
@@ -161,9 +154,7 @@ class rquerypivot
             // use unordered_set to keep track of key status in result_[0], j
             // fill j_keys; trim as each key from j is added to result_[0]
             std::unordered_set<std::string> j_keys;
-            std::size_t n_j = 0;
             for (const auto& j_elt : j.object_range()) {
-                n_j = std::max(n_j, j_elt.value().size());
                 j_keys.insert(j_elt.key());
             }
 
@@ -179,26 +170,14 @@ class rquerypivot
                 }
                 // insert j[r_elt.key()] after r_elt.value()
                 const auto& j_elt = j[r_elt.key()];
-                r_elt.value().insert(
-                    r_elt.value().array_range().end(),
-                    j_elt.array_range().begin(),
-                    j_elt.array_range().end());
+                r_elt.value().push_back(j_elt);
                 // remove key from 'j', leaving keys not in r
                 j_keys.erase(r_elt.key());
             }
 
-            // key only in result_[0]
-            if (r_keys.size()) {
-                // construct array of n_j 'null' to pad each key
-                Json pad(json_array_arg);
-                pad.reserve(n_j);
-                for (std::size_t i = 0; i < n_j; ++i)
-                    pad.push_back(Json::null());
-                for (auto& r_key : r_keys) {
-                    result_[0][r_key].insert(
-                        result_[0][r_key].array_range().end(),
-                        pad.array_range().begin(), pad.array_range().end());
-                }
+            // key only in result_[0] -- insert 'null'
+            for (auto& r_key : r_keys) {
+                result_[0][r_key].push_back(Json::null());
             }
 
             // key only in j
@@ -209,11 +188,9 @@ class rquerypivot
                 for (std::size_t i = 0; i < n_r; ++i)
                     pad.push_back(Json::null());
                 for (auto& j_key : j_keys) {
+                    // initialize key as empty array
                     result_[0][j_key] = pad;
-                    result_[0][j_key].insert(
-                        result_[0][j_key].array_range().end(),
-                        j[j_key].array_range().begin(),
-                        j[j_key].array_range().end());
+                    result_[0][j_key].push_back(j[j_key]);
                 }
             }
         }
@@ -244,8 +221,11 @@ class rquerypivot
     void pivot_transform(Json j)
         {
             Json q = query(j);
-            Json p = pivot(q);
-            pivot_append_result(p);
+            if (data_type_ == data_type::json_data_type) {
+                pivot_json(q);
+            } else {
+                pivot_ndjson(q);
+            }
         }
 
     void flatten_transform(Json j)

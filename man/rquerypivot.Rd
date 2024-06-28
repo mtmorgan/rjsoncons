@@ -112,7 +112,8 @@ j_pivot(ndjson_file, "org", as = "data.frame")
 
 ## use j_pivot() to filter 'PushEvent' for organizations
 path <- "[{id: id, type: type, org: org}]
-             [?@.type == 'PushEvent' && @.org != null]"
+             [?@.type == 'PushEvent' && @.org != null] |
+                 [0]"
 j_pivot(ndjson_file, path, as = "data.frame")
 
 ## try also

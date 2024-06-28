@@ -247,14 +247,20 @@ org: org}]` and then filter the array using JMESpath's query syntax
 define the path
 
 ```{r j_query_filter}
-path <- "[{id: id, type: type, org: org}][?@.type == 'PushEvent' && org != null]"
+path <-
+    "[{id: id, type: type, org: org}]
+         [?@.type == 'PushEvent' && org != null] |
+         [0]"
 j_query(ndjson_file, path, n_records = 5)
 ```
 
 `j_pivot()` removes empty records
 
 ```{r j_pivot_filter}
-path <- "[{id: id, type: type, org: org}][?@.type == 'PushEvent' && org != null]"
+path <-
+    "[{id: id, type: type, org: org}]
+         [?@.type == 'PushEvent' && org != null] |
+         [0]"
 j_pivot(ndjson_file, path, n_records = 5, as = "tibble")
 ```
 
