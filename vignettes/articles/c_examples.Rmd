@@ -222,8 +222,8 @@ part.
 <https://stackoverflow.com/questions/78029215>
 
 This question retrieves a JSON representation of the hierarchy of
-departments within German reseach institutions.  The interest is
-in finding the path between two departments. 
+departments within German research institutions.  The interest is in
+finding the path between two departments.
 
 The answer posted on StackOverflow translates the JSON list-of-lists
 structure describing the hierarchy into an *R* list-of-lists and uses

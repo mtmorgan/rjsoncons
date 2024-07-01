@@ -4,6 +4,7 @@
   `'{"a": [[1,2]]}'`. NDJSON `j_pivot()` records must *always* be
   objects.
 - (1.3.0.9100) add JSONPath to examples article.
+- (1.3.0.9100) make robust to 'noSuggests' CRAN checks.
 
 # rjsoncons 1.3.0
 
