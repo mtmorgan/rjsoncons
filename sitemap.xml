@@ -1,54 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/404.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/articles/a_rjsoncons.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/articles/b_ndjson_extended.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/articles/c_examples.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/as_r.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/flatten.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/j_data_type.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/patch.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/rquerypivot.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/schema.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/version.html</loc>
-  </url>
-  <url>
-    <loc>https://mtmorgan.github.io/rjsoncons/reference/zzz_paths_and_pointer.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://mtmorgan.github.io/rjsoncons/404.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/articles/a_rjsoncons.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/articles/b_ndjson_extended.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/articles/c_examples.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/articles/index.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/authors.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/index.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/news/index.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/as_r.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/flatten.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/index.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/j_data_type.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/patch.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/rquerypivot.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/schema.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/version.html</loc></url>
+<url><loc>https://mtmorgan.github.io/rjsoncons/reference/zzz_paths_and_pointer.html</loc></url>
 </urlset>
+
