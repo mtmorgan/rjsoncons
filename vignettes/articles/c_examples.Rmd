@@ -104,6 +104,95 @@ j_pivot(json, query, as = "tibble")
 
 [JMESPath]: https://jmespath.org
 
+## Constructing a pivot object using [JMESPath][]: a second example
+
+<https://stackoverflow.com/questions/78727724>
+
+The question asks about creating a tibble from a complex JSON data
+structure. Here is a reproducible example to retrieve JSON;
+unfortunately the host does not resolve when run as a GitHub action,
+so the example here is not fully evaluated.
+
+```{r, eval = FALSE}
+start_date <- end_date <- Sys.Date()
+
+res <- httr::GET(
+       url = "https://itc.aeso.ca/itc/public/api/v2/interchange",
+       query = list(
+           beginDate = format(start_date, "%Y%m%d"),
+           endDate = format(end_date, "%Y%m%d"),
+           Accept = "application/json"
+       )
+   )
+json <- httr::content(res, as = "text", encoding = "UTF-8")
+```
+
+Explore the JSON using [listviewer][].
+
+```{r, eval = FALSE}
+listviewer::jsonedit(json)
+```
+
+Write a query that extracts, directly from the JSON, some of the
+fields of interest. The queries are written using [JMESPath][]. A
+simple example extracts the 'date' from the path
+`return.BcIntertie.Allocations[].date`
+
+```{r, eval = FALSE}
+path <- 'return.BcIntertie.Allocations[].date'
+j_query(json, path) |>
+    str()
+## chr "[\"2024-07-10\",\"2024-07-10\",\"2024-07-10\",\"2024-07-10\",\"2024-07-10\",\"2024-07-10\",\"2024-07-10\",\"202"| __truncated__
+```
+
+Expand on this by querying several different fields, and then
+re-formating the query into a new JSON object.  Develop the code by
+querying / viewing until things look like a JSON array-of-objects
+
+```{r, eval = FALSE}
+path <- paste0(
+    'return.{',
+        'date: BcIntertie.Allocations[].date,',
+        'he: BcIntertie.Allocations[].he,',
+        'bc_import: BcIntertie.Allocations[].import.atc,',
+        'bc_export:  BcIntertie.Allocations[].export.atc,',
+        'matl_import: MatlIntertie.Allocations[].import.atc,',
+        'matl_export:  MatlIntertie.Allocations[].export.atc',
+    '}'
+)
+```
+
+```{r, eval = FALSE}
+j_query(json, path) |>
+    listviewer::jsonedit()
+```
+
+Finally, run `j_pivot()` to transform the JSON to a tibble.
+
+```{r, eval = FALSE}
+j_pivot(json, path, as = "tibble")
+```
+
+The result is
+
+```
+## # A tibble: 48 × 6
+##    date       he    bc_import bc_export matl_import matl_export
+##    <chr>      <chr>     <int>     <int>       <int>       <int>
+##  1 2024-07-10 4           750       950         295         300
+##  2 2024-07-10 5           750       950         295         300
+##  3 2024-07-10 6           750       950         295         300
+##  4 2024-07-10 7           750       950         295         300
+##  5 2024-07-10 8           750       950         295         300
+##  6 2024-07-10 9           750       950         295         300
+##  7 2024-07-10 10          750       950         295         300
+##  8 2024-07-10 11          750       950         295         300
+##  9 2024-07-10 12          750       950         295         300
+## 10 2024-07-10 13          750       950         295         300
+## # ℹ 38 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
 ## Reading from URLs
 
 <https://stackoverflow.com/questions/78023560>

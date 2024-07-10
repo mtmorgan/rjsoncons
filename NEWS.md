@@ -1,3 +1,8 @@
+# rjsoncons 1.3.2
+
+- (1.3.1.9000) add second example illustrating construction of
+  pivotable objects.
+
 # rjsoncons 1.3.1
 
 - (1.3.0.9200) bug fix: NDJSON `j_pivot('{"a": [1,2]}')` now pivots as
