@@ -193,6 +193,85 @@ The result is
 ## # ℹ Use `print(n = ...)` to see more rows
 ```
 
+## Reshaping nested records
+
+<https://stackoverflow.com/questions/78952424>
+
+This question wants to transform JSON into a [data.table][]. A
+previous answer uses `rbindlist()` (similar to `dplyr::bind_rows()`)
+to transform structured lists to data.tables. Here is the sample data
+
+```{r}
+json <- '[
+  {
+    "version_id": "123456",
+    "data": [
+      {
+        "review_id": "1",
+        "rating": 5,
+        "review": "This app is great",
+        "date": "2024-09-01"
+      },
+      {
+        "review_id": "2",
+        "rating": 1,
+        "review": "This app is terrible",
+        "date": "2024-09-01"
+      }
+    ]
+  },
+  {
+    "version_id": "789101",
+    "data": [
+      {
+        "review_id": "3",
+        "rating": 3,
+        "review": "This app is OK",
+        "date": "2024-09-01"
+      }
+    ]
+  }
+]'
+```
+
+The desired data.table is flattened to include `version_id` and each
+field of `data[]` as columns in the table, with the complication that
+`version_id` needs to be replicated for each element of `data[]`.
+
+The rjsoncons [answer][78952424/547331] illustrates several
+approaches. The approach most cleanly separating data transformation
+and data.table construction using [JMESPath][] creates an array of
+objects where each `version_id` is associated with *vectors* of
+`review_id`, etc., corresponding to that version.
+
+```{r}
+query <-
+    "[].{
+        version_id: version_id,
+        review_id: data[].review_id,
+        rating: data[].rating,
+        review: data[].review,
+        date: data[].date
+    }"
+```
+
+As an *R* object, this is exactly handled by `rbindlist()`. Note that
+a pivot is not involved.
+
+```{r}
+records <- j_query(json, query, as = "R")
+data.table::rbindlist(records)
+```
+
+[dplyr][]'s `bind_rows()` behaves similarly:
+
+```{r}
+dplyr::bind_rows(records)
+```
+
+[data.table]: https://CRAN.R-project.org/package=data.table
+[78952424/547331]: https://stackoverflow.com/a/78967138/547331
+
 ## Reading from URLs
 
 <https://stackoverflow.com/questions/78023560>

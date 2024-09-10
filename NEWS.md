@@ -1,5 +1,8 @@
-# rjsoncons 1.3.2
+# Pre-release
 
+- (1.3.1.9100) add example illustrating `j_query()` with JSON
+  reformatting to directly suit `datatable::rbindlist()` or
+  `dplyr::bind_rows()`.
 - (1.3.1.9000) add second example illustrating construction of
   pivotable objects.
 
