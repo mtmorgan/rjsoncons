@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.1.9001</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.1.9100</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -274,7 +274,7 @@ in the table, with the complication that <code>version_id</code> needs
 to be replicated for each element of <code>data[]</code>.</p>
 <p>The rjsoncons <a href="https://stackoverflow.com/a/78967138/547331" class="external-link">answer</a>
 illustrates several approaches. The approach most cleanly separating
-data transformation and data.table construction using <a href="https://jmespath.org" class="external-link">JMESPath</a> create an array of objects
+data transformation and data.table construction using <a href="https://jmespath.org" class="external-link">JMESPath</a> creates an array of objects
 where each <code>version_id</code> is associated with <em>vectors</em>
 of <code>review_id</code>, etc., corresponding to that version.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -725,7 +725,7 @@ documentation, the patch is a single ‘move’ operation from
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] rvest_1.0.4          dplyr_1.1.4          rjsoncons_1.3.1.9001</span></span>
+<span><span class="co">#&gt; [1] rvest_1.0.4          dplyr_1.1.4          rjsoncons_1.3.1.9100</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] viridis_0.6.5      sass_0.4.9         utf8_1.2.4         generics_0.1.3    </span></span>
