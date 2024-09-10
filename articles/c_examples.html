@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rjsoncons</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.1.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -230,6 +230,84 @@ tibble.</p>
 <span><span class="co">## # ℹ Use `print(n = ...)` to see more rows</span></span></code></pre>
 </div>
 <div class="section level3">
+<h3 id="reshaping-nested-records">Reshaping nested records<a class="anchor" aria-label="anchor" href="#reshaping-nested-records"></a>
+</h3>
+<p><a href="https://stackoverflow.com/questions/78952424" class="external-link uri">https://stackoverflow.com/questions/78952424</a></p>
+<p>This question wants to transform JSON into a <a href="https://CRAN.R-project.org/package=data.table" class="external-link">data.table</a>. A
+previous answer uses <code>rbindlist()</code> (similar to
+<code><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">dplyr::bind_rows()</a></code>) to transform structured lists to
+data.tables. Here is the sample data</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">json</span> <span class="op">&lt;-</span> <span class="st">'[</span></span>
+<span><span class="st">  {</span></span>
+<span><span class="st">    "version_id": "123456",</span></span>
+<span><span class="st">    "data": [</span></span>
+<span><span class="st">      {</span></span>
+<span><span class="st">        "review_id": "1",</span></span>
+<span><span class="st">        "rating": 5,</span></span>
+<span><span class="st">        "review": "This app is great",</span></span>
+<span><span class="st">        "date": "2024-09-01"</span></span>
+<span><span class="st">      },</span></span>
+<span><span class="st">      {</span></span>
+<span><span class="st">        "review_id": "2",</span></span>
+<span><span class="st">        "rating": 1,</span></span>
+<span><span class="st">        "review": "This app is terrible",</span></span>
+<span><span class="st">        "date": "2024-09-01"</span></span>
+<span><span class="st">      }</span></span>
+<span><span class="st">    ]</span></span>
+<span><span class="st">  },</span></span>
+<span><span class="st">  {</span></span>
+<span><span class="st">    "version_id": "789101",</span></span>
+<span><span class="st">    "data": [</span></span>
+<span><span class="st">      {</span></span>
+<span><span class="st">        "review_id": "3",</span></span>
+<span><span class="st">        "rating": 3,</span></span>
+<span><span class="st">        "review": "This app is OK",</span></span>
+<span><span class="st">        "date": "2024-09-01"</span></span>
+<span><span class="st">      }</span></span>
+<span><span class="st">    ]</span></span>
+<span><span class="st">  }</span></span>
+<span><span class="st">]'</span></span></code></pre></div>
+<p>The desired data.table is flattened to include
+<code>version_id</code> and each field of <code>data[]</code> as columns
+in the table, with the complication that <code>version_id</code> needs
+to be replicated for each element of <code>data[]</code>.</p>
+<p>The rjsoncons <a href="https://stackoverflow.com/a/78967138/547331" class="external-link">answer</a>
+illustrates several approaches. The approach most cleanly separating
+data transformation and data.table construction using <a href="https://jmespath.org" class="external-link">JMESPath</a> create an array of objects
+where each <code>version_id</code> is associated with <em>vectors</em>
+of <code>review_id</code>, etc., corresponding to that version.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">query</span> <span class="op">&lt;-</span></span>
+<span>    <span class="st">"[].{</span></span>
+<span><span class="st">        version_id: version_id,</span></span>
+<span><span class="st">        review_id: data[].review_id,</span></span>
+<span><span class="st">        rating: data[].rating,</span></span>
+<span><span class="st">        review: data[].review,</span></span>
+<span><span class="st">        date: data[].date</span></span>
+<span><span class="st">    }"</span></span></code></pre></div>
+<p>As an <em>R</em> object, this is exactly handled by
+<code>rbindlist()</code>. Note that a pivot is not involved.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">records</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
+<span><span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/rbindlist.html" class="external-link">rbindlist</a></span><span class="op">(</span><span class="va">records</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    version_id review_id rating               review       date</span></span>
+<span><span class="co">#&gt;        &lt;char&gt;    &lt;char&gt;  &lt;int&gt;               &lt;char&gt;     &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:     123456         1      5    This app is great 2024-09-01</span></span>
+<span><span class="co">#&gt; 2:     123456         2      1 This app is terrible 2024-09-01</span></span>
+<span><span class="co">#&gt; 3:     789101         3      3       This app is OK 2024-09-01</span></span></code></pre></div>
+<p><a href="https://CRAN.R-project.org/package=dplyr" class="external-link">dplyr</a>’s
+<code><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows()</a></code> behaves similarly:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">records</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 5</span></span></span>
+<span><span class="co">#&gt;   version_id review_id rating review               date      </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 123456     1              5 This app is great    2024-09-01</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 123456     2              1 This app is terrible 2024-09-01</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 789101     3              3 This app is OK       2024-09-01</span></span></code></pre></div>
+</div>
+<div class="section level3">
 <h3 id="reading-from-urls">Reading from URLs<a class="anchor" aria-label="anchor" href="#reading-from-urls"></a>
 </h3>
 <p><a href="https://stackoverflow.com/questions/78023560" class="external-link uri">https://stackoverflow.com/questions/78023560</a></p>
@@ -239,36 +317,34 @@ array of objects specific nested elements, and is similar to the
 previous question. In practice, I used
 <code>json &lt;- readLines(url)</code> to create a local copy of the
 data to use while developing the query.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://www.nrl.com/draw//data?competition=111&amp;season=2024"</span></span>
 <span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">'fixtures[].{</span></span>
 <span><span class="st">    homeTeam: homeTeam.nickName, </span></span>
 <span><span class="st">    awayTeam: awayTeam.nickName</span></span>
 <span><span class="st">}'</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
-<span><span class="co">#&gt;   homeTeam   awayTeam    </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Dolphins   Rabbitohs   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Sharks     Wests Tigers</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Titans     Eels        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Broncos    Dragons     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Sea Eagles Knights</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
+<span><span class="co">#&gt;   homeTeam awayTeam  </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Panthers Roosters  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Storm    Sharks    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Cowboys  Knights   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Bulldogs Sea Eagles</span></span></code></pre></div>
 <p>The easiest path to a more general answer (extract all members of
 ‘homeTeam’ and ‘awayTeam’ as a tibble) might, like the posted answer,
 combine JSON extraction and <a href="https://CRAN.R-project.org/package=tidyr" class="external-link">tidyr</a>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">'fixtures[].{ homeTeam: homeTeam, awayTeam: awayTeam }'</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest_wider.html" class="external-link">unnest_wider</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"homeTeam"</span>, <span class="st">"awayTeam"</span><span class="op">)</span>, names_sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 8</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 8</span></span></span>
 <span><span class="co">#&gt;   homeTeam_teamId homeTeam_nickName homeTeam_teamPosition homeTeam_theme  </span></span>
 <span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>723 Dolphins          6th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>028 Sharks            4th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>004 Titans            15th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>011 Broncos           11th                  <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          <span style="text-decoration: underline;">500</span>002 Sea Eagles        7th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          <span style="text-decoration: underline;">500</span>014 Panthers          2nd                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="text-decoration: underline;">500</span>021 Storm             1st                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          <span style="text-decoration: underline;">500</span>012 Cowboys           5th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          <span style="text-decoration: underline;">500</span>010 Bulldogs          6th                   <span style="color: #949494;">&lt;named list [2]&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: awayTeam_teamId &lt;int&gt;, awayTeam_nickName &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   awayTeam_teamPosition &lt;chr&gt;, awayTeam_theme &lt;list&gt;</span></span></span></code></pre></div>
 </div>
@@ -284,7 +360,7 @@ interesting elements:</p>
 <p>The JSON is quite large (about 90 Mb), so processing is not
 immediate. While developing the query, I focused on a subset of the data
 for a more interactive experience.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Crime2013</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"x.calls[9].args"</span><span class="op">)</span></span></code></pre></div>
 </li>
 <li><p>JSON array indexing is 0-based, in contrast to 1-based <em>R</em>
@@ -292,13 +368,13 @@ indexing.</p></li>
 <li>
 <p>In developing the JSON query, I spent quite a bit of time viewing
 results using <code>listviewer::jsonedit()</code>, e.g.,</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">listviewer</span><span class="fu">::</span><span class="fu">jsonedit</span><span class="op">(</span><span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">Crime2013</span>, <span class="st">"[0][*]"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </li>
 </ul>
 <p>The objects of interest are polygon coordinates nested deeply in the
 JSON, at the location implied by JMESPath. One polygon is at</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">"x.calls[9].args[0][0][0][0]"</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## # A tibble: 27 × 2</span></span>
@@ -319,7 +395,7 @@ JSON, at the location implied by JMESPath. One polygon is at</p>
 <p>There are 3618 of these polygons, and they are extracted by using a
 wild-card <code>*</code> in place of an index <code>0</code> at a
 particular place in the path.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">"x.calls[9].args[0][*][0][0]"</span></span>
 <span><span class="fu"><a href="../reference/rquerypivot.html">j_pivot</a></span><span class="op">(</span><span class="va">json</span>, <span class="va">query</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="co">## # A tibble: 3,618 × 2</span></span>
@@ -361,7 +437,7 @@ is to construct a graph from JSON, and then use graph algorithms to
 identify the shortest path between nodes.</p>
 <p>I followed <span class="citation">@margusl</span> to extract JSON
 from the web page.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/" class="external-link">rvest</a></span><span class="op">)</span></span>
 <span><span class="va">html</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html" class="external-link">read_html</a></span><span class="op">(</span><span class="st">"https://www.gerit.org/en/institutiondetail/10282"</span><span class="op">)</span></span>
 <span></span>
@@ -374,13 +450,13 @@ from the web page.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span>pattern <span class="op">=</span> <span class="st">"window.__PRELOADED_STATE__ = "</span>, replacement <span class="op">=</span> <span class="st">""</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>I then used <a href="https://cran.r-project.org/package=listviewer" class="external-link">listviewer</a> to
 explore the JSON interactively, to get a feel for the structure.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">listviewer</span><span class="fu">::</span><span class="fu">jsonedit</span><span class="op">(</span><span class="va">json</span><span class="op">)</span></span></code></pre></div>
 <p>Obtain the root of the institutional hierarchy with a simple path
 traversal, using <a href="https://goessner.net/articles/JsonPath/" class="external-link">JSONPath</a> syntax.
 JSONPath provides ‘wild-card’ syntax, which is convenient when querying
 hierarchical data representations.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mtmorgan.github.io/rjsoncons/">rjsoncons</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">json</span>, <span class="st">"$.institutionDetail.institution.tree"</span><span class="op">)</span></span></code></pre></div>
@@ -392,7 +468,7 @@ nodes representing each division in the institution.</p>
 vector. Use them to construct a tibble. Although the <code>id</code> key
 is an integer in the JSON, it seems appropriate to think of these as
 character-valued.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## these are all nodes, including the query node; each node has an</span></span>
 <span><span class="co">## 'id' and german ('de') and english ('en') name.</span></span>
 <span><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
@@ -404,27 +480,27 @@ character-valued.</p>
 <span>    de <span class="op">=</span> <span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">tree</span>, <span class="st">"$..name.de"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span>,</span>
 <span>    en <span class="op">=</span> <span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">tree</span>, <span class="st">"$..name.en"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>There are 492 nodes in this institution.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<p>There are 497 nodes in this institution.</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nodes</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 492 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 497 × 3</span></span></span>
 <span><span class="co">#&gt;    id        de                                                            en   </span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 10282     <span style="color: #949494;">"</span>Universität zu Köln<span style="color: #949494;">"</span>                                         Univ…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 14036     <span style="color: #949494;">"</span>Fakultät 1: Wirtschafts- und Sozialwissenschaftliche Fakult… Facu…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 176896857 <span style="color: #949494;">"</span>Cologne Graduate School in Management, \rEconomics and Soci… Colo…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 555102855 <span style="color: #949494;">"</span>Cologne Institute for Information Systems (CIIS)<span style="color: #949494;">"</span>            Colo…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 537375237 <span style="color: #949494;">"</span>ECONtribute: Markets &amp; Public Policy<span style="color: #949494;">"</span>                        ECON…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 439201502 <span style="color: #949494;">"</span>Fachbereich Volkswirtschaftslehre<span style="color: #949494;">"</span>                           Econ…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 202057753 <span style="color: #949494;">"</span>Center for Macroeconomic Research (CMR)<span style="color: #949494;">"</span>                     Cent…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 228480345 <span style="color: #949494;">"</span>Seminar für Energiewissenschaft<span style="color: #949494;">"</span>                             Chai…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 237641982 <span style="color: #949494;">"</span>Seminar für Experimentelle Wirtschafts- und Verhaltensforsc… Semi…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 352878120 <span style="color: #949494;">"</span>Seminar für Industrieökonomik und angewandte Mikroökonometr… Indu…</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 482 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 555936524 <span style="color: #949494;">"</span>Chair of Business Analytics<span style="color: #949494;">"</span>                                 Chai…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 537375237 <span style="color: #949494;">"</span>ECONtribute: Markets &amp; Public Policy<span style="color: #949494;">"</span>                        ECON…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 439201502 <span style="color: #949494;">"</span>Fachbereich Volkswirtschaftslehre<span style="color: #949494;">"</span>                           Econ…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 202057753 <span style="color: #949494;">"</span>Center for Macroeconomic Research (CMR)<span style="color: #949494;">"</span>                     Cent…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 228480345 <span style="color: #949494;">"</span>Seminar für Energiewissenschaft<span style="color: #949494;">"</span>                             Chai…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 237641982 <span style="color: #949494;">"</span>Seminar für Experimentelle Wirtschafts- und Verhaltensforsc… Semi…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 487 more rows</span></span></span></code></pre></div>
 <p>The edges are a little tricky to reconstruct from the nested
 structure in the JSON. Start with the id and number of children of each
 node.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">id</span> <span class="op">&lt;-</span></span>
 <span>    <span class="fu"><a href="../reference/rquerypivot.html">j_query</a></span><span class="op">(</span><span class="va">tree</span>, <span class="st">"$..id"</span>, as <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -440,7 +516,7 @@ records the from/to relationship implied by <code>n</code>, and then
 completes that level of the hierarchy (if
 <code>n_children[level] == 0</code>), pushes the next level onto the
 stack, or continues to the next <code>id</code>.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">edgelist</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">id</span>, <span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">id</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">parent_id</span> <span class="op">&lt;-</span> <span class="va">n_children</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -470,61 +546,61 @@ stack, or continues to the next <code>id</code>.</p>
 <span><span class="op">}</span></span></code></pre></div>
 <p>The matrix of edges, with columns <code>from</code> and
 <code>to</code>, is then</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu">edgelist</span><span class="op">(</span><span class="va">id</span>, <span class="va">children_per_node</span><span class="op">)</span></span>
 <span><span class="va">edges</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 491 × 2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 496 × 2</span></span></span>
 <span><span class="co">#&gt;    from      to       </span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 10282     14036    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 14036     176896857</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 14036     555102855</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 14036     537375237</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 14036     439201502</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 439201502 202057753</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 439201502 228480345</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 439201502 237641982</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 439201502 352878120</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 439201502 417277679</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 481 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 555102855 555936524</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 14036     537375237</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 14036     439201502</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 439201502 202057753</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 439201502 228480345</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 439201502 237641982</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 439201502 352878120</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 486 more rows</span></span></span></code></pre></div>
 <p>The computation is tricky, but not too inefficient. There are only
 two queries of the JSON object (for <code>id</code> and
 <code>children_per_node</code>) and the <code>R</code> iteration over
 elements of <code>id</code> is not too extensive.</p>
 <p>I used the <a href="https://tidygraph.data-imaginist.com" class="external-link">tidygraph</a> package to
 represent the graph from the nodes and edges.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tg</span> <span class="op">&lt;-</span> <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html" class="external-link">tbl_graph</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="va">nodes</span>, edges <span class="op">=</span> <span class="va">edges</span>, node_key <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span>
 <span><span class="va">tg</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 492 nodes and 491 edges</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tbl_graph: 497 nodes and 496 edges</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; # A rooted tree</span></span></span>
 <span><span class="co"><span style="color: #949494;">#&gt; #</span></span></span>
-<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 492 × 3 (active)</span></span></span>
+<span><span class="co"><span style="color: #949494;">#&gt; # Node Data: 497 × 3 (active)</span></span></span>
 <span><span class="co">#&gt;    id        de                                                            en   </span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 10282     <span style="color: #949494;">"</span>Universität zu Köln<span style="color: #949494;">"</span>                                         Univ…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 14036     <span style="color: #949494;">"</span>Fakultät 1: Wirtschafts- und Sozialwissenschaftliche Fakult… Facu…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 176896857 <span style="color: #949494;">"</span>Cologne Graduate School in Management, \rEconomics and Soci… Colo…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 555102855 <span style="color: #949494;">"</span>Cologne Institute for Information Systems (CIIS)<span style="color: #949494;">"</span>            Colo…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 537375237 <span style="color: #949494;">"</span>ECONtribute: Markets &amp; Public Policy<span style="color: #949494;">"</span>                        ECON…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 439201502 <span style="color: #949494;">"</span>Fachbereich Volkswirtschaftslehre<span style="color: #949494;">"</span>                           Econ…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 202057753 <span style="color: #949494;">"</span>Center for Macroeconomic Research (CMR)<span style="color: #949494;">"</span>                     Cent…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 228480345 <span style="color: #949494;">"</span>Seminar für Energiewissenschaft<span style="color: #949494;">"</span>                             Chai…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 237641982 <span style="color: #949494;">"</span>Seminar für Experimentelle Wirtschafts- und Verhaltensforsc… Semi…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 352878120 <span style="color: #949494;">"</span>Seminar für Industrieökonomik und angewandte Mikroökonometr… Indu…</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 482 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 555936524 <span style="color: #949494;">"</span>Chair of Business Analytics<span style="color: #949494;">"</span>                                 Chai…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 537375237 <span style="color: #949494;">"</span>ECONtribute: Markets &amp; Public Policy<span style="color: #949494;">"</span>                        ECON…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 439201502 <span style="color: #949494;">"</span>Fachbereich Volkswirtschaftslehre<span style="color: #949494;">"</span>                           Econ…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 202057753 <span style="color: #949494;">"</span>Center for Macroeconomic Research (CMR)<span style="color: #949494;">"</span>                     Cent…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 228480345 <span style="color: #949494;">"</span>Seminar für Energiewissenschaft<span style="color: #949494;">"</span>                             Chai…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 237641982 <span style="color: #949494;">"</span>Seminar für Experimentelle Wirtschafts- und Verhaltensforsc… Semi…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 487 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#</span></span></span>
-<span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 491 × 2</span></span></span>
+<span><span class="co"><span style="color: #949494;">#&gt; # Edge Data: 496 × 2</span></span></span>
 <span><span class="co">#&gt;    from    to</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1     2</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2     3</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     2     4</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 488 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 493 more rows</span></span></span></code></pre></div>
 <p>I then used <code>convert()</code> to find the graph with the
 shortest path between two nodes, and extracted the tibble of nodes.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tg</span> <span class="op">|&gt;</span></span>
 <span>    <span class="co">## find the shortest path between two nodes...</span></span>
 <span>    <span class="fu">tidygraph</span><span class="fu">::</span><span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/morph.html" class="external-link">convert</a></span><span class="op">(</span></span>
@@ -546,10 +622,10 @@ shortest path between two nodes, and extracted the tibble of nodes.</p>
 <p>This is the answer to the question posed in the StackOverflow
 post.</p>
 <p>It can be fun to try and visualize the graph, e.g., using <a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggraph</span><span class="fu">::</span><span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html" class="external-link">ggraph</a></span><span class="op">(</span><span class="va">tg</span>, <span class="st">"tree"</span>, circular <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggraph</span><span class="fu">::</span><span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_edge_elbow.html" class="external-link">geom_edge_elbow</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="c_examples_files/figure-html/unnamed-chunk-27-1.png" width="700"></p>
+<p><img src="c_examples_files/figure-html/unnamed-chunk-31-1.png" width="700"></p>
 </div>
 </div>
 <div class="section level2">
@@ -562,7 +638,7 @@ post.</p>
 <p>The example is not completely reproducible, but the challenge is that
 the <a href="https://CRAN.R-project.org/package=igraph" class="external-link">igraph</a>
 package produces JSON like</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="st">'</span></span>
 <span><span class="st">{</span></span>
 <span><span class="st">  "nodes": [</span></span>
@@ -587,17 +663,17 @@ package produces JSON like</p>
 field. From the <a href="https://jsonpatch.com" class="external-link">JSON patch</a>
 documentation, the patch is a single ‘move’ operation from
 <code>/attributes/directed</code> to the top-level <code>/</code>:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">patch</span> <span class="op">&lt;-</span> <span class="st">'[</span></span>
 <span><span class="st">    {"op": "move", "from": "/attributes/directed", "path": "/directed"}</span></span>
 <span><span class="st">]'</span></span></code></pre></div>
 <p>The patch is accomplished with</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">patched_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/patch.html">j_patch_apply</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">patch</span><span class="op">)</span></span></code></pre></div>
 <p>This JSON string could be visualized with
 <code>listviwer::jsonedit(patched_data)</code>, or
 <code>patched_data |&gt; as_r() |&gt; str()</code>, or</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">patched_data</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/prettify.html" class="external-link">prettify</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; {</span></span>
@@ -626,7 +702,7 @@ documentation, the patch is a single ‘move’ operation from
 <div class="section level2">
 <h2 class="unnumbered" id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.4.1 (2024-06-14)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -649,25 +725,26 @@ documentation, the patch is a single ‘move’ operation from
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] rvest_1.0.4          dplyr_1.1.4          rjsoncons_1.3.1.9000</span></span>
+<span><span class="co">#&gt; [1] rvest_1.0.4          dplyr_1.1.4          rjsoncons_1.3.1.9001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] viridis_0.6.5      sass_0.4.9         utf8_1.2.4         generics_0.1.3    </span></span>
-<span><span class="co">#&gt;  [5] tidyr_1.3.1        xml2_1.3.6         digest_0.6.36      magrittr_2.0.3    </span></span>
+<span><span class="co">#&gt;  [5] tidyr_1.3.1        xml2_1.3.6         digest_0.6.37      magrittr_2.0.3    </span></span>
 <span><span class="co">#&gt;  [9] evaluate_0.24.0    grid_4.4.1         fastmap_1.2.0      jsonlite_1.8.8    </span></span>
-<span><span class="co">#&gt; [13] ggrepel_0.9.5      gridExtra_2.3      httr_1.4.7         purrr_1.0.2       </span></span>
+<span><span class="co">#&gt; [13] ggrepel_0.9.6      gridExtra_2.3      httr_1.4.7         purrr_1.0.2       </span></span>
 <span><span class="co">#&gt; [17] fansi_1.0.6        viridisLite_0.4.2  scales_1.3.0       tweenr_2.0.3      </span></span>
 <span><span class="co">#&gt; [21] textshaping_0.4.0  jquerylib_0.1.4    cli_3.6.3          graphlayouts_1.1.1</span></span>
-<span><span class="co">#&gt; [25] rlang_1.1.4        polyclip_1.10-6    tidygraph_1.3.1    munsell_0.5.1     </span></span>
-<span><span class="co">#&gt; [29] withr_3.0.0        cachem_1.1.0       yaml_2.3.9         tools_4.4.1       </span></span>
-<span><span class="co">#&gt; [33] memoise_2.0.1      colorspace_2.1-0   ggplot2_3.5.1      curl_5.2.1        </span></span>
+<span><span class="co">#&gt; [25] rlang_1.1.4        polyclip_1.10-7    tidygraph_1.3.1    munsell_0.5.1     </span></span>
+<span><span class="co">#&gt; [29] withr_3.0.1        cachem_1.1.0       yaml_2.3.10        tools_4.4.1       </span></span>
+<span><span class="co">#&gt; [33] memoise_2.0.1      colorspace_2.1-1   ggplot2_3.5.1      curl_5.2.2        </span></span>
 <span><span class="co">#&gt; [37] vctrs_0.6.5        R6_2.5.1           lifecycle_1.0.4    fs_1.6.4          </span></span>
 <span><span class="co">#&gt; [41] MASS_7.3-60.2      ragg_1.3.2         ggraph_2.2.1       pkgconfig_2.0.3   </span></span>
-<span><span class="co">#&gt; [45] desc_1.4.3         pkgdown_2.1.0      pillar_1.9.0       bslib_0.7.0       </span></span>
-<span><span class="co">#&gt; [49] gtable_0.3.5       glue_1.7.0         Rcpp_1.0.12        ggforce_0.4.2     </span></span>
-<span><span class="co">#&gt; [53] systemfonts_1.1.0  highr_0.11         xfun_0.45          tibble_3.2.1      </span></span>
-<span><span class="co">#&gt; [57] tidyselect_1.2.1   knitr_1.48         farver_2.1.2       htmltools_0.5.8.1 </span></span>
-<span><span class="co">#&gt; [61] igraph_2.0.3       labeling_0.4.3     rmarkdown_2.27     compiler_4.4.1</span></span></code></pre></div>
+<span><span class="co">#&gt; [45] desc_1.4.3         pkgdown_2.1.0      pillar_1.9.0       bslib_0.8.0       </span></span>
+<span><span class="co">#&gt; [49] gtable_0.3.5       data.table_1.16.0  glue_1.7.0         Rcpp_1.0.13       </span></span>
+<span><span class="co">#&gt; [53] ggforce_0.4.2      systemfonts_1.1.0  highr_0.11         xfun_0.47         </span></span>
+<span><span class="co">#&gt; [57] tibble_3.2.1       tidyselect_1.2.1   knitr_1.48         farver_2.1.2      </span></span>
+<span><span class="co">#&gt; [61] htmltools_0.5.8.1  igraph_2.0.3       labeling_0.4.3     rmarkdown_2.28    </span></span>
+<span><span class="co">#&gt; [65] compiler_4.4.1</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
