@@ -1,6 +1,6 @@
 Package: rjsoncons
 Title: Query, Pivot, Patch, and Validate 'JSON' and 'NDJSON'
-Version: 1.3.1.9100
+Version: 1.3.1.9200
 Authors@R: c(
     person(
         "Martin", "Morgan", role = c("aut", "cre"),
@@ -25,6 +25,7 @@ Description: Functions to query (filter or transform), pivot (convert
     <https://danielaparker.github.io/jsoncons/> header-only library;
     the library is easily linked to other packages for direct access
     to 'C++' functionality not implemented here.
+Depends: R (>= 4.2.0)
 Imports: cli, tibble
 Suggests: jsonlite, tinytest, BiocStyle, knitr, rmarkdown
 LinkingTo: cpp11, cli
