@@ -1,4 +1,11 @@
-# Pre-release
+# Pre-release 1.3.2
+
+## Significant user-visible changes
+
+- (1.3.1.9200) add R dependency >= 4.2.0 (April, 2022) because code
+  (examples) use '|>'
+
+## Other changes
 
 - (1.3.1.9100) add example illustrating `j_query()` with JSON
   reformatting to directly suit `datatable::rbindlist()` or
