@@ -1,4 +1,4 @@
-# Pre-release 1.3.2
+# rjsoncons 1.3.2
 
 ## Significant user-visible changes
 

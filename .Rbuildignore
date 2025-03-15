@@ -11,3 +11,4 @@
 ^CRAN-SUBMISSION$
 ^data$
 ^vignettes/articles$
+^issues$

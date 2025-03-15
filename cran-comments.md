@@ -1,3 +1,8 @@
+# Release 1.3.2
+
+- Address C++ whitespace precedes literal operator deprecation
+- Depend: on R >=4.2.0 to support use of '|>' in examples
+
 # Release 1.3.1
 
 - Address 'noSuggests' R CMD check failure
