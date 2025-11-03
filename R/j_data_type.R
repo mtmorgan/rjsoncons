@@ -91,6 +91,8 @@ j_data_type <-
         )
 
         if (length(data) == 1L) {
+            is_url <- grepl("^https?://", data, TRUE)
+            is_file <- file.exists(data)
             ## compressed and uncompressed url or file path
             if (file_ext(data) %in% c("gz", "bz2", "xz")) {
                 format <-
@@ -100,13 +102,13 @@ j_data_type <-
                         "json"
                 c(
                     format,
-                    if (grepl("^https?://", data, TRUE)) "url" else "file"
+                    if (is_url) "url" else if (is_file) "file"
                 )
             } else if (identical(file_ext(data), "zip")) {
                 stop("`j_data_type()` of type `.zip` is not supported")
-            } else if (grepl("^https?://", data, TRUE)) {
+            } else if (is_url) {
                 c(j_data_type(readLines(data, 2L, warn = FALSE)), "url")
-            } else if (file.exists(data)) {
+            } else if (is_file) {
                 c(j_data_type(readLines(data, 2L, warn = FALSE)), "file")
             } else if (.is_scalar_character(data) && !inherits(data, "AsIs")) {
                 "json"
