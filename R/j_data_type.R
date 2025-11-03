@@ -40,6 +40,8 @@
 #'
 #' @inheritParams j_query
 #'
+#' @importFrom tools file_ext
+#'
 #' @details
 #'
 #' `j_data_type()` without any arguments reports possible return
