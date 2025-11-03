@@ -33,10 +33,13 @@ validate) the type of \code{data} based on the following rules:
 \itemize{
 \item For a scalar (length 1) character \code{data}, either \code{"url"}
 (matching regular expression \code{"^https?://"}, \code{"file"}
-(\code{file.exists(data)} returns \code{TRUE}), or \code{"json"}. When \code{"file"}
-or \code{"url"} is inferred, the return value is a length 2 vector,
-with the first element the inferred type of data (\code{"json"} or
-\code{"ndjson"}) obtained from the first 2 lines of the file.
+(\code{file.exists(data)} returns \code{TRUE}), or \code{"json"}. Compression
+type is accounted for and supported compression extensions are
+\code{".gz"}, \code{".bz2"}, and \code{".xz"}. \code{".zip"} is not supported and
+will return an error. When \code{"file"} or \code{"url"} is inferred,
+the return value is a length 2 vector, with the first element
+the inferred type of data (\code{"json"} or \code{"ndjson"}) obtained
+from the first 2 lines of the file.
 \item For character data with \code{length(data) > 1}, \code{"ndjson"} if all
 elements start a square bracket or curly brace, consistently
 (i.e., agreeing with the start of the first record), otherwise

@@ -49,10 +49,13 @@
 #'
 #' - For a scalar (length 1) character `data`, either `"url"`
 #'   (matching regular expression `"^https?://"`, `"file"`
-#'   (`file.exists(data)` returns `TRUE`), or `"json"`. When `"file"`
-#'   or `"url"` is inferred, the return value is a length 2 vector,
-#'   with the first element the inferred type of data (`"json"` or
-#'   `"ndjson"`) obtained from the first 2 lines of the file.
+#'   (`file.exists(data)` returns `TRUE`), or `"json"`. Compression
+#'   type is accounted for and supported compression extensions are
+#'   `".gz"`, `".bz2"`, and `".xz"`. `".zip"` is not supported and
+#'   will return an error. When `"file"` or `"url"` is inferred,
+#'   the return value is a length 2 vector, with the first element
+#'   the inferred type of data (`"json"` or `"ndjson"`) obtained
+#'   from the first 2 lines of the file.
 #' - For character data with `length(data) > 1`, `"ndjson"` if all
 #'   elements start a square bracket or curly brace, consistently
 #'   (i.e., agreeing with the start of the first record), otherwise
