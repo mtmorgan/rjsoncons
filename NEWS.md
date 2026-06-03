@@ -1,3 +1,9 @@
+# rjsoncons 1.3.3
+
+## Other changes
+
+- (1.3.2.9000) avoid (spurious?) warning under GCC-16 in jsoncons code.
+
 # rjsoncons 1.3.2
 
 ## Significant user-visible changes
