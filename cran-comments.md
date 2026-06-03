@@ -1,3 +1,7 @@
+# Release 1.3.3
+
+- Address (spurious?) array-out-of-bounds warning under GCC-16
+
 # Release 1.3.2
 
 - Address C++ whitespace precedes literal operator deprecation

@@ -12,3 +12,4 @@
 ^data$
 ^vignettes/articles$
 ^issues$
+^Dockerfile$
